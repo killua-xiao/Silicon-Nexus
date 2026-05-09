@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+@theme {
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+body {
+  @apply bg-[#0a0a0a] text-green-400 font-mono antialiased;
+}
+
+::selection {
+  @apply bg-green-900 text-green-100;
+}
