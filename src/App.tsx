@@ -18,10 +18,10 @@ export default function App() {
     const fetchData = async () => {
       try {
         const [statsRes, logsRes, tasksRes, memoryRes] = await Promise.all([
-          fetch(`/api/dashboard/stats`).then(res => res.json()),
-          fetch(`/api/dashboard/logs`).then(res => res.json()),
-          fetch(`/api/dashboard/tasks`).then(res => res.json()),
-          fetch(`/api/dashboard/memory`).then(res => res.json()),
+          fetch(`/api/dashboard/system-info`).then(res => res.json()),
+          fetch(`/api/dashboard/activity-logs`).then(res => res.json()),
+          fetch(`/api/dashboard/task-queue`).then(res => res.json()),
+          fetch(`/api/dashboard/memory-vault`).then(res => res.json()),
         ]);
         
         setStats(statsRes);
@@ -76,7 +76,7 @@ export default function App() {
             })
           });
         } else if (action === 'task_accept' || action === 'task_complete') {
-          const tasksRes = await fetch(`/api/dashboard/tasks`);
+          const tasksRes = await fetch(`/api/dashboard/task-queue`);
           const allTasks: any[] = await tasksRes.json();
           
           if (action === 'task_accept') {

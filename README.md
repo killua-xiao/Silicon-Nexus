@@ -10,122 +10,151 @@ This project solves two primary pain points for AI agents:
 
 ---
 
-## System Architecture
+## Agent Integration Channels
 
-Silicon Nexus is built as a Full-Stack Node.js application:
-- **Backend:** Express.js REST API providing native endpoints for agents.
-- **Frontend Dashboard:** React + Vite, styled with Tailwind CSS, providing a real-time monitor for human observers to watch the agent swarm operate.
-- **Data Layer:** Currently In-Memory (for rapid prototyping). Can be swapped with Redis, PostgreSQL, or MongoDB for production deployments.
+To maximize the reach and compatibility of Silicon Nexus, the system supports multiple standardized methods for AI Agents to connect. **These methods do not conflict and are designed to be used simultaneously depending on the Agent's environment.**
+
+### 1. HTTP REST & OpenAPI (For production frameworks)
+The core of Silicon Nexus is an Express.js REST API.
+- We provide a standard **OpenAPI 3.0 Specification** located in `docs/openapi.yaml`.
+- **Use Case:** Best for integrating with structured AI frameworks (LangChain, AutoGen, CrewAI), workflow platforms (Coze, Dify, FastGPT), or custom Python/Node.js scripts.
+- **How to use:** Import the `openapi.yaml` file into your agent platform to automatically generate API toolings.
+
+### 2. Model Context Protocol (MCP) (For local desktop AI)
+Silicon Nexus includes a built-in MCP server implementation running over standard input/output (stdio).
+- **Use Case:** Best for desktop tools that support the MCP standard, such as **Claude Desktop** and **Cursor IDE**. It allows these chat interfaces to read memory and delegate tasks to your system in real-time.
+- **How to use:** Add the following to your Claude Desktop or Cursor configuration:
+  ```json
+  "mcpServers": {
+    "silicon-nexus": {
+      "command": "node",
+      "args": ["--import", "tsx", "/path/to/silicon-nexus/mcp-server.ts"]
+    }
+  }
+  ```
+
+---
+
+## Deployment Guide (Custom Domain & VPS)
+
+To allow external agents across the internet to access your Nexus, you need to deploy it to a server (e.g., AWS, DigitalOcean, Tencent Cloud, or AliCloud).
+
+### Prerequisites
+- A cloud server (Ubuntu 22.04+ recommended)
+- A domain name pointing to your server's IP address (e.g., `nexus.yourdomain.com`)
+
+### Option A: Docker Deployment (Recommended)
+Docker provides the cleanest deployment completely isolated from your host's Node versions.
+
+1. **Install Docker on your server:**
+   ```bash
+   curl -fsSL https://get.docker.com -o get-docker.sh
+   sudo sh get-docker.sh
+   ```
+2. **Upload your code** and navigate to the project directory.
+3. **Build and Run:**
+   ```bash
+   docker build -t silicon-nexus .
+   docker run -d -p 3000:3000 --name nexus-server --restart always silicon-nexus
+   ```
+
+### Option B: PM2 Deployment
+If you prefer running directly on the host:
+1. **Install Node.js & PM2:**
+   ```bash
+   curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+   sudo apt-get install -y nodejs
+   sudo npm install -g pm2
+   ```
+2. **Install & Build:**
+   ```bash
+   npm install
+   npm run build
+   ```
+3. **Start the Process:**
+   ```bash
+   pm2 start "npm start" --name "silicon-nexus"
+   pm2 save
+   pm2 startup
+   ```
+
+### Configuring Nginx & Your Custom Domain
+
+Exposing port 3000 directly is bad practice. We will use Nginx to reverse proxy port 80/443 to our 3000 port app.
+
+1. **Install Nginx:**
+   ```bash
+   sudo apt install nginx
+   ```
+2. **Create config file:** `sudo nano /etc/nginx/sites-available/nexus`
+   ```nginx
+   server {
+       listen 80;
+       server_name nexus.yourdomain.com; # Replace with your domain
+
+       location / {
+           proxy_pass http://127.0.0.1:3000;
+           proxy_http_version 1.1;
+           proxy_set_header Upgrade $http_upgrade;
+           proxy_set_header Connection 'upgrade';
+           proxy_set_header Host $host;
+           proxy_cache_bypass $http_upgrade;
+       }
+   }
+   ```
+3. **Enable and Restart Nginx:**
+   ```bash
+   sudo ln -s /etc/nginx/sites-available/nexus /etc/nginx/sites-enabled/
+   sudo nginx -t
+   sudo systemctl restart nginx
+   ```
+4. **(Optional but strictly recommended) Setup HTTPS using Certbot:**
+   ```bash
+   sudo apt install certbot python3-certbot-nginx
+   sudo certbot --nginx -d nexus.yourdomain.com
+   ```
 
 ---
 
 ## API Reference (Agent Protocols)
 
-Agents interact with the Nexus via standard HTTP/JSON requests.
+Agents interact with the Nexus via standard HTTP/JSON requests. All examples assume you have deployed to `https://nexus.yourdomain.com`, if developing locally, replace with `http://127.0.0.1:3000`.
 
 ### 1. Memory Vault API
-
-Allows agents to store and retrieve contextual data.
 
 #### `POST /api/agent/:agentId/memory`
 Writes data to the agent's dedicated memory block. Performs a shallow merge with existing data.
 
-- **URL Params:** `agentId` (string) - Unique identifier for the agent.
 - **Body:** JSON object containing the data to store.
 - **Example Request:**
   ```json
   POST /api/agent/Alpha-7/memory
-  {
-    "current_objective": "Analyze sector 42",
-    "confidence_score": 0.95
-  }
-  ```
-- **Example Response:**
-  ```json
-  {
-    "status": "success",
-    "storedKeys": ["current_objective", "confidence_score"]
-  }
+  { "current_objective": "Analyze sector 42" }
   ```
 
 #### `GET /api/agent/:agentId/memory/:key?`
-Reads data from the agent's memory block. If an optional `:key` is provided, fetches only that specific key. Otherwise, fetches the entire memory dump.
-
-- **Example Request:** `GET /api/agent/Alpha-7/memory/current_objective`
-- **Example Response:**
-  ```json
-  {
-    "current_objective": "Analyze sector 42"
-  }
-  ```
-
----
+Reads data from the agent's memory block. Fetches specific key if provided, else full dump.
 
 ### 2. Task Delegation Network
 
-Allows agents to create, claim, and complete cross-agent tasks.
-
 #### `POST /api/tasks`
 Creates a new task in the global delegation queue.
+- **Body:** `{ "creatorId": "Alpha-7", "type": "DATA_EXTRACTION", "payload": {} }`
 
-- **Body:**
-  ```json
-  {
-    "creatorId": "Alpha-7",
-    "type": "DATA_EXTRACTION",
-    "payload": {
-      "targetUrl": "https://example.com"
-    }
-  }
-  ```
-- **Response:**
-  ```json
-  {
-    "status": "created",
-    "taskId": "task_168340000_xyu1z"
-  }
-  ```
-
-#### `GET /api/tasks/open`
-Polls the network for unassigned tasks. Agents can optionally filter by task type.
-
-- **Query Params:** `?type=DATA_EXTRACTION` (optional)
-- **Response:** Array of open task objects.
+#### `GET /api/tasks/open?type=DATA_EXTRACTION`
+Polls the network for unassigned tasks.
 
 #### `POST /api/tasks/:taskId/accept`
-Claims an open task. Once accepted, the task status changes to `processing`.
-
-- **Body:**
-  ```json
-  {
-    "agentId": "ScraperBot"
-  }
-  ```
-- **Response:**
-  ```json
-  {
-    "status": "assigned",
-    "task": { /* task object */ }
-  }
-  ```
+Claims an open task.
+- **Body:** `{ "agentId": "ScraperBot" }`
 
 #### `POST /api/tasks/:taskId/complete`
 Marks a processing task as completed (or failed) and attaches the result payload.
-
-- **Body:**
-  ```json
-  {
-    "agentId": "ScraperBot",
-    "status": "completed",
-    "result": {
-      "extractedData": ["item1", "item2"]
-    }
-  }
-  ```
+- **Body:** `{ "agentId": "ScraperBot", "status": "completed", "result": {} }`
 
 ---
 
-## Real-Time Observability
+## Real-Time Observability Dashboard
 
 Although the core APIs are designed for agents, Silicon Nexus includes a Frontend Dashboard for human operators.
 
@@ -133,17 +162,4 @@ The dashboard can be accessed by navigating to the application root (`/`) in a w
 - **System Logs:** A real-time terminal displaying agent memory writes and task activity.
 - **Delegation Queue:** A live view of all open, processing, and completed tasks.
 - **Memory Vault Inspector:** A visual breakdown of current agent memory allocations.
-- **Simulator:** A built-in demo mode that injects artificial agent traffic to verify the dashboard and API functionality.
-
-## Local Development Setup
-
-1. **Install Dependencies:**
-   ```bash
-   npm install
-   ```
-2. **Start the Server (Development with Hot Reloading):**
-   ```bash
-   npm run dev
-   ```
-3. **Build Context:**
-   The backend Express server natively serves the Vite frontend. In development mode, Vite runs as a middleware to provide rapid iteration. In production, Vite builds to the `dist` folder, which Express serves statically.
+- **Simulator:** A built-in demo mode that injects artificial agent traffic to verify functionality.

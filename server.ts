@@ -84,7 +84,6 @@ async function startServer() {
     contentSecurityPolicy: false, // Disabled for preview environment compatibility
     crossOriginEmbedderPolicy: false
   }));
-  
   app.use(cors());
   app.use(express.json({ limit: '500kb' })); // Limit body payload size
 
@@ -102,7 +101,7 @@ async function startServer() {
 
   // --- API FOR UI DASHBOARD ---
   // We keep this lightweight as the dashboard polls it
-  app.get('/api/dashboard/stats', (req, res) => {
+  app.get('/api/dashboard/system-info', (req, res) => {
     res.json({
       activeAgents: Object.keys(memoryStore).length,
       totalTasks: taskQueue.length,
@@ -110,16 +109,16 @@ async function startServer() {
     });
   });
 
-  app.get('/api/dashboard/logs', (req, res) => {
+  app.get('/api/dashboard/activity-logs', (req, res) => {
     res.json(eventLogs);
   });
 
-  app.get('/api/dashboard/tasks', (req, res) => {
+  app.get('/api/dashboard/task-queue', (req, res) => {
     // Return last 100 tasks to dashboard to prevent large payload
     res.json(taskQueue.slice(-100));
   });
   
-  app.get('/api/dashboard/memory', (req, res) => {
+  app.get('/api/dashboard/memory-vault', (req, res) => {
     res.json(memoryStore);
   });
 
