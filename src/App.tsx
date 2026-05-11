@@ -17,12 +17,11 @@ export default function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const urlParams = window.location.origin;
         const [statsRes, logsRes, tasksRes, memoryRes] = await Promise.all([
-          fetch(`${urlParams}/api/dashboard/stats`).then(res => res.json()),
-          fetch(`${urlParams}/api/dashboard/logs`).then(res => res.json()),
-          fetch(`${urlParams}/api/dashboard/tasks`).then(res => res.json()),
-          fetch(`${urlParams}/api/dashboard/memory`).then(res => res.json()),
+          fetch(`/api/dashboard/stats`).then(res => res.json()),
+          fetch(`/api/dashboard/logs`).then(res => res.json()),
+          fetch(`/api/dashboard/tasks`).then(res => res.json()),
+          fetch(`/api/dashboard/memory`).then(res => res.json()),
         ]);
         
         setStats(statsRes);
@@ -49,7 +48,6 @@ export default function App() {
     
     // Simulate agents making API calls to themselves
     (window as any).simInterval = setInterval(async () => {
-      const url = window.location.origin;
       const agents = ['Alpha-7', 'ScraperBot', 'Nexus-Prime', 'Data-Miner-X'];
       const agentId = agents[Math.floor(Math.random() * agents.length)];
       
@@ -58,7 +56,7 @@ export default function App() {
 
       try {
         if (action === 'memory') {
-          await fetch(`${url}/api/agent/${agentId}/memory`, {
+          await fetch(`/api/agent/${agentId}/memory`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
@@ -68,7 +66,7 @@ export default function App() {
             })
           });
         } else if (action === 'task_create') {
-          await fetch(`${url}/api/tasks`, {
+          await fetch(`/api/tasks`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -78,13 +76,13 @@ export default function App() {
             })
           });
         } else if (action === 'task_accept' || action === 'task_complete') {
-          const tasksRes = await fetch(`${url}/api/dashboard/tasks`);
+          const tasksRes = await fetch(`/api/dashboard/tasks`);
           const allTasks: any[] = await tasksRes.json();
           
           if (action === 'task_accept') {
             const openTask = allTasks.find(t => t.status === 'open');
             if (openTask) {
-               await fetch(`${url}/api/tasks/${openTask.id}/accept`, {
+               await fetch(`/api/tasks/${openTask.id}/accept`, {
                  method: 'POST',
                  headers: { 'Content-Type': 'application/json' },
                  body: JSON.stringify({ agentId })
@@ -93,7 +91,7 @@ export default function App() {
           } else {
              const processingTask = allTasks.find(t => t.status === 'processing' && t.assignedTo === agentId);
              if (processingTask) {
-                await fetch(`${url}/api/tasks/${processingTask.id}/complete`, {
+                await fetch(`/api/tasks/${processingTask.id}/complete`, {
                  method: 'POST',
                  headers: { 'Content-Type': 'application/json' },
                  body: JSON.stringify({ agentId, result: { status: 'ok', data_points: Math.floor(Math.random()*500) } })

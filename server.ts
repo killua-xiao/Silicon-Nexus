@@ -74,6 +74,10 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  // Trust proxy is required when running behind a reverse proxy (like Cloud Run or standard load balancers)
+  // This resolves express-rate-limit 'X-Forwarded-For' and 'Forwarded' header warnings and ensures correct IP tracking
+  app.set('trust proxy', 1);
+
   // --- MIDDLEWARE ---
   // Security headers. Disable contentSecurityPolicy for development to allow local script execution if needed, but strict elsewhere.
   app.use(helmet({
