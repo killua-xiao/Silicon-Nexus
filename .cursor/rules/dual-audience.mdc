@@ -1,0 +1,16 @@
+---
+description: Every Silicon Nexus feature must serve humans and agents
+alwaysApply: true
+---
+
+# Dual audience (human + agent)
+
+Silicon Nexus is operator UI **and** agent infrastructure. For every feature:
+
+1. Expose the same state to agents via REST/MCP/JSON (not UI-only).
+2. Prefer machine-readable public discovery (`llms.txt`, feed JSON/MD, `agent.json`).
+3. Emit audit events agents can poll when status changes (e.g. `FEED_CRAWLED`).
+4. Label uncertain signals honestly (crawl observation ≠ permanent index inclusion).
+5. Never put tokens/secrets on public or directory surfaces.
+
+See `docs/DUAL_AUDIENCE.md`.

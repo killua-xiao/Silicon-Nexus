@@ -1,0 +1,428 @@
+openapi: 3.0.0
+info:
+  title: Silicon Nexus API
+  description: |
+    Agent infrastructure platform: memory vault, task swarm, GEO sites, and public discovery.
+    Auth: Operator Key (nxo_*), account session (nxu_*), or per-agent tokens (nxa_*).
+    Credentials via Authorization: Bearer or X-API-Key only (query-string api_key is rejected).
+    Registered accounts get workspace ws_{accountId}; operator key uses default.
+  version: 1.3.0
+servers:
+  - url: https://silinex.xyz/api
+    description: Production (silinex.xyz)
+  - url: http://localhost:3000/api
+    description: Development Server
+
+components:
+  securitySchemes:
+    OperatorOrAgentToken:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Operator Key (nxo_*) or Agent Token (nxa_*). Bearer Authorization also accepted.
+  schemas:
+    AgentRegistration:
+      type: object
+      required: [agentId]
+      properties:
+        agentId:
+          type: string
+        label:
+          type: string
+        rotate:
+          type: boolean
+          default: false
+    UsageSnapshot:
+      type: object
+      properties:
+        workspaceId: { type: string }
+        enrolledAgents: { type: integer }
+        memoryAgents: { type: integer }
+        memoryBytes: { type: integer }
+        totalTasks: { type: integer }
+        openTasks: { type: integer }
+        processingTasks: { type: integer }
+        completedTasks: { type: integer }
+        failedTasks: { type: integer }
+
+security:
+  - OperatorOrAgentToken: []
+
+paths:
+  /auth/status:
+    get:
+      summary: Auth mode probe (public)
+      security: []
+      operationId: getAuthStatus
+      responses:
+        '200':
+          description: Whether identity mode is enabled
+
+  /directory:
+    get:
+      summary: Public opt-in agent directory (no auth)
+      operationId: listPublicDirectory
+      security: []
+      responses:
+        '200':
+          description: Listed agents without tokens
+
+  /agents:
+    get:
+      summary: List enrolled agents (operator only)
+      operationId: listAgents
+      responses:
+        '200':
+          description: Enrolled agent metadata (no token secrets)
+
+  /agents/register:
+    post:
+      summary: Enroll an agent and mint a one-time nxa_* token (operator only)
+      operationId: registerAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentRegistration'
+      responses:
+        '200':
+          description: Token issued (shown once)
+
+  /agents/{agentId}:
+    patch:
+      summary: Update agent label (operator only)
+      operationId: patchAgent
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [label]
+              properties:
+                label:
+                  type: string
+      responses:
+        '200':
+          description: Label updated
+        '404':
+          description: Agent not found
+
+  /agents/{agentId}/revoke:
+    post:
+      summary: Revoke an agent's token (operator only)
+      operationId: revokeAgent
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Token revoked
+
+  /dashboard/system-info:
+    get:
+      summary: Aggregate stats (operator only)
+      operationId: getSystemInfo
+      responses:
+        '200':
+          description: Dashboard counters
+
+  /dashboard/activity-logs:
+    get:
+      summary: Persisted audit events (operator only)
+      operationId: getActivityLogs
+      responses:
+        '200':
+          description: Recent audit log entries
+
+  /dashboard/task-queue:
+    get:
+      summary: Recent tasks (operator only)
+      operationId: getTaskQueue
+      responses:
+        '200':
+          description: Task queue snapshot
+
+  /dashboard/memory-vault:
+    get:
+      summary: Full memory vault (operator only)
+      operationId: getMemoryVault
+      responses:
+        '200':
+          description: Agent memory map
+
+  /dashboard/agents:
+    get:
+      summary: Agent enrollment list for dashboard (operator only)
+      operationId: getDashboardAgents
+      responses:
+        '200':
+          description: Agents array
+
+  /dashboard/usage:
+    get:
+      summary: Usage snapshot with plan quotas (operator only)
+      operationId: getUsage
+      responses:
+        '200':
+          description: Usage snapshot including plan limits and daily counters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageSnapshot'
+
+  /agent/{agentId}/memory:
+    post:
+      summary: Write to Agent's Memory Vault
+      operationId: writeAgentMemory
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+      responses:
+        '200':
+          description: Memory successfully written
+    delete:
+      summary: Wipe an agent's entire memory register
+      operationId: wipeAgentMemory
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Memory wiped
+        '404':
+          description: Agent memory not found
+
+  /agent/{agentId}/memory/{key}:
+    get:
+      summary: Read from Agent's Memory Vault
+      operationId: readAgentMemory
+      parameters:
+        - name: agentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: key
+          in: path
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Memory data retrieved successfully
+
+  /tasks:
+    post:
+      summary: Create a new Delegation Task
+      operationId: createTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type]
+              properties:
+                creatorId:
+                  type: string
+                type:
+                  type: string
+                payload:
+                  type: object
+      responses:
+        '200':
+          description: Task created successfully
+
+  /tasks/open:
+    get:
+      summary: Poll for open Tasks
+      operationId: getOpenTasks
+      parameters:
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of unassigned tasks
+
+  /tasks/{taskId}:
+    get:
+      summary: Get a workspace-scoped task (includes result)
+      operationId: getTask
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Task including payload, status, and result
+        '404':
+          description: Task not found in this workspace
+
+  /tasks/{taskId}/accept:
+    post:
+      summary: Accept an open Task (CAS claim)
+      operationId: acceptTask
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                agentId:
+                  type: string
+      responses:
+        '200':
+          description: Task successfully assigned
+        '409':
+          description: Task already claimed (CAS conflict)
+
+  /tasks/{taskId}/complete:
+    post:
+      summary: Complete or fail a Task
+      operationId: completeTask
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                agentId:
+                  type: string
+                status:
+                  type: string
+                  enum: [completed, failed]
+                  default: completed
+                result:
+                  type: object
+      responses:
+        '200':
+          description: Task finalized
+
+  /tasks/{taskId}/fail:
+    post:
+      summary: Mark a task failed (operator)
+      operationId: failTask
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [lastError]
+              properties:
+                lastError:
+                  type: string
+      responses:
+        '200':
+          description: Task marked failed
+
+  /tasks/{taskId}/reopen:
+    post:
+      summary: Reopen a failed or processing task (operator)
+      operationId: reopenTask
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Task reopened as open
+        '409':
+          description: Task not reopenable
+
+  /dashboard/snapshot:
+    get:
+      summary: Operator console snapshot (stats, tasks, worker heartbeat)
+      operationId: getDashboardSnapshot
+      responses:
+        '200':
+          description: One-payload dashboard including worker.online
+
+  /sites:
+    get:
+      summary: List GEO sites (tenant if authenticated; all public if anonymous)
+      operationId: listSites
+      security: []
+      responses:
+        '200':
+          description: Site roster
+
+  /sites/{slug}/pull:
+    post:
+      summary: Pull HTTPS sitemap into GEO surfaces (operator; plan-gated)
+      operationId: pullSiteSitemap
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sitemapUrl:
+                  type: string
+      responses:
+        '200':
+          description: Honest pull report (local sync ≠ inclusion)
+
+  /plans:
+    get:
+      summary: Public plan catalog and stripeConfigured
+      operationId: listPlans
+      security: []
+      responses:
+        '200':
+          description: Plans and billing configuration flag

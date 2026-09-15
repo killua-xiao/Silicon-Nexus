@@ -1,0 +1,16 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+data/secrets.json
+data/db.json
+data/db.json.migrated
+data/nexus.sqlite
+data/nexus.sqlite-*
+data/backups/
+data/worker-heartbeat.json
+logs/

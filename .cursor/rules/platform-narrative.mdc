@@ -1,0 +1,13 @@
+---
+description: Silicon Nexus is a modular AI/Agent platform, not a single feature
+alwaysApply: true
+---
+
+# Platform narrative
+
+Silicon Nexus is **agent infrastructure for the AI era** — a capability platform.
+
+- Core stays: memory vault, task swarm, auth, MCP, dual audience.
+- GEO / signals / future modules are **additive capabilities**, not a rename of the product.
+- Marketing may spotlight one module; code and docs must keep the platform frame.
+- See `docs/PRODUCT.md` and `docs/ARCHITECTURE.md`.

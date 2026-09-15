@@ -1,0 +1,47 @@
+{
+  "name": "@silinex/sdk",
+  "version": "0.2.0",
+  "description": "TypeScript client for Silicon Nexus memory, tasks, GEO sites, and dashboard snapshot",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepublishOnly": "npm run build"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xiao-0/Silicon-Nexus.git",
+    "directory": "sdk/typescript"
+  },
+  "homepage": "https://silinex.xyz",
+  "bugs": {
+    "url": "https://github.com/xiao-0/Silicon-Nexus/issues"
+  },
+  "keywords": [
+    "silicon-nexus",
+    "silinex",
+    "mcp",
+    "agents",
+    "memory",
+    "swarm"
+  ],
+  "author": "Silicon Nexus",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "typescript": "~5.8.2"
+  }
+}

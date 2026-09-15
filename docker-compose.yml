@@ -1,0 +1,18 @@
+services:
+  nexus:
+    build: .
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - APP_URL=${APP_URL:-https://silinex.xyz}
+      - NEXUS_AUTH_MODE=${NEXUS_AUTH_MODE:-identity}
+      - NEXUS_OPERATOR_KEY=${NEXUS_OPERATOR_KEY:-}
+      - NEXUS_TOKEN_RATE_LIMIT=${NEXUS_TOKEN_RATE_LIMIT:-300}
+    volumes:
+      - nexus-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  nexus-data:
