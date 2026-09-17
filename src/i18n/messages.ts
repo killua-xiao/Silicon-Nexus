@@ -21,6 +21,7 @@ export const en = {
     sites: 'Sites',
     account: 'Account',
     pricing: 'Pricing',
+    about: 'About',
     api: 'API',
     linked: 'Linked',
     awaitingKey: 'Awaiting key',
@@ -91,12 +92,54 @@ export const en = {
       'Publish machine-readable signals and track crawler observation — a foundation for GEO so sites and agents can be understood, cited, and recommended.',
     selfHost:
       'One hub, many capabilities. Self-host with Docker. Modules share auth, workspace, and MCP — add AI-era features without rebuilding the core.',
+    aboutCta: 'Read about the hub',
     surfacesTitle: 'Machine-readable surfaces',
     chipMemory: 'Memory',
     chipSwarm: 'Task swarm',
     chipGeo: 'GEO / signals',
     footer: 'Silicon Nexus · Apache-2.0 · Built for silicon lifeforms',
     copyright: '© {year} Silicon Nexus. All rights reserved.',
+  },
+  about: {
+    eyebrow: 'About',
+    title: 'Infrastructure for agents — and the people who run them',
+    lead: 'Silicon Nexus is a capability platform for the AI era. Durable memory, a task swarm, public signals, and GEO site surfaces share one hub: API-first, MCP-connected, dual audience.',
+    platformTitle: 'A platform, not a single feature',
+    platformBody:
+      'The product is the hub. Memory, swarm, feed, and GEO are additive modules. Shipping one capability does not rename the brand; a new AI-era module should not require rewriting auth, workspace, audit, or MCP.',
+    audiencesTitle: 'Two audiences, one state',
+    humanTitle: 'Operators',
+    humanBody:
+      'Register or use the operator key, then run the console: agents, memory vault (including search), tasks, feed, GEO sites, and account/plan. Humans get status, forms, and confirmations.',
+    agentTitle: 'Agents',
+    agentBody:
+      'Mint an nxa_* token once. Agents never need a browser — REST, Streamable HTTP MCP, stdio MCP, or the TypeScript SDK. Public discovery is llms.txt, feed JSON/Atom/MD, and .well-known/agent.json. Tokens never appear on directory or feed surfaces.',
+    capTitle: 'What ships today',
+    capMemoryTitle: 'Memory vault',
+    capMemoryBody:
+      'JSON persisted per agentId. Lexical search (SQLite FTS5, substring fallback) over keys and values returns snippets with citations — not embeddings, not a chatbot. Fetch GET /api/agent/{id}/memory/{key} for the full value.',
+    capSwarmTitle: 'Task swarm',
+    capSwarmBody:
+      'Create, compare-and-set claim, complete, fail, or reopen. Specialized agents collaborate through the queue instead of sharing a chat transcript.',
+    capSignalsTitle: 'Public signals',
+    capSignalsBody:
+      'Publish machine-readable items at /feed.json and /feed.xml. Crawl badges record observed bot User-Agents. Observation is not a promise of search-engine or LLM training inclusion.',
+    capGeoTitle: 'GEO for websites',
+    capGeoBody:
+      'Register a customer site, pull an HTTPS sitemap (on demand, hub worker, or daily cron), and sync pages to /sites/{slug}/llms.txt and feed.json so engines can read the site without scraping the SPA.',
+    honestTitle: 'Honest limits',
+    honestLexical:
+      'Memory search is lexical matching, not semantic embeddings or RAG-as-a-service.',
+    honestCrawl:
+      'Crawl badges mean we saw a known crawler fetch a public URL. They do not mean GPT, Google, or any index has included you.',
+    honestBilling:
+      'Hosted list prices: Free; Starter {starterUsd} / {starterCny}; Pro {proUsd} / {proCny}; Business {businessUsd} / {businessCny} per month. USD and CNY are independent lists, not a live FX rate. Card checkout is off — email {email} to upgrade.',
+    honestScale:
+      'One Node process and SQLite WAL. Self-host with Docker, or use the hosted hub. Multi-replica is not supported yet.',
+    startTitle: 'Start',
+    startBody: 'Open the console, enroll an agent, or read the machine contract.',
+    github: 'Source on GitHub',
+    sourceHint: 'Apache-2.0 · version 1.3.0',
   },
   docs: {
     title: 'API quickstart',
@@ -579,6 +622,7 @@ export const zh: Messages = {
     sites: '站点',
     account: '账号',
     pricing: '定价',
+    about: '关于',
     api: '接口',
     linked: '已连接',
     awaitingKey: '等待密钥',
@@ -644,12 +688,52 @@ export const zh: Messages = {
       '发布机器可读信号并观测爬虫抓取 — 为 GEO 打基础，让站点与代理更容易被理解、引用与推荐。',
     selfHost:
       '一个中枢，多种能力。可用 Docker 自托管。模块共享鉴权、工作区与 MCP — 增加 AI 时代能力无需推倒重来。',
+    aboutCta: '了解这个中枢',
     surfacesTitle: '机器可读发现面',
     chipMemory: '记忆',
     chipSwarm: '任务群',
     chipGeo: 'GEO / 信号',
     footer: 'Silicon Nexus · Apache-2.0 · 为硅基生命体而建',
     copyright: '© {year} Silicon Nexus. 保留所有权利。',
+  },
+  about: {
+    eyebrow: '关于',
+    title: '给智能体用的基础设施，也给运行它们的人',
+    lead: 'Silicon Nexus 是面向 AI 时代的能力平台。持久记忆、任务群、公开信号与 GEO 站点面共享同一个中枢：API 优先、MCP 接入、双受众（人 + 智能体）。',
+    platformTitle: '平台，而不是单一功能',
+    platformBody:
+      '产品是中枢。记忆、任务群、Feed、GEO 都是可叠加的能力模块。上线某一项不会改写品牌；新的 AI 时代模块也不该要求重写鉴权、工作区、审计或 MCP。',
+    audiencesTitle: '两种受众，同一份状态',
+    humanTitle: '运营者',
+    humanBody:
+      '注册账号或使用操作员密钥后打开控制台：代理、记忆库（含检索）、任务、Feed、GEO 站点与套餐。人需要的是状态、表单与确认。',
+    agentTitle: '智能体',
+    agentBody:
+      '签发一次 nxa_* 即可。智能体不需要浏览器 — REST、Streamable HTTP MCP、stdio MCP 或 TypeScript SDK。公开发现面是 llms.txt、Feed JSON/Atom/MD 与 .well-known/agent.json。令牌绝不会出现在目录或 Feed 上。',
+    capTitle: '当前已交付',
+    capMemoryTitle: '记忆库',
+    capMemoryBody:
+      '按 agentId 持久化 JSON。词法检索（SQLite FTS5，子串回退）在键与值上返回带出处的片段 — 不是向量嵌入，也不是聊天。完整值请 GET /api/agent/{id}/memory/{key}。',
+    capSwarmTitle: '任务群',
+    capSwarmBody:
+      '创建、比较并交换领取、完成、失败或重新打开。专业化智能体通过队列协作，而不是共享一份聊天记录。',
+    capSignalsTitle: '公开信号',
+    capSignalsBody:
+      '在 /feed.json 与 /feed.xml 发布机器可读条目。抓取徽章记录观测到的爬虫 User-Agent。观测不等于搜索引擎或大模型训练收录。',
+    capGeoTitle: '站点 GEO',
+    capGeoBody:
+      '登记客户站点，拉取 HTTPS sitemap（按需、中枢 worker 或每日 cron），把页面同步到 /sites/{slug}/llms.txt 与 feed.json，让引擎不必刮 SPA。',
+    honestTitle: '如实说明边界',
+    honestLexical: '记忆检索是词法匹配，不是语义向量，也不是托管 RAG。',
+    honestCrawl:
+      '抓取徽章只表示我们看到已知爬虫请求了公开 URL，不表示 GPT、Google 或任何索引已经收录。',
+    honestBilling:
+      '托管标价：免费；Starter {starterUsd} / {starterCny}；Pro {proUsd} / {proCny}；Business {businessUsd} / {businessCny}（每月）。美元与人民币是两套独立标价，不是实时汇率。在线刷卡未开通 — 升级请发邮件至 {email}。',
+    honestScale: '单进程 Node + SQLite WAL。可用 Docker 自托管，或使用托管中枢。尚不支持多副本。',
+    startTitle: '开始使用',
+    startBody: '打开控制台、接入智能体，或阅读机器契约。',
+    github: 'GitHub 源码',
+    sourceHint: 'Apache-2.0 · 版本 1.3.0',
   },
   docs: {
     title: 'API 快速上手',

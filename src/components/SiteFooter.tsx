@@ -15,6 +15,7 @@ export function SiteFooter({
 }) {
   const t = useT();
   const links = [
+    { to: '/about', label: t.nav.about },
     { to: '/connect', label: t.connect.nav },
     { to: '/pricing', label: t.nav.pricing },
     { to: '/feed', label: t.nav.feed },
@@ -48,6 +49,14 @@ export function SiteFooter({
               href={`mailto:${SITE_LEGAL.contactEmail}`}
             >
               {SITE_LEGAL.contactEmail}
+            </a>
+            <a
+              href={SITE_LEGAL.githubUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="transition hover:text-teal-glow"
+            >
+              GitHub
             </a>
             <a href="/.well-known/agent.json" className="font-mono transition hover:text-teal-glow">
               agent.json

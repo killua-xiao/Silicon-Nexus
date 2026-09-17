@@ -18,6 +18,12 @@ Every surface still serves **two audiences**:
 5. **Document agent path** in OpenAPI / MCP tool descriptions when you add operator UI.
 6. **Stay modular** — new capabilities hang off the platform; they do not redefine the whole product narrative.
 
+## About / README
+
+- Human: `/about` (locale copy) and GitHub README
+- Agent: `/llms.txt` About section · `agent.json` `endpoints.about`
+- Honest: lexical search ≠ embeddings; crawl observation ≠ inclusion; hosted card checkout is off
+
 ## Memory search example
 
 - Human: search box on `/console` memory vault; hits show agentId, key, snippet

@@ -17,6 +17,7 @@ export type AgentCard = {
     ready: string;
     mcpHttp: string;
     mcpHint: string;
+    about: string;
     feed: string;
     feedJson: string;
     feedAtom: string;
@@ -60,6 +61,7 @@ export function buildAgentCard(appUrl: string): AgentCard {
       ready: `${base}/ready`,
       mcpHttp: `${base}/mcp`,
       mcpHint: 'Remote Streamable HTTP at /mcp, or stdio via dist/mcp-server.cjs',
+      about: `${base}/about`,
       feed: `${base}/feed`,
       feedJson: `${base}/feed.json`,
       feedAtom: `${base}/feed.xml`,

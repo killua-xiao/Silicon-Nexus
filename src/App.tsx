@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { I18nProvider } from './i18n/I18nProvider';
 import { ToastProvider } from './components/Toast';
 import { LandingPage } from './pages/LandingPage';
+import { AboutPage } from './pages/AboutPage';
 import { DocsPage } from './pages/DocsPage';
 import { ConnectPage } from './pages/ConnectPage';
 import { PricingPage } from './pages/PricingPage';
@@ -24,6 +25,7 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/about" element={<AboutPage />} />
             <Route path="/docs" element={<DocsPage />} />
             <Route path="/connect" element={<ConnectPage />} />
             <Route path="/pricing" element={<PricingPage />} />

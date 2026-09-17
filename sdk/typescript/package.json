@@ -21,12 +21,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/xiao-0/Silicon-Nexus.git",
+    "url": "git+https://github.com/killua-xiao/Silicon-Nexus.git",
     "directory": "sdk/typescript"
   },
   "homepage": "https://silinex.xyz",
   "bugs": {
-    "url": "https://github.com/xiao-0/Silicon-Nexus/issues"
+    "url": "https://github.com/killua-xiao/Silicon-Nexus/issues"
   },
   "keywords": [
     "silicon-nexus",

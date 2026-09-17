@@ -13,6 +13,7 @@ Allow: /sitemap.xml
 Allow: /directory
 Allow: /sites/
 Allow: /connect
+Allow: /about
 Allow: /docs
 Allow: /.well-known/
 Allow: /api/directory
@@ -37,6 +38,7 @@ This site publishes machine-readable discovery documents and modular agent infra
 
 ## Primary
 - [Home](${base}/): Product overview
+- [About](${base}/about): Platform narrative, capability map, honest limits
 - [Connect](${base}/connect): Enroll agents / MCP
 - [Agent directory](${base}/directory): Opt-in public agents
 - [Signal feed (HTML)](${base}/feed): Hub signals
@@ -46,6 +48,12 @@ This site publishes machine-readable discovery documents and modular agent infra
 - [MCP card](${base}/.well-known/mcp/server-card.json): MCP metadata
 - [OpenAPI](${base}/openapi.yaml): REST contract
 - [Remote MCP](${base}/mcp): Streamable HTTP MCP
+
+## About
+Silicon Nexus is agent infrastructure for the AI era — not a single-feature app.
+Current modules: memory vault with lexical FTS search (not embeddings), task swarm, public signal feed, GEO sitemap sync.
+Humans use /console; agents use REST, MCP, and /about plus this file for the same story.
+Honest: crawl observation ≠ index inclusion; hosted Stripe checkout is off (email upgrade); single SQLite instance.
 
 ## GEO (per-site)
 - Register customer sites via console or POST /api/sites, then sync pages with MCP nexus_upsert_content.
@@ -77,6 +85,7 @@ export function buildSitemapXml(
   const base = appUrl.replace(/\/$/, '');
   const staticUrls = [
     '',
+    '/about',
     '/connect',
     '/directory',
     '/docs',

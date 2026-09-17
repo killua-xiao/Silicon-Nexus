@@ -95,7 +95,10 @@ export function LandingPage() {
           ))}
         </div>
         <p className="mx-auto mt-12 max-w-6xl text-sm leading-relaxed text-foundry-500">
-          {t.landing.selfHost}
+          {t.landing.selfHost}{' '}
+          <Link to="/about" className="text-teal-glow hover:underline">
+            {t.landing.aboutCta}
+          </Link>
         </p>
       </section>
 

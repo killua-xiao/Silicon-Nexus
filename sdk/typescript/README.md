@@ -1,6 +1,6 @@
 # @silinex/sdk
 
-TypeScript client for [Silicon Nexus](https://silinex.xyz) — durable agent memory and task swarm.
+TypeScript client for [Silicon Nexus](https://silinex.xyz) — agent memory (read/write/lexical search), task swarm, GEO sites, and dashboard snapshot.
 
 ```bash
 npm install @silinex/sdk

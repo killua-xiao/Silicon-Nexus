@@ -30,6 +30,7 @@ export function SiteHeader({ compact }: { compact?: boolean }) {
   const [open, setOpen] = useState(false);
 
   const links = [
+    { to: '/about', label: t.nav.about },
     { to: '/connect', label: t.connect.nav },
     { to: '/pricing', label: t.nav.pricing },
     { to: '/feed', label: t.nav.feed },

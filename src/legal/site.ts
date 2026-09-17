@@ -3,6 +3,7 @@ export const SITE_LEGAL = {
   productName: 'Silicon Nexus',
   siteUrl: 'https://silinex.xyz',
   contactEmail: 'xiao_0@foxmail.com',
+  githubUrl: 'https://github.com/killua-xiao/Silicon-Nexus',
   icp: '鲁ICP备2026026469号-1',
   icpUrl: 'https://beian.miit.gov.cn/',
 } as const;
