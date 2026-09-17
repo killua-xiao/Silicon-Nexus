@@ -88,4 +88,18 @@ describe('auth + billing', { concurrency: 1 }, () => {
     assert.equal(snap.plan.id, 'starter');
     assert.equal(snap.billing.stripeConfigured, false);
   });
+
+  test('public plans expose USD and CNY list prices', async () => {
+    const { getPlan, listPublicPlans } = await import('../src/server/plans.ts');
+    const { formatListPrice } = await import('../src/lib/planPrice.ts');
+    const starter = getPlan('starter');
+    assert.equal(starter.priceMonthlyUsd, 19);
+    assert.equal(starter.priceMonthlyCny, 138);
+    assert.equal(formatListPrice('en', starter.priceMonthlyUsd, starter.priceMonthlyCny), '$19');
+    assert.equal(formatListPrice('zh', starter.priceMonthlyUsd, starter.priceMonthlyCny), '¥138');
+    const business = getPlan('business');
+    const zhBiz = formatListPrice('zh', business.priceMonthlyUsd, business.priceMonthlyCny);
+    assert.ok(zhBiz && zhBiz.includes('¥') && zhBiz.replace(/,/g, '').includes('1788'));
+    assert.equal(listPublicPlans().every((p) => p.priceMonthlyCny != null && p.priceMonthlyUsd != null), true);
+  });
 });

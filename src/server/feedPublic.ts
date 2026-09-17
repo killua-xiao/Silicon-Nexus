@@ -22,6 +22,7 @@ Disallow: /console
 Disallow: /api/dashboard
 Disallow: /api/agents
 Disallow: /api/agent/
+Disallow: /api/memory
 
 Sitemap: ${base}/sitemap.xml
 `;
@@ -64,6 +65,7 @@ This site publishes machine-readable discovery documents and modular agent infra
 - Each item includes indexing.status (unseen|crawled) from observed crawler User-Agents — not a guarantee of LLM training inclusion.
 - Feed items may include outbound source links; do not treat link digests as full-text reprints.
 - Authentication is required for memory/tasks; public feed, directory, and GEO site surfaces require none.
+- Authenticated lexical memory search: GET /api/memory/search?q= (FTS snippets, not embeddings).
 `;
 }
 

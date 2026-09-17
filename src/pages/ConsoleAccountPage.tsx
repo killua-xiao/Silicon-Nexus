@@ -2,9 +2,11 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { apiJson, getOperatorKey, setOperatorKey } from '../lib/api';
 import { useToast } from '../components/Toast';
-import { useT } from '../i18n/I18nProvider';
+import { useI18n, useT } from '../i18n/I18nProvider';
 import { Skeleton } from '../components/EmptyState';
 import { SITE_LEGAL } from '../legal/site';
+import { formatListPrice } from '../lib/planPrice';
+import type { Locale, Messages } from '../i18n/messages';
 
 type MeResponse = {
   kind: 'account' | 'operator_key';
@@ -22,6 +24,7 @@ type MeResponse = {
     name: string;
     tagline: string;
     priceMonthlyUsd: number | null;
+    priceMonthlyCny?: number | null;
     bullets: string[];
     maxAgents: number;
     maxSites: number;
@@ -39,8 +42,20 @@ type AccountRow = {
   createdAt: string;
 };
 
+function formatAccountPlanPrice(
+  locale: Locale,
+  pricing: Messages['pricing'],
+  plan: MeResponse['plan']
+): string {
+  const labeled = formatListPrice(locale, plan.priceMonthlyUsd, plan.priceMonthlyCny ?? null);
+  if (labeled) return ` · ${labeled}${pricing.perMonth}`;
+  if (plan.priceMonthlyUsd === 0 || plan.priceMonthlyCny === 0) return ` · ${pricing.free}`;
+  return '';
+}
+
 export function ConsoleAccountPage() {
   const t = useT();
+  const { locale } = useI18n();
   const { push } = useToast();
   const [params] = useSearchParams();
   const [me, setMe] = useState<MeResponse | null>(null);
@@ -147,6 +162,7 @@ export function ConsoleAccountPage() {
               {t.account.plan}:{' '}
               <span className="text-teal-glow">
                 {me.plan.name} ({me.plan.id})
+                {formatAccountPlanPrice(locale, t.pricing, me.plan)}
               </span>
             </p>
             <p>

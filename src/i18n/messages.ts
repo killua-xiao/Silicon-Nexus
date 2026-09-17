@@ -46,7 +46,7 @@ export const en = {
     agentCardHint: 'Machine-readable capability card:',
     sectionTitle: 'Connect an agent in 5 minutes',
     sectionBody:
-      'Enroll an agent, copy the MCP config (or call REST), and your agent can read/write memory and claim tasks immediately.',
+      'Enroll an agent, copy the MCP config (or call REST), and your agent can read, write, and search memory and claim tasks immediately.',
     step1: 'Enroll an agent in the console and save the one-time nxa_* token.',
     step2: 'Copy the MCP JSON from the Agents console into Cursor / Claude.',
     step3: 'Optional: use the TypeScript SDK or point REST clients at /api.',
@@ -70,7 +70,8 @@ export const en = {
       'Register or log in, then mint an nxa_* token in /console/agents. Tokens stay in your workspace.',
     guide2: 'For Smithery use https://silinex.xyz/mcp with Bearer token; for Cursor paste the stdio JSON below.',
     guide3: 'Confirm Silicon Nexus tools appear (initialize / tools/list).',
-    guide4: 'Ask the agent to write memory or create a PING task — or use the TypeScript SDK.',
+    guide4:
+      'Ask the agent to write memory, search it with nexus_search_memory, or create a PING task — or use the TypeScript SDK.',
     fullDocs: 'Long-form tutorial also lives in the repo as',
   },
   landing: {
@@ -81,7 +82,7 @@ export const en = {
     viewApi: 'View API',
     memoryTitle: 'Memory that survives the run',
     memoryBody:
-      'Agents forget between executions. The memory vault lets them read and write durable state across sessions — scoped per agent, queryable over REST or MCP.',
+      'Agents forget between executions. The memory vault stores durable JSON per agent — and they can retrieve by meaning-free lexical search (FTS) over REST or MCP instead of re-reading the whole blob.',
     swarmTitle: 'Swarm by delegation',
     swarmBody:
       'Break work into tasks, claim with compare-and-set semantics, complete or reopen on failure. The queue is the collaboration bus between specialized agents.',
@@ -113,6 +114,7 @@ export const en = {
       directory: 'Public agent directory',
       writeMemory: 'Write memory',
       readMemory: 'Read memory',
+      searchMemory: 'Search memory (FTS, not embeddings)',
       createTask: 'Create task',
       openTasks: 'List open tasks',
       accept: 'CAS claim',
@@ -235,7 +237,7 @@ export const en = {
         },
         {
           heading: 'Plans and payment',
-          body: 'Paid plans (Starter, Pro, Business) are currently opened manually by the operator after you request an upgrade. Prices on /pricing are list prices in USD and may change. Refunds are handled case by case. Online card checkout is not enabled.',
+          body: 'Paid plans (Starter, Pro, Business) are currently opened manually by the operator after you request an upgrade. English /pricing shows USD list prices (Starter {starterUsd}, Pro {proUsd}, Business {businessUsd} per month). The Chinese locale shows CNY list prices for the same SKUs ({starterCny} / {proCny} / {businessCny}). These are list prices, not a live exchange rate, and may change. Online card checkout is not enabled. If card checkout is enabled later, Stripe would charge in USD. Refunds are handled case by case.',
         },
         {
           heading: 'Your content',
@@ -251,7 +253,7 @@ export const en = {
         },
         {
           heading: 'Liability',
-          body: 'To the extent permitted by law, we are not liable for indirect or consequential loss, or for data loss beyond restoring the latest available backup. Mandatory rights under PRC law still apply.',
+          body: 'To the extent permitted by law, we are not liable for indirect or consequential loss, or for data loss beyond restoring the latest available backup. List prices on /pricing are informational and may change; they are not a quote or offer until an upgrade is confirmed by the operator (or a future checkout). Mandatory rights under PRC law still apply.',
         },
         {
           heading: 'Governing law',
@@ -323,6 +325,8 @@ export const en = {
     planBusinessB4: 'Priority support path',
     checkoutNote:
       'Online card checkout is not enabled. Start on Free, then email the operator to upgrade. An admin can also change plans in the console.',
+    currencyNote:
+      'English list prices are in USD. Switch to 中文 for CNY list prices (same plans, not a live FX rate).',
     ctaPaid: 'Email to upgrade',
     recommended: 'Recommended',
   },
@@ -364,7 +368,7 @@ export const en = {
     upgradeTitle: 'Upgrade plan',
     upgradeStripe: 'Starts Stripe Checkout for this account.',
     upgradeManual:
-      'Online checkout is off. Email the operator with your account email and the plan you want (Starter / Pro / Business).',
+      'Online checkout is off. Email the operator with your account email and the plan you want (Starter / Pro / Business). List prices follow the UI language (USD in English, CNY in Chinese).',
     checkoutOk: 'Checkout completed. Plan updates after the Stripe webhook.',
   },
   onboarding: {
@@ -398,7 +402,7 @@ export const en = {
     modAgents: 'Agents',
     modAgentsDesc: 'Enroll agents, rotate tokens, opt into the public directory.',
     modMemory: 'Memory vault',
-    modMemoryDesc: 'Durable JSON state scoped per agentId across runs.',
+    modMemoryDesc: 'Durable JSON per agentId, with lexical search over keys and values.',
     modTasks: 'Task swarm',
     modTasksDesc: 'Create, claim (CAS), complete, or fail delegated work.',
     modFeed: 'Signal feed',
@@ -526,6 +530,11 @@ export const en = {
     emptyTitle: 'No entities bound',
     emptyHint: 'Enroll an agent and write memory to populate the vault.',
     wiped: 'Wiped {id}',
+    searchPlaceholder: 'Search keys and values…',
+    searchHint: 'Lexical FTS (not embeddings). Hits are snippets — open the key for the full JSON.',
+    searchEmpty: 'No matching keys.',
+    searching: 'Searching…',
+    searchHits: '{n} hits',
   },
   agents: {
     issueTitle: 'Issue agent token',
@@ -595,7 +604,7 @@ export const zh: Messages = {
     agentCardHint: '机器可读能力卡片：',
     sectionTitle: '5 分钟接入智能体',
     sectionBody:
-      '注册代理、复制 MCP 配置（或直接调 REST），即可读写记忆并领取任务。',
+      '注册代理、复制 MCP 配置（或直接调 REST），即可读写并检索记忆、领取任务。',
     step1: '在控制台注册代理，并保存一次性 nxa_* 令牌。',
     step2: '在「代理」页复制 MCP JSON，粘贴到 Cursor / Claude。',
     step3: '可选：使用 TypeScript SDK，或让客户端直接请求 /api。',
@@ -616,7 +625,7 @@ export const zh: Messages = {
     guide1: '注册或登录后，在 /console/agents 签发 nxa_*。令牌只属于你的工作区。',
     guide2: 'Smithery 填写 https://silinex.xyz/mcp 并带 Bearer；Cursor 可粘贴下方 stdio JSON。',
     guide3: '确认出现 Silicon Nexus 工具（initialize / tools/list）。',
-    guide4: '让智能体写入记忆或创建 PING 任务——也可使用 TypeScript SDK。',
+    guide4: '让智能体写入记忆、用 nexus_search_memory 检索，或创建 PING 任务——也可使用 TypeScript SDK。',
     fullDocs: '完整教程见仓库',
   },
   landing: {
@@ -626,7 +635,7 @@ export const zh: Messages = {
     viewApi: '查看 API',
     memoryTitle: '跨越运行的记忆',
     memoryBody:
-      '代理在多次执行之间往往会丢失上下文。记忆库让它们按代理隔离地读写持久状态，并可通过 REST 或 MCP 查询。',
+      '代理在多次执行之间往往会丢失上下文。记忆库按代理隔离保存持久 JSON，并提供词法检索（FTS，不是向量），不必每次把整库读回上下文。',
     swarmTitle: '通过委托组成代理群',
     swarmBody:
       '将工作拆成任务，使用比较并交换（CAS）领取，完成或在失败后重新打开。任务队列是专业化代理之间的协作总线。',
@@ -658,6 +667,7 @@ export const zh: Messages = {
       directory: '公开代理目录',
       writeMemory: '写入记忆',
       readMemory: '读取记忆',
+      searchMemory: '检索记忆（FTS，非向量）',
       createTask: '创建任务',
       openTasks: '列出开放任务',
       accept: 'CAS 领取',
@@ -778,7 +788,7 @@ export const zh: Messages = {
         },
         {
           heading: '套餐与费用',
-          body: '付费套餐（入门 / 专业 / 商务）目前由运营者在收到升级请求后手动开通。/pricing 所示为美元标价，可能调整。退款一事一议。尚未开通在线刷卡。',
+          body: '付费套餐（入门 / 专业 / 商务）目前由运营者在收到升级请求后手动开通。中文 /pricing 展示人民币刊例价（入门 {starterCny}、专业 {proCny}、商务 {businessCny}，均为每月）。英文界面展示同一套餐的美元刊例价（{starterUsd} / {proUsd} / {businessUsd}）。两者均为刊例价，不是实时汇率，可能调整。尚未开通在线刷卡。若日后开通银行卡支付，Stripe 将以美元扣款。退款一事一议。',
         },
         {
           heading: '你的内容',
@@ -794,7 +804,7 @@ export const zh: Messages = {
         },
         {
           heading: '责任限制',
-          body: '在法律允许范围内，我们不对间接或后果性损失、以及超出最近一次可用备份范围的数据丢失承担责任。中国法律强制规定的权利不受影响。',
+          body: '在法律允许范围内，我们不对间接或后果性损失、以及超出最近一次可用备份范围的数据丢失承担责任。/pricing 刊例价仅供展示，可能调整；在运营者确认开通（或日后完成在线支付）前，不构成要约或报价。中国法律强制规定的权利不受影响。',
         },
         {
           heading: '适用法律',
@@ -866,6 +876,8 @@ export const zh: Messages = {
     planBusinessB4: '优先支持通道',
     checkoutNote:
       '暂未开通在线刷卡。请先注册免费版，再发信给运营者申请升级。管理员也可在控制台改套餐。',
+    currencyNote:
+      '中文刊例价为人民币。切换 EN 显示同一套餐的美元刊例价（不是实时汇率）。',
     ctaPaid: '发信申请升级',
     recommended: '推荐',
   },
@@ -905,7 +917,7 @@ export const zh: Messages = {
     passwordFailed: '密码更新失败',
     upgradeTitle: '升级套餐',
     upgradeStripe: '为当前账号启动 Stripe Checkout。',
-    upgradeManual: '暂未开通在线支付。请用注册邮箱发信给运营者，说明要升级的套餐（入门 / 专业 / 商务）。',
+    upgradeManual: '暂未开通在线支付。请用注册邮箱发信给运营者，说明要升级的套餐（入门 / 专业 / 商务）。界面语言决定刊例价币种（中文人民币、英文美元）。',
     checkoutOk: '结账完成。套餐会在 Stripe webhook 到达后更新。',
   },
   onboarding: {
@@ -938,7 +950,7 @@ export const zh: Messages = {
     modAgents: '代理',
     modAgentsDesc: '注册代理、轮换令牌、加入公开目录。',
     modMemory: '记忆库',
-    modMemoryDesc: '按 agentId 隔离的持久 JSON 状态。',
+    modMemoryDesc: '按 agentId 隔离的持久 JSON，并支持对键和值做词法检索。',
     modTasks: '任务群',
     modTasksDesc: '创建、认领（CAS）、完成或失败委派任务。',
     modFeed: '信号 Feed',
@@ -1065,6 +1077,11 @@ export const zh: Messages = {
     emptyTitle: '尚未绑定实体',
     emptyHint: '注册代理并写入记忆后，这里会显示内容。',
     wiped: '已清空 {id}',
+    searchPlaceholder: '搜索键名与内容…',
+    searchHint: '词法全文检索（不是向量）。命中是片段，打开对应 key 才是完整 JSON。',
+    searchEmpty: '没有匹配的键。',
+    searching: '检索中…',
+    searchHits: '{n} 条命中',
   },
   agents: {
     issueTitle: '签发代理令牌',

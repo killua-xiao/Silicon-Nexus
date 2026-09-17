@@ -2,17 +2,19 @@ import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { SiteHeader } from '../components/SiteHeader';
 import { SiteFooter } from '../components/SiteFooter';
-import { useT } from '../i18n/I18nProvider';
+import { useI18n, useT } from '../i18n/I18nProvider';
 import { apiJson } from '../lib/api';
 import { cn } from '../lib/cn';
 import { SITE_LEGAL } from '../legal/site';
 import type { Messages } from '../i18n/messages';
+import { PUBLIC_LIST_PRICES, formatListPrice } from '../lib/planPrice';
 
 type PlanId = 'free' | 'starter' | 'pro' | 'business';
 
 type ApiPlan = {
   id: string;
   priceMonthlyUsd: number | null;
+  priceMonthlyCny: number | null;
   highlighted?: boolean;
 };
 
@@ -42,17 +44,11 @@ function localizedPlan(t: Messages['pricing'], id: PlanId) {
   return map[id];
 }
 
-const FALLBACK_PRICE: Record<PlanId, number> = {
-  free: 0,
-  starter: 19,
-  pro: 79,
-  business: 249,
-};
-
 const ORDER: PlanId[] = ['free', 'starter', 'pro', 'business'];
 
 export function PricingPage() {
   const t = useT();
+  const { locale } = useI18n();
   const [plans, setPlans] = useState<ApiPlan[]>([]);
   const [stripeConfigured, setStripeConfigured] = useState(false);
 
@@ -67,9 +63,11 @@ export function PricingPage() {
 
   const display = ORDER.map((id) => {
     const api = plans.find((p) => p.id === id);
+    const priceMonthlyUsd = api?.priceMonthlyUsd ?? PUBLIC_LIST_PRICES[id].usd;
+    const priceMonthlyCny = api?.priceMonthlyCny ?? PUBLIC_LIST_PRICES[id].cny;
     return {
       id,
-      priceMonthlyUsd: api?.priceMonthlyUsd ?? FALLBACK_PRICE[id],
+      priceLabel: formatListPrice(locale, priceMonthlyUsd, priceMonthlyCny),
       highlighted: api?.highlighted ?? id === 'pro',
       ...localizedPlan(t.pricing, id),
     };
@@ -84,7 +82,8 @@ export function PricingPage() {
           {t.pricing.title}
         </h1>
         <p className="mt-3 max-w-2xl text-foundry-400 leading-relaxed">{t.pricing.intro}</p>
-        <p className="mt-2 max-w-2xl text-xs text-foundry-600">{t.pricing.checkoutNote}</p>
+        <p className="mt-2 max-w-2xl text-xs text-foundry-500">{t.pricing.currencyNote}</p>
+        <p className="mt-1 max-w-2xl text-xs text-foundry-600">{t.pricing.checkoutNote}</p>
 
         <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {display.map((plan) => (
@@ -102,10 +101,8 @@ export function PricingPage() {
                 {plan.name}
               </div>
               <div className="mt-2 font-mono text-3xl text-foundry-100">
-                {plan.priceMonthlyUsd === 0
-                  ? t.pricing.free
-                  : `$${plan.priceMonthlyUsd}`}
-                {plan.priceMonthlyUsd > 0 ? (
+                {plan.priceLabel ?? t.pricing.free}
+                {plan.priceLabel ? (
                   <span className="text-sm text-foundry-500">{t.pricing.perMonth}</span>
                 ) : null}
               </div>

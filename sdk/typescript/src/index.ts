@@ -67,6 +67,24 @@ export class SiliconNexus {
         `/agent/${encodeURIComponent(agentId)}/memory`
       );
     },
+    search: (input: { q: string; limit?: number; agentId?: string }) => {
+      const params = new URLSearchParams({ q: input.q });
+      if (input.limit != null) params.set('limit', String(input.limit));
+      const agentId = input.agentId || this.agentId;
+      if (agentId) params.set('agentId', agentId);
+      return this.request<{
+        query: string;
+        engine: 'fts5' | 'substring';
+        note: string;
+        hits: Array<{
+          agentId: string;
+          key: string;
+          snippet: string;
+          rank: number;
+          updatedAt: string;
+        }>;
+      }>(`/memory/search?${params.toString()}`);
+    },
     wipe: (agentId = this.agentId) => {
       if (!agentId) throw new Error('agentId required');
       return this.request<{ status: string }>(

@@ -10,6 +10,23 @@ export interface AgentMemory {
   [key: string]: unknown;
 }
 
+export type MemorySearchEngine = 'fts5' | 'substring';
+
+export interface MemorySearchHit {
+  agentId: string;
+  key: string;
+  snippet: string;
+  rank: number;
+  updatedAt: string;
+}
+
+export interface MemorySearchResult {
+  query: string;
+  engine: MemorySearchEngine;
+  note: string;
+  hits: MemorySearchHit[];
+}
+
 export interface Task {
   id: string;
   workspaceId: string;

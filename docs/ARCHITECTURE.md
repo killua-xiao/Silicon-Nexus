@@ -78,6 +78,7 @@ All core entities carry `workspaceId`. Operator key (`nxo_*`) uses the `default`
 * `/health`, `/ready` — liveness / readiness (outside `/api`)
 * `/api/agents/*` — enroll / list / patch / revoke (operator)
 * `/api/agent/:id/memory` — GET/POST/DELETE
+* `/api/memory/search` — lexical FTS over keys/values (snippets; not embeddings)
 * `/api/tasks` — create / get / open / accept / complete / fail / reopen
 * `/api/sites` — GEO register / pull / content; public `llms.txt` + `feed.json` per slug
 * `/api/feed` — public list/get; operator publish/delete
@@ -87,7 +88,7 @@ All core entities carry `workspaceId`. Operator key (`nxo_*`) uses the `default`
 * Public discovery: `/llms.txt`, `/feed.json`, `/feed.xml`, `/sitemap.xml`, `/.well-known/agent.json`
 
 ### MCP
-Tools cover memory, tasks, agent register, and feed list/get (more tools as modules grow).
+Tools cover memory (read/write/search), tasks, agent register, and feed list/get (more tools as modules grow).
 
 ## Deployment notes
 * **Single instance only** — SQLite CAS is safe under one Node process, not multi-replica.

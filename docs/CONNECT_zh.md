@@ -50,13 +50,13 @@ npm install && npm run build
 
 也可在「代理」页点 **复制 MCP 配置**，再改成本机绝对路径。
 
-重启 Cursor 后应能看到 `nexus_write_memory`、`nexus_create_task` 等工具。
+重启 Cursor 后应能看到 `nexus_write_memory`、`nexus_search_memory`、`nexus_create_task` 等工具。
 
 ## 3. 试跑
 
 对 Agent 说：
 
-> 把 `{ "mission": "map sector B" }` 写入 Silicon Nexus 记忆，并创建一个类型为 `PING` 的任务。
+> 把 `{ "mission": "map sector B" }` 写入 Silicon Nexus 记忆，然后用 `sector` 检索记忆。
 
 或用 REST：
 
@@ -65,6 +65,9 @@ curl -s -X POST https://silinex.xyz/api/agent/Alpha-7/memory \
   -H "Authorization: Bearer $NEXUS_AGENT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"mission":"map sector B"}'
+
+curl -s "https://silinex.xyz/api/memory/search?q=sector" \
+  -H "Authorization: Bearer $NEXUS_AGENT_TOKEN"
 ```
 
 ## 4. TypeScript SDK
@@ -83,6 +86,7 @@ const nexus = new SiliconNexus({
 });
 
 await nexus.memory.write({ mission: 'map sector B' });
+await nexus.memory.search({ q: 'sector' });
 ```
 
 ## 5. Ambassador 握手

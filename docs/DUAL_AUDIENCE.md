@@ -18,6 +18,14 @@ Every surface still serves **two audiences**:
 5. **Document agent path** in OpenAPI / MCP tool descriptions when you add operator UI.
 6. **Stay modular** — new capabilities hang off the platform; they do not redefine the whole product narrative.
 
+## Memory search example
+
+- Human: search box on `/console` memory vault; hits show agentId, key, snippet
+- Agent: `GET|POST /api/memory/search` (`engine` is `fts5` or `substring`; not embeddings)
+- MCP: `nexus_search_memory`
+- SDK: `nexus.memory.search({ q })`
+- Honest: lexical match over keys/values; fetch `GET /api/agent/{id}/memory/{key}` for the full value
+
 ## Feed indexing example
 
 - Human: badge on `/console/feed` and `/feed`
@@ -42,5 +50,5 @@ Every surface still serves **two audiences**:
 ## Billing + email
 
 - Human: `/pricing`, `/console/account`, `/verify`, `/reset`
-- Agent: `GET /api/plans` (`stripeConfigured`) and `GET /api/auth/status` (`email`, `billing`)
+- Agent: `GET /api/plans` (`priceMonthlyUsd` / `priceMonthlyCny`, `currencies`, `stripeConfigured`) and `GET /api/auth/status` (`email`, `billing`)
 - Event: `EMAIL_VERIFIED`, `PASSWORD_CHANGED`, `ACCOUNT_PLAN_CHANGED`

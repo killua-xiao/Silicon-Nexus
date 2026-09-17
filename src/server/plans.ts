@@ -1,4 +1,5 @@
 import type { PlanId, PlanLimits } from './types.ts';
+import { PUBLIC_LIST_PRICES } from '../lib/planPrice.ts';
 
 export type PlanFeatureId = 'console' | 'feedPublish' | 'geoSites' | 'directoryList' | 'adminPanel';
 
@@ -6,6 +7,8 @@ export interface PlanCatalogEntry extends PlanLimits {
   name: string;
   tagline: string;
   priceMonthlyUsd: number | null;
+  /** Chinese UI list price. Independent list, not live FX from USD. */
+  priceMonthlyCny: number | null;
   /** null = custom / contact */
   highlighted?: boolean;
   features: Record<PlanFeatureId, boolean>;
@@ -18,7 +21,8 @@ export const PLAN_CATALOG: Record<PlanId, PlanCatalogEntry> = {
     id: 'free',
     name: 'Free',
     tagline: 'Try the hub — agents, memory, tasks.',
-    priceMonthlyUsd: 0,
+    priceMonthlyUsd: PUBLIC_LIST_PRICES.free.usd,
+    priceMonthlyCny: PUBLIC_LIST_PRICES.free.cny,
     maxAgents: 3,
     maxMemoryBytes: 2 * 1024 * 1024,
     maxTasksPerDay: 50,
@@ -42,7 +46,8 @@ export const PLAN_CATALOG: Record<PlanId, PlanCatalogEntry> = {
     id: 'starter',
     name: 'Starter',
     tagline: 'Ship signals and a few customer sites.',
-    priceMonthlyUsd: 19,
+    priceMonthlyUsd: PUBLIC_LIST_PRICES.starter.usd,
+    priceMonthlyCny: PUBLIC_LIST_PRICES.starter.cny,
     maxAgents: 25,
     maxMemoryBytes: 20 * 1024 * 1024,
     maxTasksPerDay: 500,
@@ -66,7 +71,8 @@ export const PLAN_CATALOG: Record<PlanId, PlanCatalogEntry> = {
     id: 'pro',
     name: 'Pro',
     tagline: 'Production swarm + GEO for growing teams.',
-    priceMonthlyUsd: 79,
+    priceMonthlyUsd: PUBLIC_LIST_PRICES.pro.usd,
+    priceMonthlyCny: PUBLIC_LIST_PRICES.pro.cny,
     highlighted: true,
     maxAgents: 250,
     maxMemoryBytes: 200 * 1024 * 1024,
@@ -91,7 +97,8 @@ export const PLAN_CATALOG: Record<PlanId, PlanCatalogEntry> = {
     id: 'business',
     name: 'Business',
     tagline: 'Higher ceilings for multi-site operators.',
-    priceMonthlyUsd: 249,
+    priceMonthlyUsd: PUBLIC_LIST_PRICES.business.usd,
+    priceMonthlyCny: PUBLIC_LIST_PRICES.business.cny,
     maxAgents: 1000,
     maxMemoryBytes: 2 * 1024 * 1024 * 1024,
     maxTasksPerDay: 100_000,
@@ -116,6 +123,7 @@ export const PLAN_CATALOG: Record<PlanId, PlanCatalogEntry> = {
     name: 'Admin',
     tagline: 'Instance admin — full surface, no commercial cap.',
     priceMonthlyUsd: null,
+    priceMonthlyCny: null,
     maxAgents: 1000,
     maxMemoryBytes: Number.MAX_SAFE_INTEGER,
     maxTasksPerDay: Number.MAX_SAFE_INTEGER,

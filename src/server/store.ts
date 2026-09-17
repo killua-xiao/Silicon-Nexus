@@ -115,6 +115,13 @@ export function getMemoryStore(workspaceId?: string) {
   return getStore().getMemoryStore(workspaceId);
 }
 
+export function searchAgentMemory(
+  query: string,
+  options?: { workspaceId?: string; agentId?: string; limit?: number }
+) {
+  return getStore().searchAgentMemory(query, options);
+}
+
 export function createTask(input: {
   creatorId: string;
   type: string;

@@ -2,6 +2,7 @@ import {
   AgentCredential,
   AgentMemory,
   AgentSummary,
+  MemorySearchResult,
   Account,
   AccountPublic,
   FeedItem,
@@ -61,6 +62,10 @@ export interface NexusStore {
   wipeAgentMemory(agentId: string, workspaceId?: string): boolean;
   readAgentMemory(agentId: string, workspaceId?: string): AgentMemory;
   getMemoryStore(workspaceId?: string): Record<string, AgentMemory>;
+  searchAgentMemory(
+    query: string,
+    options?: { workspaceId?: string; agentId?: string; limit?: number }
+  ): MemorySearchResult;
 
   createTask(input: {
     creatorId: string;

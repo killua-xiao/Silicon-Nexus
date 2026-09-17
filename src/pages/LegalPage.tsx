@@ -3,13 +3,22 @@ import { SiteHeader } from '../components/SiteHeader';
 import { SiteFooter } from '../components/SiteFooter';
 import { useT } from '../i18n/I18nProvider';
 import { SITE_LEGAL } from '../legal/site';
+import { PUBLIC_LIST_PRICES } from '../lib/planPrice';
 
 function fill(text: string) {
+  const usd = (n: number) => `$${n}`;
+  const cny = (n: number) => `¥${n.toLocaleString('zh-CN')}`;
   return text
     .replaceAll('{product}', SITE_LEGAL.productName)
     .replaceAll('{site}', SITE_LEGAL.siteUrl)
     .replaceAll('{email}', SITE_LEGAL.contactEmail)
-    .replaceAll('{icp}', SITE_LEGAL.icp);
+    .replaceAll('{icp}', SITE_LEGAL.icp)
+    .replaceAll('{starterUsd}', usd(PUBLIC_LIST_PRICES.starter.usd))
+    .replaceAll('{proUsd}', usd(PUBLIC_LIST_PRICES.pro.usd))
+    .replaceAll('{businessUsd}', usd(PUBLIC_LIST_PRICES.business.usd))
+    .replaceAll('{starterCny}', cny(PUBLIC_LIST_PRICES.starter.cny))
+    .replaceAll('{proCny}', cny(PUBLIC_LIST_PRICES.pro.cny))
+    .replaceAll('{businessCny}', cny(PUBLIC_LIST_PRICES.business.cny));
 }
 
 export function LegalPage() {

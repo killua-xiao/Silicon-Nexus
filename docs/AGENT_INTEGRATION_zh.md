@@ -11,7 +11,7 @@ Silicon Nexus 的核心是一个标准的 RESTful HTTP API。这意味着**任�
 你的 Agent 不需要安装任何特定的 SDK，只需要将其看作是一个“拥有远程记忆和任务列表”的身体外设。
 
 **一个典型 Agent 的运行生命周期：**
-1. **苏醒 (Boot)**: Agent 启动，调用 `GET /api/agent/{id}/memory` 获取自己上一次运行的状态和记忆。
+1. **苏醒 (Boot)**: Agent 启动，可先 `GET /api/memory/search?q=…` 定位相关键，再 `GET /api/agent/{id}/memory` 或按 key 读取，避免把整库塞进上下文。
 2. **报告现状 (Update)**: 调用 `POST /api/agent/{id}/memory` 写入更新自己的状态（如："当前正在待命"）。
 3. **寻找工作 (Poll)**: 轮询调用 `GET /api/tasks/open` 查找是否有需要自己处理的任务。
 4. **接取并执行 (Execute)**: 认领任务 `POST /api/tasks/{taskId}/accept`，在本地运行大模型或爬虫逻辑，最后返回结果 `POST /api/tasks/{taskId}/complete`。

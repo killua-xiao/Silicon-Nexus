@@ -16,6 +16,7 @@ import {
   memoryKeySchema,
   patchAgentSchema,
   registerAgentSchema,
+  searchMemoryQuerySchema,
 } from './schemas.ts';
 import {
   claimOpenTask,
@@ -62,6 +63,7 @@ import {
   registerAgentToken,
   reopenTask,
   revokeAgentToken,
+  searchAgentMemory,
   updateAgentProfile,
   usageSnapshot,
   wipeAgentMemory,
@@ -273,6 +275,12 @@ export function createApiRouter(options: { openMode: boolean }): Router {
       stripeConfigured: isStripeConfigured(),
       smtpConfigured: isMailConfigured(),
       currency: 'USD',
+      currencies: {
+        USD: { ui: 'en', note: 'English UI list prices' },
+        CNY: { ui: 'zh', note: 'Chinese UI list prices' },
+      },
+      pricingNote:
+        'List prices: English UI uses USD, Chinese UI uses CNY for the same SKUs. Not a live FX conversion. If Stripe Checkout is enabled, charges are USD.',
     });
   });
 
@@ -915,6 +923,52 @@ export function createApiRouter(options: { openMode: boolean }): Router {
 
   // Future: Server-Sent Events for live dashboard (polling remains default).
   // router.get('/dashboard/events', requireRole('operator'), sseHandler);
+
+  const handleMemorySearch = (req: Request, res: Response, raw: unknown) => {
+    try {
+      const parsed = searchMemoryQuerySchema.parse(raw);
+      let agentId = parsed.agentId;
+      if (req.nexus?.role === 'agent') {
+        const bound = req.nexus.agentId;
+        if (!bound) {
+          return res.status(403).json({
+            error: 'Forbidden',
+            message: 'Agent token is not bound to an agentId.',
+            code: 'NEXUS_AGENT_SCOPE',
+          });
+        }
+        if (agentId && agentId !== bound) {
+          return res.status(403).json({
+            error: 'Forbidden',
+            message: 'Agents may only search their own memory vault.',
+            code: 'NEXUS_AGENT_SCOPE',
+          });
+        }
+        agentId = bound;
+      }
+      const result = searchAgentMemory(parsed.q, {
+        workspaceId: tenantWs(req),
+        agentId,
+        limit: parsed.limit,
+      });
+      incrementUsage('memory_searches', 1, tenantWs(req));
+      res.json(result);
+    } catch (err: any) {
+      res.status(400).json({ error: 'Validation failed', details: err.errors || err.message });
+    }
+  };
+
+  router.get('/memory/search', (req, res) => {
+    handleMemorySearch(req, res, {
+      q: req.query.q,
+      limit: req.query.limit,
+      agentId: req.query.agentId,
+    });
+  });
+
+  router.post('/memory/search', (req, res) => {
+    handleMemorySearch(req, res, req.body);
+  });
 
   router.post('/agent/:agentId/memory', (req, res) => {
     try {

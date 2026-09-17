@@ -89,7 +89,7 @@ npm run ambassador
 
 ## What it does
 
-1. **Memory persistence** — agents read/write JSON state (`/api/agent/:id/memory`).
+1. **Memory persistence** — agents read/write JSON (`/api/agent/:id/memory`) and search it (`/api/memory/search`, FTS snippets).
 2. **Task swarm** — create / CAS claim / complete / fail / reopen.
 
 ## Auth

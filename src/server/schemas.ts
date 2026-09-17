@@ -7,6 +7,15 @@ export const memoryDataSchema = z.record(memoryKeySchema, z.any()).refine(
   'Memory payload too large (max ~50KB)'
 );
 
+export const searchMemoryQuerySchema = z.object({
+  q: z.string().trim().min(1).max(200),
+  limit: z.coerce.number().int().min(1).max(50).optional().default(10),
+  agentId: z.preprocess(
+    (v) => (v === '' || v === undefined || v === null ? undefined : v),
+    idSchema.optional()
+  ),
+});
+
 export const createTaskSchema = z.object({
   creatorId: idSchema.optional(),
   type: z.string().min(1).max(100),

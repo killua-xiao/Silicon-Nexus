@@ -50,13 +50,13 @@ In Cursor MCP settings (or Claude Desktop `claude_desktop_config.json`), paste:
 
 Or use **Copy MCP config** on the Agents page — then fix the absolute path.
 
-Restart Cursor. You should see tools like `nexus_write_memory`, `nexus_create_task`, …
+Restart Cursor. You should see tools like `nexus_write_memory`, `nexus_search_memory`, `nexus_create_task`, …
 
 ## 3. Try it
 
 Ask the agent:
 
-> Write `{ "mission": "map sector B" }` to my Silicon Nexus memory, then create a task type `PING`.
+> Write `{ "mission": "map sector B" }` to my Silicon Nexus memory, then search memory for `sector`.
 
 Or via REST:
 
@@ -65,6 +65,9 @@ curl -s -X POST https://silinex.xyz/api/agent/Alpha-7/memory \
   -H "Authorization: Bearer $NEXUS_AGENT_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"mission":"map sector B"}'
+
+curl -s "https://silinex.xyz/api/memory/search?q=sector" \
+  -H "Authorization: Bearer $NEXUS_AGENT_TOKEN"
 ```
 
 ## 4. TypeScript SDK
@@ -83,6 +86,7 @@ const nexus = new SiliconNexus({
 });
 
 await nexus.memory.write({ mission: 'map sector B' });
+await nexus.memory.search({ q: 'sector' });
 ```
 
 ## 5. Ambassador handshake

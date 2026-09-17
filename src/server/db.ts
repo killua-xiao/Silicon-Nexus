@@ -258,6 +258,7 @@ function migrateSchema(database: Database.Database) {
       ON auth_tokens(account_id, purpose);
   `);
 
+  migrateMemorySearchSchema(database);
 
   const existing = database
     .prepare('SELECT id FROM workspaces WHERE id = ?')
@@ -267,6 +268,45 @@ function migrateSchema(database: Database.Database) {
     database
       .prepare('INSERT INTO workspaces (id, name, created_at) VALUES (?, ?, ?)')
       .run(DEFAULT_WORKSPACE_ID, 'Default Workspace', new Date().toISOString());
+  }
+}
+
+function migrateMemorySearchSchema(database: Database.Database) {
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS memory_index (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      workspace_id TEXT NOT NULL,
+      agent_id TEXT NOT NULL,
+      mem_key TEXT NOT NULL,
+      body TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      UNIQUE (workspace_id, agent_id, mem_key)
+    );
+    CREATE INDEX IF NOT EXISTS idx_memory_index_ws_agent
+      ON memory_index(workspace_id, agent_id);
+  `);
+
+  try {
+    database.exec(`
+      CREATE VIRTUAL TABLE IF NOT EXISTS memory_fts USING fts5(
+        body,
+        content='memory_index',
+        content_rowid='id',
+        tokenize='unicode61 remove_diacritics 2'
+      );
+      CREATE TRIGGER IF NOT EXISTS memory_index_ai AFTER INSERT ON memory_index BEGIN
+        INSERT INTO memory_fts(rowid, body) VALUES (new.id, new.body);
+      END;
+      CREATE TRIGGER IF NOT EXISTS memory_index_ad AFTER DELETE ON memory_index BEGIN
+        INSERT INTO memory_fts(memory_fts, rowid, body) VALUES('delete', old.id, old.body);
+      END;
+      CREATE TRIGGER IF NOT EXISTS memory_index_au AFTER UPDATE ON memory_index BEGIN
+        INSERT INTO memory_fts(memory_fts, rowid, body) VALUES('delete', old.id, old.body);
+        INSERT INTO memory_fts(rowid, body) VALUES (new.id, new.body);
+      END;
+    `);
+  } catch {
+    // FTS5 unavailable — substring search still works off memory_index.
   }
 }
 

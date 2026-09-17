@@ -33,6 +33,20 @@ export const MCP_TOOLS = [
     },
   },
   {
+    name: 'nexus_search_memory',
+    description:
+      "Lexical search over this agent's memory keys and JSON values (FTS5, substring fallback). Returns snippets with citations — not embeddings, not a chat. Fetch nexus_read_memory with the hit key for the full value. Agent tokens search only their own vault; operators may omit agentId to search the workspace.",
+    inputSchema: {
+      type: 'object',
+      properties: {
+        q: { type: 'string', description: 'Search query (keys and values)' },
+        agentId: { type: 'string', description: 'Optional; operators can scope to one agent' },
+        limit: { type: 'number', description: 'Max hits, 1–50, default 10' },
+      },
+      required: ['q'],
+    },
+  },
+  {
     name: 'nexus_create_task',
     description: 'Delegate a sub-task to the Nexus swarm queue.',
     inputSchema: {
@@ -272,6 +286,22 @@ export function createNexusMcpServer(cfg: McpSessionConfig): Server {
         const agentId = resolveAgentId(cfg, args?.agentId);
         const keyPath = args?.key ? `/${args.key}` : '';
         const data = await apiJson(cfg, `/agent/${agentId}/memory${keyPath}`);
+        return { content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] };
+      }
+
+      if (name === 'nexus_search_memory') {
+        const q = String(args?.q ?? '').trim();
+        if (!q) throw new Error('q is required');
+        const params = new URLSearchParams({ q });
+        if (typeof args?.limit === 'number' && Number.isFinite(args.limit)) {
+          params.set('limit', String(args.limit));
+        }
+        if (cfg.token.startsWith('nxa_') || cfg.agentId) {
+          params.set('agentId', resolveAgentId(cfg, args?.agentId));
+        } else if (typeof args?.agentId === 'string' && args.agentId.trim()) {
+          params.set('agentId', args.agentId.trim());
+        }
+        const data = await apiJson(cfg, `/memory/search?${params.toString()}`);
         return { content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] };
       }
 

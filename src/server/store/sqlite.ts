@@ -14,6 +14,8 @@ import {
   MAX_AGENTS,
   MAX_LOGS,
   MAX_TASKS,
+  MemorySearchHit,
+  MemorySearchResult,
   PlanId,
   PublicAgentEntry,
   Site,
@@ -28,6 +30,12 @@ import {
 } from '../types.ts';
 import type { NexusStore, RegisterAgentFailure, RegisterAgentResult } from './types.ts';
 import { buildIndexing, INDEXING_NOTE } from '../crawlDetect.ts';
+import {
+  MEMORY_SEARCH_NOTE,
+  extractSnippet,
+  flattenMemoryValue,
+  sanitizeFtsQuery,
+} from '../memorySearch.ts';
 
 type TaskRow = {
   id: string;
@@ -243,6 +251,7 @@ export class SqliteStore implements NexusStore {
     this.db.prepare('SELECT 1').get();
     this.isolateSharedUserAccounts();
     this.grandfatherVerifiedAccounts();
+    this.ensureMemorySearchIndex();
   }
 
   /** First boot of email-verify: existing accounts are treated as already confirmed. */
@@ -582,18 +591,25 @@ export class SqliteStore implements NexusStore {
       return { ok: false, code: 'plan_limit' };
     }
 
-    if (existing) {
-      this.db
-        .prepare(
-          `UPDATE memory SET data_json = ?, updated_at = ? WHERE workspace_id = ? AND agent_id = ?`
-        )
-        .run(JSON.stringify(merged), now, ws, agentId);
-    } else {
-      this.db
-        .prepare(
-          `INSERT INTO memory (workspace_id, agent_id, data_json, updated_at) VALUES (?, ?, ?, ?)`
-        )
-        .run(ws, agentId, JSON.stringify(merged), now);
+    const persist = this.db.transaction(() => {
+      if (existing) {
+        this.db
+          .prepare(
+            `UPDATE memory SET data_json = ?, updated_at = ? WHERE workspace_id = ? AND agent_id = ?`
+          )
+          .run(JSON.stringify(merged), now, ws, agentId);
+      } else {
+        this.db
+          .prepare(
+            `INSERT INTO memory (workspace_id, agent_id, data_json, updated_at) VALUES (?, ?, ?, ?)`
+          )
+          .run(ws, agentId, JSON.stringify(merged), now);
+      }
+      this.reindexAgentMemory(ws, agentId, merged, now);
+    });
+    persist();
+
+    if (!existing) {
       this.logEvent('AGENT_REGISTERED', agentId, 'New silicon entity detected.', ws);
     }
 
@@ -608,11 +624,16 @@ export class SqliteStore implements NexusStore {
       .prepare('SELECT 1 AS ok FROM memory WHERE workspace_id = ? AND agent_id = ?')
       .get(ws, agentId);
     if (!existing) return false;
-    this.db
-      .prepare(
-        `UPDATE memory SET data_json = '{}', updated_at = ? WHERE workspace_id = ? AND agent_id = ?`
-      )
-      .run(new Date().toISOString(), ws, agentId);
+    const now = new Date().toISOString();
+    const wipe = this.db.transaction(() => {
+      this.db
+        .prepare(
+          `UPDATE memory SET data_json = '{}', updated_at = ? WHERE workspace_id = ? AND agent_id = ?`
+        )
+        .run(now, ws, agentId);
+      this.reindexAgentMemory(ws, agentId, {}, now);
+    });
+    wipe();
     this.logEvent('MEMORY_WIPE', agentId, 'Memory register cleared.', ws);
     return true;
   }
@@ -635,6 +656,184 @@ export class SqliteStore implements NexusStore {
       out[row.agent_id] = JSON.parse(row.data_json);
     }
     return out;
+  }
+
+  searchAgentMemory(
+    query: string,
+    options?: { workspaceId?: string; agentId?: string; limit?: number }
+  ): MemorySearchResult {
+    const ws = this.ws(options?.workspaceId);
+    const agentId = options?.agentId || undefined;
+    const limit = Math.min(Math.max(options?.limit ?? 10, 1), 50);
+    const q = query.trim().slice(0, 200);
+    const empty: MemorySearchResult = {
+      query: q,
+      engine: 'fts5',
+      note: MEMORY_SEARCH_NOTE,
+      hits: [],
+    };
+    if (!q) return empty;
+
+    const ftsHits = this.searchMemoryFts(q, ws, agentId, limit);
+    if (ftsHits && ftsHits.length > 0) {
+      return { query: q, engine: 'fts5', note: MEMORY_SEARCH_NOTE, hits: ftsHits };
+    }
+
+    const subHits = this.searchMemorySubstring(q, ws, agentId, limit);
+    if (subHits.length > 0) {
+      return { query: q, engine: 'substring', note: MEMORY_SEARCH_NOTE, hits: subHits };
+    }
+
+    return {
+      query: q,
+      engine: ftsHits ? 'fts5' : 'substring',
+      note: MEMORY_SEARCH_NOTE,
+      hits: [],
+    };
+  }
+
+  private ensureMemorySearchIndex(): void {
+    const ver = this.db.prepare(`SELECT value FROM meta WHERE key = ?`).get('memory_index_version') as
+      | { value: string }
+      | undefined;
+    if (ver?.value === '1') return;
+    this.rebuildMemoryIndex();
+    this.db
+      .prepare(`INSERT OR REPLACE INTO meta (key, value) VALUES ('memory_index_version', '1')`)
+      .run();
+  }
+
+  private rebuildMemoryIndex(): void {
+    const del = this.db.prepare('DELETE FROM memory_index');
+    const insert = this.db.prepare(
+      `INSERT INTO memory_index (workspace_id, agent_id, mem_key, body, updated_at)
+       VALUES (?, ?, ?, ?, ?)`
+    );
+    const rows = this.db
+      .prepare('SELECT workspace_id, agent_id, data_json, updated_at FROM memory')
+      .all() as MemoryRow[];
+
+    const tx = this.db.transaction(() => {
+      del.run();
+      for (const row of rows) {
+        let data: AgentMemory = {};
+        try {
+          data = JSON.parse(row.data_json || '{}') as AgentMemory;
+        } catch {
+          continue;
+        }
+        for (const [key, value] of Object.entries(data)) {
+          insert.run(
+            row.workspace_id,
+            row.agent_id,
+            key,
+            flattenMemoryValue(key, value),
+            row.updated_at
+          );
+        }
+      }
+    });
+    tx();
+  }
+
+  private reindexAgentMemory(
+    workspaceId: string,
+    agentId: string,
+    data: AgentMemory,
+    updatedAt: string
+  ): void {
+    this.db
+      .prepare('DELETE FROM memory_index WHERE workspace_id = ? AND agent_id = ?')
+      .run(workspaceId, agentId);
+    const insert = this.db.prepare(
+      `INSERT INTO memory_index (workspace_id, agent_id, mem_key, body, updated_at)
+       VALUES (?, ?, ?, ?, ?)`
+    );
+    for (const [key, value] of Object.entries(data)) {
+      insert.run(workspaceId, agentId, key, flattenMemoryValue(key, value), updatedAt);
+    }
+  }
+
+  private ftsReady(): boolean {
+    const row = this.db
+      .prepare(`SELECT 1 AS ok FROM sqlite_master WHERE type = 'table' AND name = 'memory_fts'`)
+      .get() as { ok: number } | undefined;
+    return !!row;
+  }
+
+  private searchMemoryFts(
+    query: string,
+    workspaceId: string,
+    agentId: string | undefined,
+    limit: number
+  ): MemorySearchHit[] | null {
+    if (!this.ftsReady()) return null;
+    const match = sanitizeFtsQuery(query);
+    if (!match) return null;
+    try {
+      const rows = this.db
+        .prepare(
+          `SELECT mi.agent_id AS agent_id, mi.mem_key AS mem_key, mi.body AS body,
+                  mi.updated_at AS updated_at, bm25(memory_fts) AS rank
+           FROM memory_fts
+           JOIN memory_index mi ON mi.id = memory_fts.rowid
+           WHERE memory_fts MATCH ?
+             AND mi.workspace_id = ?
+             AND (? IS NULL OR mi.agent_id = ?)
+           ORDER BY rank
+           LIMIT ?`
+        )
+        .all(match, workspaceId, agentId ?? null, agentId ?? null, limit) as Array<{
+        agent_id: string;
+        mem_key: string;
+        body: string;
+        updated_at: string;
+        rank: number;
+      }>;
+      if (rows.length === 0) return null;
+      return rows.map((row) => ({
+        agentId: row.agent_id,
+        key: row.mem_key,
+        snippet: extractSnippet(row.body, query),
+        rank: Number(row.rank),
+        updatedAt: row.updated_at,
+      }));
+    } catch {
+      return null;
+    }
+  }
+
+  private searchMemorySubstring(
+    query: string,
+    workspaceId: string,
+    agentId: string | undefined,
+    limit: number
+  ): MemorySearchHit[] {
+    const needle = query.trim().slice(0, 200);
+    if (!needle) return [];
+    const rows = this.db
+      .prepare(
+        `SELECT agent_id, mem_key, body, updated_at
+         FROM memory_index
+         WHERE workspace_id = ?
+           AND (? IS NULL OR agent_id = ?)
+           AND (instr(body, ?) > 0 OR instr(mem_key, ?) > 0)
+         ORDER BY updated_at DESC
+         LIMIT ?`
+      )
+      .all(workspaceId, agentId ?? null, agentId ?? null, needle, needle, limit) as Array<{
+      agent_id: string;
+      mem_key: string;
+      body: string;
+      updated_at: string;
+    }>;
+    return rows.map((row, i) => ({
+      agentId: row.agent_id,
+      key: row.mem_key,
+      snippet: extractSnippet(row.body, query),
+      rank: 1000 + i,
+      updatedAt: row.updated_at,
+    }));
   }
 
   private pruneTaskQueueIfNeeded(ws: string) {
@@ -945,7 +1144,7 @@ export class SqliteStore implements NexusStore {
         stripeConfigured,
         note: stripeConfigured
           ? 'Stripe key detected — Checkout webhooks can map subscriptions to account.planId.'
-          : 'Plans enforced locally. Admins upgrade accounts via PATCH /api/accounts/:id/plan. See /pricing.',
+          : 'Plans enforced locally. Admins upgrade accounts via PATCH /api/accounts/:id/plan. List prices: USD in English UI, CNY in Chinese UI. See /pricing.',
       },
     };
   }

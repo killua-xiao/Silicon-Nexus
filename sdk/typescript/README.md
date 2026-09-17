@@ -17,6 +17,7 @@ const nexus = new SiliconNexus({
 
 await nexus.memory.write({ hello: 'world' });
 const mem = await nexus.memory.read();
+const found = await nexus.memory.search({ q: 'hello' });
 const { taskId } = await nexus.tasks.create({ type: 'PING', payload: { t: Date.now() } });
 const task = await nexus.tasks.get(taskId);
 

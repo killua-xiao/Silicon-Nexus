@@ -70,8 +70,9 @@ export function buildAgentCard(appUrl: string): AgentCard {
       {
         id: 'memory.read_write',
         name: 'Agent Memory Vault',
-        description: 'Read and write durable JSON memory scoped to an agentId.',
-        tags: ['memory', 'state', 'persistence'],
+        description:
+          'Read, write, and lexically search durable JSON memory scoped to an agentId (FTS5; not embeddings).',
+        tags: ['memory', 'state', 'persistence', 'search'],
       },
       {
         id: 'tasks.delegate',
