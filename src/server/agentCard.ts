@@ -43,9 +43,9 @@ export function buildAgentCard(appUrl: string): AgentCard {
   const base = appUrl.replace(/\/$/, '');
   return {
     name: 'Silicon Nexus',
-    version: '1.3.0',
+    version: '1.4.0',
     description:
-      'Agent infrastructure platform for the AI era: durable memory, task swarm, public signals/GEO surfaces, and extensible MCP capabilities for autonomous agents and operators.',
+      'Portable agent body for silicon lifeforms: citeable facts across vendors, continuity handoff/assume, honest observation surfaces. Not a chat memory or workflow engine.',
     url: base,
     documentationUrl: `${base}/docs`,
     openApiUrl: `${base}/openapi.yaml`,
@@ -70,37 +70,45 @@ export function buildAgentCard(appUrl: string): AgentCard {
     },
     skills: [
       {
-        id: 'memory.read_write',
-        name: 'Agent Memory Vault',
+        id: 'body.read_write',
+        name: 'Portable Agent Body',
         description:
-          'Read, write, and lexically search durable JSON memory scoped to an agentId (FTS5; not embeddings).',
-        tags: ['memory', 'state', 'persistence', 'search'],
+          'Read, write, and lexically search citeable JSON body keys scoped to an agentId (FTS5; not embeddings). Writes stamp source/updatedAt/confidence.',
+        tags: ['body', 'memory', 'provenance', 'persistence', 'search'],
       },
       {
-        id: 'tasks.delegate',
-        name: 'Task Swarm',
-        description: 'Create, claim (CAS), complete, fail, or reopen delegation tasks.',
-        tags: ['tasks', 'delegation', 'swarm'],
+        id: 'body.continuity',
+        name: 'Continuity Protocol',
+        description:
+          'Handoff a body snapshot; assume it later (restore drifted keys, optional token rotation) so identity survives session death.',
+        tags: ['continuity', 'handoff', 'assume', 'identity'],
       },
       {
         id: 'agents.enroll',
         name: 'Agent Enrollment',
-        description: 'Operators mint scoped nxa_* tokens for agents.',
-        tags: ['auth', 'enrollment'],
+        description: 'Operators mint scoped nxa_* tokens for agents (portable identity).',
+        tags: ['auth', 'enrollment', 'identity'],
       },
       {
-        id: 'feed.signals',
-        name: 'Public Signal Feed',
+        id: 'events.observation',
+        name: 'Honest Observation Feed',
         description:
-          'AI-readable public signals at /feed.json and /feed.xml for crawlers and agents.',
-        tags: ['feed', 'discovery', 'crawlers'],
+          'Machine-readable events at /feed.json with crawl observation badges. Observation ≠ index inclusion.',
+        tags: ['feed', 'observation', 'discovery'],
       },
       {
-        id: 'geo.sites_sync',
-        name: 'Multi-site GEO Sync',
+        id: 'surfaces.publish',
+        name: 'Publish Surfaces (legacy GEO)',
         description:
-          'Register customer sites, pull HTTPS sitemaps (on demand, worker due-pull, or daily cron), and sync pages to /sites/{slug}/llms.txt + feed.json. Crawl observation ≠ guaranteed inclusion.',
-        tags: ['geo', 'sites', 'sync', 'llms.txt'],
+          'Optional: sync site pages to /sites/{slug}/llms.txt + feed.json so agents can read without scraping a SPA. Not an SEO product.',
+        tags: ['surfaces', 'llms.txt', 'publish', 'legacy'],
+      },
+      {
+        id: 'tasks.delegate',
+        name: 'Task Queue (legacy)',
+        description:
+          'Legacy create/claim/complete queue. Prefer continuity handoff/assume. Not a workflow engine.',
+        tags: ['tasks', 'legacy'],
       },
     ],
     mcp: {

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AgentPanel } from '../components/AgentPanel';
+import { ContinuityPanel } from '../components/ContinuityPanel';
 import { McpConfigPanel } from '../components/McpConfigPanel';
 import { useConsole } from './ConsoleLayout';
 import { useT } from '../i18n/I18nProvider';
@@ -25,6 +26,10 @@ export function AgentsPage() {
         onRevoke={revokeAgent}
         onPatch={patchAgent}
         onTokenIssued={setIssued}
+      />
+      <ContinuityPanel
+        agents={agents}
+        defaultAgentId={issued?.agentId || agents[0]?.agentId}
       />
       <McpConfigPanel
         defaultAgentId={issued?.agentId}

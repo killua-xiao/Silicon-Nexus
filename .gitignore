@@ -14,3 +14,5 @@ data/nexus.sqlite-*
 data/backups/
 data/worker-heartbeat.json
 logs/
+# Investor brief: local download only, never the public site or repo
+docs/investors/

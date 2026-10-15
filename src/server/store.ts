@@ -4,6 +4,7 @@ import { logJson } from './log.ts';
 import { migrateFromJsonIfNeeded } from './store/migrate.ts';
 import { SqliteStore } from './store/sqlite.ts';
 import type { NexusStore } from './store/types.ts';
+import type { MemoryWriteOptions } from './bodyMeta.ts';
 import type {
   AgentMemory,
   FeedItemInput,
@@ -99,8 +100,13 @@ export function updateAgentProfile(
   return getStore().updateAgentProfile(agentId, patch, workspaceId);
 }
 
-export function writeAgentMemory(agentId: string, data: AgentMemory, workspaceId?: string) {
-  return getStore().writeAgentMemory(agentId, data, workspaceId);
+export function writeAgentMemory(
+  agentId: string,
+  data: AgentMemory,
+  workspaceId?: string,
+  options?: Partial<MemoryWriteOptions>
+) {
+  return getStore().writeAgentMemory(agentId, data, workspaceId, options);
 }
 
 export function wipeAgentMemory(agentId: string, workspaceId?: string) {
@@ -111,8 +117,33 @@ export function readAgentMemory(agentId: string, workspaceId?: string) {
   return getStore().readAgentMemory(agentId, workspaceId);
 }
 
+export function getMemoryUpdatedAt(agentId: string, workspaceId?: string) {
+  return getStore().getMemoryUpdatedAt(agentId, workspaceId);
+}
+
 export function getMemoryStore(workspaceId?: string) {
   return getStore().getMemoryStore(workspaceId);
+}
+
+export function createHandoff(
+  agentId: string,
+  input: { note?: string; includeKeys?: string[]; ttlHours?: number },
+  workspaceId?: string
+) {
+  return getStore().createHandoff(agentId, input, workspaceId);
+}
+
+export function getHandoff(handoffId: string, workspaceId?: string) {
+  return getStore().getHandoff(handoffId, workspaceId);
+}
+
+export function assumeHandoff(
+  agentId: string,
+  handoffId: string,
+  options: { rotateToken?: boolean; planId?: string | null },
+  workspaceId?: string
+) {
+  return getStore().assumeHandoff(agentId, handoffId, options, workspaceId);
 }
 
 export function searchAgentMemory(
@@ -284,6 +315,10 @@ export function getAccountByStripeCustomerId(customerId: string) {
 
 export function listAccounts() {
   return getStore().listAccounts();
+}
+
+export function adminOverview() {
+  return getStore().adminOverview();
 }
 
 export function registerAccount(input: { email: string; password: string }) {

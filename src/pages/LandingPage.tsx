@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Boxes, Database, Globe2 } from 'lucide-react';
+import { Database, Eye, GitBranch } from 'lucide-react';
 import { SiteHeader } from '../components/SiteHeader';
 import { SiteFooter } from '../components/SiteFooter';
 import { HeroBackdrop } from '../components/HeroBackdrop';
@@ -10,8 +10,8 @@ export function LandingPage() {
   const t = useT();
   const features = [
     { icon: Database, title: t.landing.memoryTitle, body: t.landing.memoryBody },
-    { icon: Boxes, title: t.landing.swarmTitle, body: t.landing.swarmBody },
-    { icon: Globe2, title: t.landing.visibilityTitle, body: t.landing.visibilityBody },
+    { icon: GitBranch, title: t.landing.swarmTitle, body: t.landing.swarmBody },
+    { icon: Eye, title: t.landing.visibilityTitle, body: t.landing.visibilityBody },
   ];
   const surfaces = [
     { href: '/llms.txt', label: 'llms.txt' },
@@ -23,15 +23,15 @@ export function LandingPage() {
   return (
     <div className="min-h-screen foundry-glow text-foundry-100">
       <SiteHeader />
-      <section className="relative isolate min-h-[calc(100svh-4.5rem)] overflow-hidden">
+      <section className="relative isolate min-h-[calc(100svh-4.75rem)] overflow-hidden">
         <HeroBackdrop />
-        <div className="relative z-10 mx-auto flex min-h-[calc(100svh-4.5rem)] max-w-6xl flex-col justify-center px-6 py-16 md:px-12">
-          <div className="hero-copy">
+        <div className="relative z-10 mx-auto flex min-h-[calc(100svh-4.75rem)] max-w-6xl flex-col justify-center px-6 py-20 md:px-8">
+          <div className="hero-copy max-w-2xl">
           <motion.p
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="nx-kicker mb-4"
+            className="nx-kicker mb-5"
           >
             {t.landing.eyebrow}
           </motion.p>
@@ -39,15 +39,17 @@ export function LandingPage() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.65, delay: 0.05 }}
-            className="max-w-3xl text-5xl font-semibold leading-[1.05] tracking-tight md:text-6xl lg:text-7xl"
+            className="max-w-xl text-4xl font-semibold leading-[1.05] tracking-[-0.04em] md:text-5xl lg:text-6xl"
           >
-            Silicon <span className="text-teal-glow">Nexus</span>
+            {t.landing.headline}
+            <br />
+            <span className="text-teal-glow">{t.landing.headlineAccent}</span>
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.15 }}
-            className="mt-5 max-w-xl text-lg leading-relaxed text-foundry-300 md:text-xl"
+            className="mt-6 max-w-lg text-lg leading-relaxed text-foundry-300 md:text-xl"
           >
             {t.landing.tagline}
           </motion.p>
@@ -58,19 +60,19 @@ export function LandingPage() {
             className="mt-6 flex flex-wrap gap-2"
           >
             <span className="nx-chip">{t.landing.chipMemory}</span>
-            <span className="nx-chip">{t.landing.chipSwarm}</span>
             <span className="nx-chip">{t.landing.chipGeo}</span>
+            <span className="nx-chip">{t.landing.chipSwarm}</span>
           </motion.div>
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.55, delay: 0.28 }}
-            className="mt-8 flex flex-wrap gap-3"
+            className="mt-9 flex flex-wrap gap-3"
           >
-            <Link to="/console" className="nx-btn nx-btn-primary px-5 py-2.5">
+            <Link to="/console" className="nx-btn nx-btn-primary px-6 py-3">
               {t.landing.openConsole}
             </Link>
-            <Link to="/docs" className="nx-btn nx-btn-ghost px-5 py-2.5">
+            <Link to="/connect" className="nx-btn nx-btn-ghost px-6 py-3">
               {t.landing.viewApi}
             </Link>
           </motion.div>
@@ -78,76 +80,90 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section className="border-t border-white/5 bg-foundry-950 px-6 py-20 md:px-12">
-        <div className="mx-auto grid max-w-6xl gap-4 md:grid-cols-3">
+      <section className="border-t border-white/[0.06] bg-foundry-950 px-6 py-20 md:px-8">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-8 flex items-end justify-between gap-4">
+            <p className="nx-kicker">{t.landing.surfacesTitle}</p>
+            <span className="flex gap-4 text-sm">
+              <Link to="/cookbook" className="text-foundry-400 transition hover:text-teal-glow">
+                {t.cookbook.nav}
+              </Link>
+              <Link to="/about" className="text-foundry-400 transition hover:text-teal-glow">
+                {t.landing.aboutCta}
+              </Link>
+            </span>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
           {features.map((f, i) => (
             <article
               key={f.title}
               className="nx-card nx-card-hover animate-foundry-rise p-6"
-              style={{ animationDelay: `${i * 60}ms` }}
+              style={{ animationDelay: `${i * 70}ms` }}
             >
-              <span className="mb-4 inline-flex rounded-md border border-white/10 p-2 text-teal-glow">
-                <f.icon className="h-4 w-4" />
-              </span>
-              <h2 className="text-xl font-semibold tracking-tight text-foundry-100">{f.title}</h2>
+              <div className="mb-6 flex items-center justify-between">
+                <span className="inline-flex rounded-xl border border-white/10 bg-white/[0.03] p-2.5 text-teal-glow">
+                  <f.icon className="h-4 w-4" />
+                </span>
+                <span className="font-mono text-xs text-foundry-600">0{i + 1}</span>
+              </div>
+              <h2 className="text-xl font-semibold text-foundry-100">{f.title}</h2>
               <p className="mt-3 text-sm leading-relaxed text-foundry-400">{f.body}</p>
             </article>
           ))}
+          </div>
+          <p className="mt-8 max-w-3xl text-sm leading-relaxed text-foundry-500">
+            {t.landing.selfHost}
+          </p>
         </div>
-        <p className="mx-auto mt-12 max-w-6xl text-sm leading-relaxed text-foundry-500">
-          {t.landing.selfHost}{' '}
-          <Link to="/about" className="text-teal-glow hover:underline">
-            {t.landing.aboutCta}
-          </Link>
-        </p>
       </section>
 
-      <section className="border-t border-white/5 bg-foundry-900/40 px-6 py-20 md:px-12">
+      <section className="border-t border-white/[0.06] bg-foundry-900/50 px-6 py-20 md:px-8">
         <div className="mx-auto max-w-6xl">
-          <div className="nx-card p-6 md:p-8">
-            <h2 className="text-2xl font-semibold tracking-tight text-foundry-100">
-              {t.connect.sectionTitle}
-            </h2>
-            <p className="mt-3 max-w-2xl leading-relaxed text-foundry-400">{t.connect.sectionBody}</p>
-            <ol className="mt-8 grid gap-3 md:grid-cols-3">
-              <li className="rounded-md border border-white/5 bg-foundry-950/50 p-4 text-sm text-foundry-300">
-                <span className="font-mono text-teal-glow">1.</span> {t.connect.step1}
-              </li>
-              <li className="rounded-md border border-white/5 bg-foundry-950/50 p-4 text-sm text-foundry-300">
-                <span className="font-mono text-teal-glow">2.</span> {t.connect.step2}
-              </li>
-              <li className="rounded-md border border-white/5 bg-foundry-950/50 p-4 text-sm text-foundry-300">
-                <span className="font-mono text-teal-glow">3.</span> {t.connect.step3}
-              </li>
-            </ol>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link to="/connect" className="nx-btn nx-btn-primary">
-                {t.connect.pageTitle}
-              </Link>
-              <Link to="/console/agents" className="nx-btn nx-btn-ghost">
-                {t.nav.agents}
-              </Link>
-              <a href="/.well-known/agent.json" target="_blank" rel="noreferrer" className="nx-btn nx-btn-ghost">
-                {t.connect.viewCard}
-              </a>
+          <div className="nx-card overflow-hidden p-0">
+            <div className="grid md:grid-cols-[1.1fr_0.9fr]">
+              <div className="p-6 md:p-10">
+                <p className="nx-kicker mb-4">{t.connect.nav}</p>
+                <h2 className="text-3xl font-semibold text-foundry-100">
+                  {t.connect.sectionTitle}
+                </h2>
+                <p className="mt-4 max-w-xl leading-relaxed text-foundry-400">{t.connect.sectionBody}</p>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Link to="/connect" className="nx-btn nx-btn-primary">
+                    {t.connect.pageTitle}
+                  </Link>
+                  <Link to="/console/agents" className="nx-btn nx-btn-ghost">
+                    {t.nav.agents}
+                  </Link>
+                  <a href="/.well-known/agent.json" target="_blank" rel="noreferrer" className="nx-btn nx-btn-ghost">
+                    {t.connect.viewCard}
+                  </a>
+                </div>
+              </div>
+              <ol className="grid content-center gap-3 border-t border-white/[0.06] bg-foundry-950/40 p-6 md:border-l md:border-t-0 md:p-8">
+                {[t.connect.step1, t.connect.step2, t.connect.step3].map((step, i) => (
+                  <li key={step} className="rounded-2xl border border-white/[0.06] bg-foundry-950/70 p-4 text-sm leading-relaxed text-foundry-300">
+                    <span className="mb-2 block font-mono text-[11px] tracking-[0.16em] text-teal-glow">
+                      0{i + 1}
+                    </span>
+                    {step}
+                  </li>
+                ))}
+              </ol>
             </div>
           </div>
 
-          <div className="mt-10">
-            <p className="nx-kicker mb-3">{t.landing.surfacesTitle}</p>
-            <div className="flex flex-wrap gap-2">
-              {surfaces.map((s) => (
-                <a
-                  key={s.href}
-                  href={s.href}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="rounded-md border border-white/10 px-3 py-1.5 font-mono text-xs text-foundry-300 transition hover:border-teal-glow/40 hover:text-teal-glow"
-                >
-                  {s.label}
-                </a>
-              ))}
-            </div>
+          <div className="mt-8 flex flex-wrap items-center gap-2">
+            {surfaces.map((s) => (
+              <a
+                key={s.href}
+                href={s.href}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full border border-white/10 bg-white/[0.02] px-3.5 py-1.5 font-mono text-xs text-foundry-300 transition hover:border-teal-glow/40 hover:text-teal-glow"
+              >
+                {s.label}
+              </a>
+            ))}
           </div>
         </div>
       </section>

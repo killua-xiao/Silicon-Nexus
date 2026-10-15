@@ -11,7 +11,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
       key={code}
       onClick={() => setLocale(code)}
       className={cn(
-        'rounded px-2 py-1 text-[11px] font-medium transition',
+        'rounded-full px-2.5 py-1 text-[11px] font-medium transition',
         locale === code
           ? 'bg-teal-glow/20 text-teal-glow'
           : 'text-foundry-500 hover:text-foundry-200'
@@ -25,7 +25,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'inline-flex items-center rounded border border-white/10 bg-foundry-950/60 p-0.5',
+        'inline-flex items-center rounded-full border border-white/10 bg-foundry-950/70 p-0.5',
         className
       )}
       role="group"

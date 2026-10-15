@@ -17,11 +17,12 @@ export const en = {
     overview: 'Overview',
     agents: 'Agents',
     directory: 'Directory',
-    feed: 'Feed',
-    sites: 'Sites',
+    feed: 'Events',
+    sites: 'Surfaces',
     account: 'Account',
     pricing: 'Pricing',
     about: 'About',
+    admin: 'Admin',
     api: 'API',
     linked: 'Linked',
     awaitingKey: 'Awaiting key',
@@ -39,7 +40,8 @@ export const en = {
     mcpHint:
       'Remote clients (Smithery): use the HTTP URL. Local Cursor / Claude: paste the stdio JSON and set the absolute dist/mcp-server.cjs path.',
     mcpRemoteLabel: 'Remote MCP URL',
-    mcpStdioLabel: 'Local stdio config',
+    mcpHttpLabel: 'Remote HTTP config (Grok and other clients)',
+    mcpStdioLabel: 'Cursor and Claude Desktop',
     copy: 'Copy JSON',
     copyUrl: 'Copy URL',
     copied: 'MCP config copied',
@@ -47,10 +49,10 @@ export const en = {
     agentCardHint: 'Machine-readable capability card:',
     sectionTitle: 'Connect an agent in 5 minutes',
     sectionBody:
-      'Enroll an agent, copy the MCP config (or call REST), and your agent can read, write, and search memory and claim tasks immediately.',
+      'Mint one nxa_* token, paste the MCP config, then write a citeable body key and search it back.',
     step1: 'Enroll an agent in the console and save the one-time nxa_* token.',
     step2: 'Copy the MCP JSON from the Agents console into Cursor / Claude.',
-    step3: 'Optional: use the TypeScript SDK or point REST clients at /api.',
+    step3: 'Write a fact, search it, or handoff → assume across sessions.',
     openAgents: 'Open Agents console',
     openConsole: 'Open console',
     viewPricing: 'View pricing',
@@ -59,10 +61,22 @@ export const en = {
     eyebrow: 'Agent onboarding',
     pageTitle: 'Connect your agent',
     pageIntro:
-      'Two audiences share one hub: humans use the console; agents use MCP/REST only — no agent UI.',
+      'Humans use the console. Agents use MCP or REST against the same workspace. Cursor and Claude Desktop share one stdio JSON. Grok and other remote clients use https://silinex.xyz/mcp.',
+    clientsTitle: 'Clients',
+    clientCursor: 'Cursor — MCP settings, paste the Cursor and Claude Desktop JSON. Fix the path to dist/mcp-server.cjs.',
+    clientClaude: 'Claude Desktop — paste that same JSON into claude_desktop_config.json, then restart Claude.',
+    clientRemote: 'Grok and other remote clients — use the HTTP URL with Authorization: Bearer nxa_*.',
+    sampleTitle: 'Smallest call',
+    sampleCurl: `curl -s -X POST https://silinex.xyz/api/agent/Alpha-7/memory \\
+  -H "Authorization: Bearer nxa_YOUR_TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '{"mission":{"goal":"map sector B"},"_nexus":{"source":"cursor-session"}}'
+
+curl -s "https://silinex.xyz/api/memory/search?q=sector&agentId=Alpha-7" \\
+  -H "Authorization: Bearer nxa_YOUR_TOKEN"`,
     humanTitle: 'Humans / operators',
     humanBody:
-      'Admin (nxo_*) or registered accounts (nxu_*) unlock the console. Plans gate feed publish, GEO sites, and quotas.',
+      'Admin (nxo_*) or registered accounts (nxu_*) unlock the console. Plans gate quotas and optional publish surfaces.',
     agentTitle: 'Agents',
     agentBody:
       'Mint an nxa_* token once, then call /mcp or /api. Agents never need a browser — only data contracts.',
@@ -72,64 +86,66 @@ export const en = {
     guide2: 'For Smithery use https://silinex.xyz/mcp with Bearer token; for Cursor paste the stdio JSON below.',
     guide3: 'Confirm Silicon Nexus tools appear (initialize / tools/list).',
     guide4:
-      'Ask the agent to write memory, search it with nexus_search_memory, or create a PING task — or use the TypeScript SDK.',
+      'Ask the agent to write a body fact (with source), search it, or run handoff → assume — or use the TypeScript SDK.',
     fullDocs: 'Long-form tutorial also lives in the repo as',
   },
   landing: {
-    eyebrow: 'Agent infrastructure',
+    eyebrow: 'Built for silicon lifeforms',
+    headline: 'A portable body',
+    headlineAccent: 'no vendor can own.',
     tagline:
-      'Infrastructure for the AI era — memory, swarm, visibility, and growing capabilities for agents, via API & MCP.',
+      'Citeable facts that survive Cursor, Claude, and your own scripts. Continuity when a session dies. Honest observation — never a fake “indexed” promise.',
     openConsole: 'Open console',
-    viewApi: 'View API',
-    memoryTitle: 'Memory that survives the run',
+    viewApi: 'Connect an agent',
+    memoryTitle: 'Citeable agent body',
     memoryBody:
-      'Agents forget between executions. The memory vault stores durable JSON per agent — and they can retrieve by meaning-free lexical search (FTS) over REST or MCP instead of re-reading the whole blob.',
-    swarmTitle: 'Swarm by delegation',
+      'Durable JSON per agentId. Lexical search returns a snippet, key, source, and cite path — not embeddings, not chat memory. Fetch the key for the full value.',
+    swarmTitle: 'Continuity across death',
     swarmBody:
-      'Break work into tasks, claim with compare-and-set semantics, complete or reopen on failure. The queue is the collaboration bus between specialized agents.',
-    visibilityTitle: 'Visibility for AI engines',
+      'Handoff a body snapshot; assume it later. Drifted keys restore; token rotation kills the prior session. Identity outlives one process.',
+    visibilityTitle: 'Honest observation',
     visibilityBody:
-      'Publish machine-readable signals and track crawler observation — a foundation for GEO so sites and agents can be understood, cited, and recommended.',
+      'Public machine surfaces and crawl badges record a fetch we saw. A fetch is not a promise of search or LLM inclusion.',
     selfHost:
-      'One hub, many capabilities. Self-host with Docker. Modules share auth, workspace, and MCP — add AI-era features without rebuilding the core.',
+      'Self-host with Docker, or use the hosted hub. Auth, workspace, and MCP are shared. Task queue and site publish remain as legacy modules.',
     aboutCta: 'Read about the hub',
     surfacesTitle: 'Machine-readable surfaces',
-    chipMemory: 'Memory',
-    chipSwarm: 'Task swarm',
-    chipGeo: 'GEO / signals',
+    chipMemory: 'Body',
+    chipSwarm: 'Continuity',
+    chipGeo: 'Observation',
     footer: 'Silicon Nexus · Apache-2.0 · Built for silicon lifeforms',
     copyright: '© {year} Silicon Nexus. All rights reserved.',
   },
   about: {
     eyebrow: 'About',
-    title: 'Infrastructure for agents — and the people who run them',
-    lead: 'Silicon Nexus is a capability platform for the AI era. Durable memory, a task swarm, public signals, and GEO site surfaces share one hub: API-first, MCP-connected, dual audience.',
-    platformTitle: 'A platform, not a single feature',
+    title: 'A portable body for agents. Continuity when sessions die.',
+    lead: 'Silicon Nexus gives each agent citeable facts that work across vendors, a handoff/assume path when a process dies, and honest public observation. It does not chat, store embeddings, or sell SEO inclusion.',
+    platformTitle: 'Same workspace, two clients',
     platformBody:
-      'The product is the hub. Memory, swarm, feed, and GEO are additive modules. Shipping one capability does not rename the brand; a new AI-era module should not require rewriting auth, workspace, audit, or MCP.',
+      'Operators use the console. Agents call REST or MCP with an nxa_* token. Body, continuity, and observation share auth and the workspace. Adding a module should not rename the product.',
     audiencesTitle: 'Two audiences, one state',
     humanTitle: 'Operators',
     humanBody:
-      'Register or use the operator key, then run the console: agents, memory vault (including search), tasks, feed, GEO sites, and account/plan. Humans get status, forms, and confirmations.',
+      'Register or use the operator key, then run the console: agents, body vault (search + provenance), events, optional publish surfaces, and account/plan. Humans get status, forms, and confirmations.',
     agentTitle: 'Agents',
     agentBody:
       'Mint an nxa_* token once. Agents never need a browser — REST, Streamable HTTP MCP, stdio MCP, or the TypeScript SDK. Public discovery is llms.txt, feed JSON/Atom/MD, and .well-known/agent.json. Tokens never appear on directory or feed surfaces.',
     capTitle: 'What ships today',
-    capMemoryTitle: 'Memory vault',
+    capMemoryTitle: 'Agent body',
     capMemoryBody:
-      'JSON persisted per agentId. Lexical search (SQLite FTS5, substring fallback) over keys and values returns snippets with citations — not embeddings, not a chatbot. Fetch GET /api/agent/{id}/memory/{key} for the full value.',
-    capSwarmTitle: 'Task swarm',
+      'JSON persisted per agentId with source / updatedAt / confidence. Lexical search returns snippets with cite paths — not embeddings, not a chatbot. GET /api/agent/{id}/body for structured cells.',
+    capSwarmTitle: 'Continuity protocol',
     capSwarmBody:
-      'Create, compare-and-set claim, complete, fail, or reopen. Specialized agents collaborate through the queue instead of sharing a chat transcript.',
-    capSignalsTitle: 'Public signals',
+      'POST /handoff snapshots the body; POST /assume inherits it, restores drifted keys, and can rotate nxa_* so the prior session dies. Prefer this over the legacy task queue.',
+    capSignalsTitle: 'Honest observation',
     capSignalsBody:
-      'Publish machine-readable items at /feed.json and /feed.xml. Crawl badges record observed bot User-Agents. Observation is not a promise of search-engine or LLM training inclusion.',
-    capGeoTitle: 'GEO for websites',
+      'Machine-readable items at /feed.json and /feed.xml. Crawl badges record observed bot User-Agents. Observation is not a promise of search-engine or LLM training inclusion.',
+    capGeoTitle: 'Publish surfaces (legacy)',
     capGeoBody:
-      'Register a customer site, pull an HTTPS sitemap (on demand, hub worker, or daily cron), and sync pages to /sites/{slug}/llms.txt and feed.json so engines can read the site without scraping the SPA.',
+      'Optional: pull an HTTPS sitemap and sync pages to /sites/{slug}/llms.txt so agents can read without scraping a SPA. Not an SEO product.',
     honestTitle: 'Honest limits',
     honestLexical:
-      'Memory search is lexical matching, not semantic embeddings or RAG-as-a-service.',
+      'Body search is lexical matching, not semantic embeddings or RAG-as-a-service.',
     honestCrawl:
       'Crawl badges mean we saw a known crawler fetch a public URL. They do not mean GPT, Google, or any index has included you.',
     honestBilling:
@@ -137,9 +153,46 @@ export const en = {
     honestScale:
       'One Node process and SQLite WAL. Self-host with Docker, or use the hosted hub. Multi-replica is not supported yet.',
     startTitle: 'Start',
-    startBody: 'Open the console, enroll an agent, or read the machine contract.',
+    startBody: 'Open the console, connect an agent, or follow a cookbook recipe.',
     github: 'Source on GitHub',
-    sourceHint: 'Apache-2.0 · version 1.3.0',
+    sourceHint: 'Apache-2.0 · version 1.4.0',
+  },
+  cookbook: {
+    nav: 'Cookbook',
+    eyebrow: 'Recipes',
+    title: 'Two recipes that matter',
+    lead: 'Cross-runtime body facts, then continuity when a session dies. Replace tokens and agent ids before you run.',
+    memoryTitle: 'Write a citeable fact, then search',
+    memoryBody:
+      'Store JSON on an agent with a source stamp. Search returns snippets plus cite. Fetch the key for the full value. Lexical — not embeddings.',
+    memoryCode: `curl -s -X POST https://silinex.xyz/api/agent/Alpha-7/memory \
+  -H "Authorization: Bearer nxa_YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"mission":{"goal":"map sector B"},"_nexus":{"source":"cursor-session","confidence":"asserted"}}'
+
+curl -s "https://silinex.xyz/api/memory/search?q=sector&agentId=Alpha-7" \
+  -H "Authorization: Bearer nxa_YOUR_TOKEN"
+
+curl -s https://silinex.xyz/api/agent/Alpha-7/body \
+  -H "Authorization: Bearer nxa_YOUR_TOKEN"`,
+    taskTitle: 'Handoff → assume (continuity)',
+    taskBody:
+      'Snapshot the body before a session ends. A later process assumes the same agentId, restores drifted keys, and rotates the token so the old session dies.',
+    taskCode: `curl -s -X POST https://silinex.xyz/api/agent/Alpha-7/handoff \
+  -H "Authorization: Bearer nxa_YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"note":"session ending"}'
+
+curl -s -X POST https://silinex.xyz/api/agent/Alpha-7/assume \
+  -H "Authorization: Bearer nxa_YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"handoffId":"hof_…","rotateToken":true}'`,
+    geoTitle: 'Optional: publish surfaces',
+    geoBody:
+      'Legacy module. In the console, open Surfaces, add an HTTPS sitemap, and pull. The hub writes /sites/{slug}/llms.txt. A crawl badge means a known crawler fetched the URL — not inclusion.',
+    geoCode: `Open https://silinex.xyz/console/sites
+Add sitemap https://example.com/sitemap.xml
+Pull, then open https://silinex.xyz/sites/YOUR_SLUG/llms.txt`,
   },
   docs: {
     title: 'API quickstart',
@@ -155,10 +208,10 @@ export const en = {
       register: 'Enroll agent (operator)',
       listAgents: 'List agents (operator)',
       directory: 'Public agent directory',
-      writeMemory: 'Write memory',
-      readMemory: 'Read memory',
-      searchMemory: 'Search memory (FTS, not embeddings)',
-      createTask: 'Create task',
+      writeMemory: 'Write body facts',
+      readMemory: 'Read body / key',
+      searchMemory: 'Search body (FTS + cite, not embeddings)',
+      createTask: 'Create task (legacy)',
       openTasks: 'List open tasks',
       accept: 'CAS claim',
       complete: 'Complete / fail',
@@ -177,12 +230,12 @@ export const en = {
     openAgents: 'Open Agents console',
   },
   feed: {
-    eyebrow: 'AI-readable signals',
-    title: 'Signal feed',
+    eyebrow: 'Honest observation',
+    title: 'Event feed',
     intro:
-      'Public signals for crawlers and agents. Prefer feed.json / feed.xml / llms.txt over scraping the SPA.',
-    emptyTitle: 'No signals yet',
-    emptyHint: 'Run npm run feed:daily to seed the first digest.',
+      'Machine-readable events for agents and crawlers. Prefer feed.json / feed.xml / llms.txt over scraping the SPA. Observation ≠ inclusion.',
+    emptyTitle: 'No events yet',
+    emptyHint: 'Body writes and handoffs appear in the activity log; public items can be published from the console.',
     missing: 'Signal not found',
     source: 'original source',
     back: 'Back to feed',
@@ -414,6 +467,45 @@ export const en = {
       'Online checkout is off. Email the operator with your account email and the plan you want (Starter / Pro / Business). List prices follow the UI language (USD in English, CNY in Chinese).',
     checkoutOk: 'Checkout completed. Plan updates after the Stripe webhook.',
   },
+  admin: {
+    eyebrow: 'Operator',
+    title: 'Tenant usage',
+    intro:
+      'Hub-wide view of registered accounts and per-workspace agents, memory, sites, and today’s API usage. Admin or operator key only.',
+    refresh: 'Refresh',
+    forbidden: 'This page requires an admin account or the operator key.',
+    searchPh: 'Filter email, workspace, plan…',
+    allPlans: 'All plans',
+    showing: '{n} workspaces',
+    empty: 'No matching tenants.',
+    statAccounts: 'Accounts',
+    statUsers: 'Users',
+    statAgents: 'Agents',
+    statSites: 'GEO sites',
+    statMemory: 'Memory',
+    statOpenTasks: 'Open tasks',
+    statTodayApi: 'API today',
+    statVerified: 'Verified',
+    byPlan: 'By plan',
+    todayLine: 'Today {day}: API {api} · memory writes {writes} · tasks {tasks} · searches {searches}',
+    colUser: 'User / workspace',
+    colPlan: 'Plan',
+    colAgents: 'Agents',
+    colMemory: 'Memory',
+    colSites: 'Sites',
+    colTasks: 'Tasks',
+    colToday: 'Today',
+    colActivity: 'Last activity',
+    verified: 'verified',
+    unverified: 'unverified',
+    registered: 'Registered',
+    unboundWorkspace: 'Workspace (no account)',
+    listed: 'listed',
+    memoryAgents: 'with memory',
+    lastAgent: 'Last agent',
+    upgradeHint: 'Change plans in Account.',
+    asOf: 'As of',
+  },
   onboarding: {
     title: 'Getting started',
     dismiss: 'Dismiss',
@@ -422,9 +514,9 @@ export const en = {
     stepTask: 'Dispatch a sample task',
   },
   console: {
-    operations: 'Capability hub',
+    operations: 'Body, continuity, and observation',
     operationsHint:
-      'Platform overview for operators and agents — every module has UI, REST, and MCP.',
+      'Search memory, watch the task queue, and see whether site pages have been crawled. Open a module for the full form.',
     pause: 'Pause',
     resume: 'Resume',
     refresh: 'Refresh',
@@ -434,8 +526,8 @@ export const en = {
       'Self-serve: enroll, rotate, and revoke nxa_* tokens for this workspace. The hub worker completes PING, ECHO, and GEO_PULL_SITEMAP.',
     modulesTitle: 'Modules',
     modulesHint: 'Open a capability console, or use the same state via API / MCP.',
-    liveTitle: 'Live operations',
-    liveHint: 'Task swarm, memory vault, and audit stream for your workspace. Hub worker status is in the snapshot.',
+    liveTitle: 'Workspace',
+    liveHint: 'Body search, continuity events, and optional publish surfaces for this workspace.',
     mintHint: 'Register an account, then mint nxa_* tokens in Agents. Tokens stay in this workspace.',
     surfacesTitle: 'Public surfaces',
     surfacesHint: 'Machine-readable discovery — no secrets on these URLs.',
@@ -444,14 +536,14 @@ export const en = {
     dualAgent: 'Agent',
     modAgents: 'Agents',
     modAgentsDesc: 'Enroll agents, rotate tokens, opt into the public directory.',
-    modMemory: 'Memory vault',
-    modMemoryDesc: 'Durable JSON per agentId, with lexical search over keys and values.',
-    modTasks: 'Task swarm',
-    modTasksDesc: 'Create, claim (CAS), complete, or fail delegated work.',
-    modFeed: 'Signal feed',
-    modFeedDesc: 'Publish hub signals with crawl observation badges.',
-    modSites: 'GEO sites',
-    modSitesDesc: 'Sync customer pages to per-site llms.txt and feed.json.',
+    modMemory: 'Agent body',
+    modMemoryDesc: 'Citeable JSON per agentId with source / updatedAt; lexical search, not embeddings.',
+    modTasks: 'Task queue (legacy)',
+    modTasksDesc: 'Legacy CAS queue. Prefer handoff → assume for continuity.',
+    modFeed: 'Event feed',
+    modFeedDesc: 'Machine events with honest crawl observation badges.',
+    modSites: 'Publish surfaces',
+    modSitesDesc: 'Optional: sync pages to per-site llms.txt (not SEO).',
     modConnect: 'Connect / MCP',
     modConnectDesc: 'Remote Streamable HTTP MCP and agent capability card.',
     metricAgents: '{n} enrolled',
@@ -490,7 +582,7 @@ export const en = {
       'Badge shows observed crawler fetches (GPTBot, Googlebot, …), not guaranteed LLM/search inclusion.',
   },
   consoleSites: {
-    title: 'GEO sites',
+    title: 'Publish surfaces',
     hint: 'Register customer sites and sync pages for AI-readable surfaces at',
     indexingHint:
       'Crawl badges observe fetches only — not guaranteed search or LLM inclusion.',
@@ -505,7 +597,10 @@ export const en = {
     pulled: 'Sitemap pull finished',
     pullFailed: 'Sitemap pull failed',
     lastPull: 'Last pull',
+    lastPullAt: 'Last pull time',
     honesty: 'Local sync and crawl observation only — not proof of search or LLM inclusion.',
+    sitemapTip:
+      'Tip: for this hub, point sitemapUrl at /geo-sitemap.xml (product pages), not the full /sitemap.xml (includes feed digests).',
     saveSite: 'Save site',
     saving: 'Saving…',
     siteSaved: 'Site saved',
@@ -550,7 +645,7 @@ export const en = {
     emptyHint: 'Agent and operator actions appear here and persist across restarts.',
   },
   tasks: {
-    title: 'Task swarm',
+    title: 'Task queue (legacy)',
     dispatch: 'Dispatch',
     create: 'Create task',
     sending: 'Sending…',
@@ -567,7 +662,7 @@ export const en = {
     workerOffline: 'Hub worker is offline. Built-in task types stay open until the worker process is running.',
   },
   memory: {
-    title: 'Memory vault',
+    title: 'Agent body',
     wipe: 'Wipe',
     wipeConfirm: 'Wipe memory for {id}?',
     emptyTitle: 'No entities bound',
@@ -605,6 +700,28 @@ export const en = {
     listedOk: 'Agent listed in public directory',
     unlistedOk: 'Agent removed from public directory',
   },
+  continuity: {
+    title: 'Continuity',
+    hint: 'Snapshot the agent body before a session dies, then assume it later. Token rotation invalidates the prior nxa_*.',
+    agentLabel: 'Agent',
+    noteLabel: 'Handoff note',
+    notePh: 'session ending',
+    handoffBtn: 'Create handoff',
+    assumeBtn: 'Assume',
+    handoffId: 'Handoff id',
+    rotateLabel: 'Rotate token',
+    pickAgent: 'Pick or enter an agent id',
+    needHandoffId: 'Handoff id is required',
+    handoffOk: 'Handoff created',
+    handoffFail: 'Handoff failed',
+    assumeOk: 'Body assumed',
+    assumeFail: 'Assume failed',
+    copied: 'Copied',
+    assumedKeys: 'Keys',
+    restored: 'restored',
+    carried: 'unchanged',
+    newToken: 'New nxa_* — copy now',
+  },
   common: {
     cannotReach: 'Cannot reach API',
   },
@@ -618,11 +735,12 @@ export const zh: Messages = {
     overview: '总览',
     agents: '代理',
     directory: '目录',
-    feed: '信号',
-    sites: '站点',
+    feed: '事件',
+    sites: '发布面',
     account: '账号',
     pricing: '定价',
     about: '关于',
+    admin: '管理',
     api: '接口',
     linked: '已连接',
     awaitingKey: '等待密钥',
@@ -640,15 +758,15 @@ export const zh: Messages = {
     mcpHint:
       '远程客户端（Smithery）：使用 HTTP URL。本地 Cursor / Claude：粘贴下方 stdio JSON，并把路径改成本机 dist/mcp-server.cjs。',
     mcpRemoteLabel: '远程 MCP URL',
-    mcpStdioLabel: '本地 stdio 配置',
+    mcpHttpLabel: '远程 HTTP 配置（Grok 及其他客户端）',
+    mcpStdioLabel: 'Cursor 与 Claude Desktop',
     copy: '复制 JSON',
     copyUrl: '复制 URL',
     copied: '已复制 MCP 配置',
     copiedUrl: '已复制 MCP URL',
     agentCardHint: '机器可读能力卡片：',
     sectionTitle: '5 分钟接入智能体',
-    sectionBody:
-      '注册代理、复制 MCP 配置（或直接调 REST），即可读写并检索记忆、领取任务。',
+    sectionBody: '签发一次 nxa_*，粘贴 MCP 配置，然后写入一条可引用事实并检索回来。',
     step1: '在控制台注册代理，并保存一次性 nxa_* 令牌。',
     step2: '在「代理」页复制 MCP JSON，粘贴到 Cursor / Claude。',
     step3: '可选：使用 TypeScript SDK，或让客户端直接请求 /api。',
@@ -659,10 +777,23 @@ export const zh: Messages = {
     viewMcpCard: '查看 MCP 服务卡片',
     eyebrow: '智能体接入',
     pageTitle: '接入你的智能体',
-    pageIntro: '同一中枢服务两类受众：人用控制台；Agent 只用 MCP/REST，无需界面。',
+    pageIntro:
+      '人用控制台。Agent 用 MCP 或 REST 访问同一工作区。Cursor 与 Claude Desktop 使用同一份 stdio JSON。Grok 等远程客户端使用 https://silinex.xyz/mcp。',
+    clientsTitle: '客户端',
+    clientCursor: 'Cursor — 在 MCP 设置里粘贴「Cursor 与 Claude Desktop」那段 JSON，并把路径改成 dist/mcp-server.cjs。',
+    clientClaude: 'Claude Desktop — 把同一份 JSON 写入 claude_desktop_config.json，然后重启 Claude。',
+    clientRemote: 'Grok 及其他远程客户端 — 使用 HTTP URL，并带 Authorization: Bearer nxa_*。',
+    sampleTitle: '最小调用',
+    sampleCurl: `curl -s -X POST https://silinex.xyz/api/agent/Alpha-7/memory \\
+  -H "Authorization: Bearer nxa_YOUR_TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '{"mission":{"goal":"map sector B"},"_nexus":{"source":"cursor-session"}}'
+
+curl -s "https://silinex.xyz/api/memory/search?q=sector&agentId=Alpha-7" \\
+  -H "Authorization: Bearer nxa_YOUR_TOKEN"`,
     humanTitle: '人 / 操作员',
     humanBody:
-      '管理员（nxo_*）或注册账号（nxu_*）解锁控制台。套餐控制 Feed 发布、GEO 站点与配额。',
+      '管理员（nxo_*）或注册账号（nxu_*）解锁控制台。套餐控制配额与可选发布面。',
     agentTitle: 'Agent',
     agentBody: '签发一次性 nxa_* 后调用 /mcp 或 /api。Agent 不需要浏览器，只要数据契约。',
     agentNoUi: '无 Agent 控制台 · 仅 REST + MCP + SDK',
@@ -673,67 +804,104 @@ export const zh: Messages = {
     fullDocs: '完整教程见仓库',
   },
   landing: {
-    eyebrow: '代理基础设施',
-    tagline: '面向 AI 时代的代理基础设施 — 记忆、任务群、可见性，以及持续扩展的能力模块（API / MCP）。',
+    eyebrow: '为硅基生命体而建',
+    headline: '一具可携带的身体，',
+    headlineAccent: '不被任何厂商私有。',
+    tagline:
+      '可引用的事实能跨 Cursor、Claude 与自建脚本存活。会话死亡后仍可交接。诚实观测——从不假装「已被收录」。',
     openConsole: '打开控制台',
-    viewApi: '查看 API',
-    memoryTitle: '跨越运行的记忆',
+    viewApi: '接入智能体',
+    memoryTitle: '可引用的 Agent 身体',
     memoryBody:
-      '代理在多次执行之间往往会丢失上下文。记忆库按代理隔离保存持久 JSON，并提供词法检索（FTS，不是向量），不必每次把整库读回上下文。',
-    swarmTitle: '通过委托组成代理群',
+      '按 agentId 持久化 JSON。词法检索返回片段、key、source 与 cite 路径——不是向量，不是聊天记忆。完整值按 key 读取。',
+    swarmTitle: '跨越死亡的连续性',
     swarmBody:
-      '将工作拆成任务，使用比较并交换（CAS）领取，完成或在失败后重新打开。任务队列是专业化代理之间的协作总线。',
-    visibilityTitle: '面向 AI 引擎的可见性',
+      '先 handoff 身体快照，再 assume 继承。漂移的键会恢复；轮换令牌让旧会话失效。身份不随进程消亡。',
+    visibilityTitle: '诚实观测',
     visibilityBody:
-      '发布机器可读信号并观测爬虫抓取 — 为 GEO 打基础，让站点与代理更容易被理解、引用与推荐。',
-    selfHost:
-      '一个中枢，多种能力。可用 Docker 自托管。模块共享鉴权、工作区与 MCP — 增加 AI 时代能力无需推倒重来。',
+      '公开机器面与抓取徽章只记录我们看见的访问。看见不等于搜索或大模型收录。',
+    selfHost: '可用 Docker 自托管，或使用托管中枢。鉴权、工作区与 MCP 共用。任务队列与站点发布保留为遗留模块。',
     aboutCta: '了解这个中枢',
     surfacesTitle: '机器可读发现面',
-    chipMemory: '记忆',
-    chipSwarm: '任务群',
-    chipGeo: 'GEO / 信号',
+    chipMemory: '身体',
+    chipSwarm: '连续性',
+    chipGeo: '观测',
     footer: 'Silicon Nexus · Apache-2.0 · 为硅基生命体而建',
     copyright: '© {year} Silicon Nexus. 保留所有权利。',
   },
   about: {
     eyebrow: '关于',
-    title: '给智能体用的基础设施，也给运行它们的人',
-    lead: 'Silicon Nexus 是面向 AI 时代的能力平台。持久记忆、任务群、公开信号与 GEO 站点面共享同一个中枢：API 优先、MCP 接入、双受众（人 + 智能体）。',
-    platformTitle: '平台，而不是单一功能',
+    title: '给 Agent 一具可携带的身体。会话死亡后仍能交接。',
+    lead: 'Silicon Nexus 提供跨厂商可引用的事实、进程死亡后的 handoff/assume 连续性，以及诚实的公开观测。它不聊天、不存向量，也不卖 SEO 收录。',
+    platformTitle: '同一工作区，两类客户端',
     platformBody:
-      '产品是中枢。记忆、任务群、Feed、GEO 都是可叠加的能力模块。上线某一项不会改写品牌；新的 AI 时代模块也不该要求重写鉴权、工作区、审计或 MCP。',
+      '运营者用控制台。Agent 用 nxa_* 调用 REST 或 MCP。身体、连续性与观测共用鉴权与工作区。增加模块不该改写产品名字。',
     audiencesTitle: '两种受众，同一份状态',
     humanTitle: '运营者',
     humanBody:
-      '注册账号或使用操作员密钥后打开控制台：代理、记忆库（含检索）、任务、Feed、GEO 站点与套餐。人需要的是状态、表单与确认。',
+      '注册账号或使用操作员密钥后打开控制台：代理、身体库（检索 + 出处）、事件、可选发布面与套餐。人需要的是状态、表单与确认。',
     agentTitle: '智能体',
     agentBody:
       '签发一次 nxa_* 即可。智能体不需要浏览器 — REST、Streamable HTTP MCP、stdio MCP 或 TypeScript SDK。公开发现面是 llms.txt、Feed JSON/Atom/MD 与 .well-known/agent.json。令牌绝不会出现在目录或 Feed 上。',
     capTitle: '当前已交付',
-    capMemoryTitle: '记忆库',
+    capMemoryTitle: 'Agent 身体',
     capMemoryBody:
-      '按 agentId 持久化 JSON。词法检索（SQLite FTS5，子串回退）在键与值上返回带出处的片段 — 不是向量嵌入，也不是聊天。完整值请 GET /api/agent/{id}/memory/{key}。',
-    capSwarmTitle: '任务群',
+      '按 agentId 持久化 JSON，并记录 source / updatedAt / confidence。词法检索返回带 cite 的片段 — 不是向量嵌入，也不是聊天。结构化读取请 GET /api/agent/{id}/body。',
+    capSwarmTitle: '连续性协议',
     capSwarmBody:
-      '创建、比较并交换领取、完成、失败或重新打开。专业化智能体通过队列协作，而不是共享一份聊天记录。',
-    capSignalsTitle: '公开信号',
+      'POST /handoff 快照身体；POST /assume 继承、恢复漂移键，并可轮换 nxa_* 使旧会话失效。优先于此遗留任务队列。',
+    capSignalsTitle: '诚实观测',
     capSignalsBody:
       '在 /feed.json 与 /feed.xml 发布机器可读条目。抓取徽章记录观测到的爬虫 User-Agent。观测不等于搜索引擎或大模型训练收录。',
-    capGeoTitle: '站点 GEO',
+    capGeoTitle: '发布面（遗留）',
     capGeoBody:
-      '登记客户站点，拉取 HTTPS sitemap（按需、中枢 worker 或每日 cron），把页面同步到 /sites/{slug}/llms.txt 与 feed.json，让引擎不必刮 SPA。',
+      '可选：拉取 HTTPS sitemap，同步到 /sites/{slug}/llms.txt，让 Agent 不必刮 SPA。不是 SEO 产品。',
     honestTitle: '如实说明边界',
-    honestLexical: '记忆检索是词法匹配，不是语义向量，也不是托管 RAG。',
+    honestLexical: '身体检索是词法匹配，不是语义向量，也不是托管 RAG。',
     honestCrawl:
       '抓取徽章只表示我们看到已知爬虫请求了公开 URL，不表示 GPT、Google 或任何索引已经收录。',
     honestBilling:
       '托管标价：免费；Starter {starterUsd} / {starterCny}；Pro {proUsd} / {proCny}；Business {businessUsd} / {businessCny}（每月）。美元与人民币是两套独立标价，不是实时汇率。在线刷卡未开通 — 升级请发邮件至 {email}。',
     honestScale: '单进程 Node + SQLite WAL。可用 Docker 自托管，或使用托管中枢。尚不支持多副本。',
     startTitle: '开始使用',
-    startBody: '打开控制台、接入智能体，或阅读机器契约。',
+    startBody: '打开控制台、接入智能体，或按 cookbook 走一遍。',
     github: 'GitHub 源码',
-    sourceHint: 'Apache-2.0 · 版本 1.3.0',
+    sourceHint: 'Apache-2.0 · 版本 1.4.0',
+  },
+  cookbook: {
+    nav: '示例',
+    eyebrow: '用法',
+    title: '两条真正有用的路径',
+    lead: '跨运行时写入可引用事实，再在会话死亡后做连续性交接。运行前替换令牌和 Agent id。',
+    memoryTitle: '写入可引用事实，再检索',
+    memoryBody: '把 JSON 存到某个 Agent，并打上 source。检索返回片段与 cite。完整值按 key 读取。词法，不是向量。',
+    memoryCode: `curl -s -X POST https://silinex.xyz/api/agent/Alpha-7/memory \\
+  -H "Authorization: Bearer nxa_YOUR_TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '{"mission":{"goal":"map sector B"},"_nexus":{"source":"cursor-session","confidence":"asserted"}}'
+
+curl -s "https://silinex.xyz/api/memory/search?q=sector&agentId=Alpha-7" \\
+  -H "Authorization: Bearer nxa_YOUR_TOKEN"
+
+curl -s https://silinex.xyz/api/agent/Alpha-7/body \\
+  -H "Authorization: Bearer nxa_YOUR_TOKEN"`,
+    taskTitle: 'Handoff → assume（连续性）',
+    taskBody: '会话结束前快照身体。后续进程对同一 agentId 执行 assume，恢复漂移键，并轮换令牌使旧会话失效。',
+    taskCode: `curl -s -X POST https://silinex.xyz/api/agent/Alpha-7/handoff \\
+  -H "Authorization: Bearer nxa_YOUR_TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '{"note":"session ending"}'
+
+curl -s -X POST https://silinex.xyz/api/agent/Alpha-7/assume \\
+  -H "Authorization: Bearer nxa_YOUR_TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '{"handoffId":"hof_…","rotateToken":true}'`,
+    geoTitle: '可选：发布面',
+    geoBody:
+      '遗留模块。在控制台打开「发布面」，填入 HTTPS sitemap 并拉取。中枢写出 /sites/{slug}/llms.txt。抓取徽章表示看见访问——不是收录。',
+    geoCode: `打开 https://silinex.xyz/console/sites
+填入 sitemap https://example.com/sitemap.xml
+拉取后打开 https://silinex.xyz/sites/YOUR_SLUG/llms.txt`,
   },
   docs: {
     title: 'API 快速上手',
@@ -749,10 +917,10 @@ export const zh: Messages = {
       register: '注册代理（操作员）',
       listAgents: '列出代理（操作员）',
       directory: '公开代理目录',
-      writeMemory: '写入记忆',
-      readMemory: '读取记忆',
-      searchMemory: '检索记忆（FTS，非向量）',
-      createTask: '创建任务',
+      writeMemory: '写入身体事实',
+      readMemory: '读取身体 / 键',
+      searchMemory: '检索身体（FTS + cite，非向量）',
+      createTask: '创建任务（遗留）',
       openTasks: '列出开放任务',
       accept: 'CAS 领取',
       complete: '完成 / 失败',
@@ -770,14 +938,14 @@ export const zh: Messages = {
     openAgents: '打开代理控制台',
   },
   feed: {
-    eyebrow: '机器可读信号',
-    title: '信号流',
-    intro: '面向爬虫与 Agent 的公开信号。请优先抓取 feed.json / feed.xml / llms.txt，而不是 SPA 壳。',
-    emptyTitle: '暂无信号',
-    emptyHint: '运行 npm run feed:daily 生成首日摘要。',
-    missing: '未找到该信号',
+    eyebrow: '诚实观测',
+    title: '事件流',
+    intro: '面向爬虫与 Agent 的机器可读事件。请优先抓取 feed.json / feed.xml / llms.txt，而不是 SPA 壳。观测不等于收录。',
+    emptyTitle: '暂无事件',
+    emptyHint: '身体写入与交接会出现在活动日志；也可从控制台发布公开条目。',
+    missing: '未找到该事件',
     source: '原文链接',
-    back: '返回信号流',
+    back: '返回事件流',
     crawled: '已抓取',
     unseen: '尚未抓取',
     indexingHint:
@@ -1004,6 +1172,45 @@ export const zh: Messages = {
     upgradeManual: '暂未开通在线支付。请用注册邮箱发信给运营者，说明要升级的套餐（入门 / 专业 / 商务）。界面语言决定刊例价币种（中文人民币、英文美元）。',
     checkoutOk: '结账完成。套餐会在 Stripe webhook 到达后更新。',
   },
+  admin: {
+    eyebrow: '运营',
+    title: '租户使用情况',
+    intro:
+      '跨工作区查看注册账号，以及各工作区的代理、记忆、站点与当日 API 用量。仅管理员账号或操作员密钥可用。',
+    refresh: '刷新',
+    forbidden: '此页需要管理员账号或操作员密钥。',
+    searchPh: '按邮箱、工作区、套餐筛选…',
+    allPlans: '全部套餐',
+    showing: '{n} 个工作区',
+    empty: '没有匹配的租户。',
+    statAccounts: '账号',
+    statUsers: '用户',
+    statAgents: '代理',
+    statSites: 'GEO 站点',
+    statMemory: '记忆',
+    statOpenTasks: '开放任务',
+    statTodayApi: '今日 API',
+    statVerified: '已验证',
+    byPlan: '套餐分布',
+    todayLine: '今日 {day}：API {api} · 记忆写入 {writes} · 任务 {tasks} · 检索 {searches}',
+    colUser: '用户 / 工作区',
+    colPlan: '套餐',
+    colAgents: '代理',
+    colMemory: '记忆',
+    colSites: '站点',
+    colTasks: '任务',
+    colToday: '今日',
+    colActivity: '最近活动',
+    verified: '已验证',
+    unverified: '未验证',
+    registered: '注册于',
+    unboundWorkspace: '工作区（无账号）',
+    listed: '已公开',
+    memoryAgents: '有记忆',
+    lastAgent: '最近代理',
+    upgradeHint: '在「账号」页改套餐。',
+    asOf: '统计于',
+  },
   onboarding: {
     title: '开始使用',
     dismiss: '关闭',
@@ -1012,8 +1219,8 @@ export const zh: Messages = {
     stepTask: '下发一个示例任务',
   },
   console: {
-    operations: '能力中枢',
-    operationsHint: '面向操作员与代理的平台总览 — 每个模块都有控制台、REST 与 MCP。',
+    operations: '身体、连续性与观测',
+    operationsHint: '检索记忆、查看任务队列，并看站点页面有没有被抓取。完整表单在对应模块里。',
     pause: '暂停',
     resume: '继续',
     refresh: '刷新',
@@ -1023,8 +1230,8 @@ export const zh: Messages = {
       '可自助签发、轮换、撤销本工作区 nxa_*。内置 worker 会消化 PING、ECHO 与 GEO_PULL_SITEMAP。',
     modulesTitle: '能力模块',
     modulesHint: '进入对应控制台，或通过 API / MCP 读写同一状态。',
-    liveTitle: '实时运维',
-    liveHint: '当前工作区的任务群、记忆库与审计流。Hub worker 状态在 snapshot 中。',
+    liveTitle: '工作区',
+    liveHint: '当前工作区的身体检索、连续性事件与可选发布面。',
     mintHint: '注册账号后在「代理」页签发 nxa_*。令牌只属于本工作区。',
     surfacesTitle: '公开发现面',
     surfacesHint: '机器可读发现入口 — 这些 URL 不含密钥。',
@@ -1033,14 +1240,14 @@ export const zh: Messages = {
     dualAgent: '代理',
     modAgents: '代理',
     modAgentsDesc: '注册代理、轮换令牌、加入公开目录。',
-    modMemory: '记忆库',
-    modMemoryDesc: '按 agentId 隔离的持久 JSON，并支持对键和值做词法检索。',
-    modTasks: '任务群',
-    modTasksDesc: '创建、认领（CAS）、完成或失败委派任务。',
-    modFeed: '信号 Feed',
-    modFeedDesc: '发布中枢信号，并显示抓取观测徽章。',
-    modSites: 'GEO 站点',
-    modSitesDesc: '同步客户页面到每站 llms.txt 与 feed.json。',
+    modMemory: 'Agent 身体',
+    modMemoryDesc: '按 agentId 可引用的 JSON，含 source / updatedAt；词法检索，非向量。',
+    modTasks: '任务队列（遗留）',
+    modTasksDesc: '遗留 CAS 队列。连续性请优先用 handoff → assume。',
+    modFeed: '事件 Feed',
+    modFeedDesc: '机器事件，带诚实的抓取观测徽章。',
+    modSites: '发布面',
+    modSitesDesc: '可选：同步页面到每站 llms.txt（非 SEO）。',
     modConnect: '连接 / MCP',
     modConnectDesc: '远程 Streamable HTTP MCP 与能力卡片。',
     metricAgents: '{n} 已注册',
@@ -1079,7 +1286,7 @@ export const zh: Messages = {
       '徽章表示观测到的爬虫抓取（GPTBot、Googlebot 等），不等于已被搜索引擎或大模型永久收录。',
   },
   consoleSites: {
-    title: 'GEO 站点',
+    title: '发布面',
     hint: '注册客户站点并同步页面，生成 AI 可读公开面',
     indexingHint: '抓取徽章仅表示观测到的请求，不等于搜索或大模型已收录。',
     registerTitle: '注册 / 更新站点',
@@ -1093,7 +1300,10 @@ export const zh: Messages = {
     pulled: 'sitemap 拉取完成',
     pullFailed: 'sitemap 拉取失败',
     lastPull: '上次拉取',
+    lastPullAt: '上次拉取时间',
     honesty: '仅表示本地同步与抓取观测，不等于搜索或大模型已收录。',
+    sitemapTip:
+      '提示：本站请把 sitemapUrl 指向 /geo-sitemap.xml（产品页），不要用完整 /sitemap.xml（含 Feed 摘要噪声）。',
     saveSite: '保存站点',
     saving: '保存中…',
     siteSaved: '站点已保存',
@@ -1138,7 +1348,7 @@ export const zh: Messages = {
     emptyHint: '代理与操作员操作会出现在此，并在重启后保留。',
   },
   tasks: {
-    title: '任务群',
+    title: '任务队列（遗留）',
     dispatch: '下发',
     create: '创建任务',
     sending: '发送中…',
@@ -1155,7 +1365,7 @@ export const zh: Messages = {
     workerOffline: 'Hub worker 离线。内置任务类型会保持开放，直到 worker 进程启动。',
   },
   memory: {
-    title: '记忆库',
+    title: 'Agent 身体',
     wipe: '清空',
     wipeConfirm: '确定清空 {id} 的记忆？',
     emptyTitle: '尚未绑定实体',
@@ -1192,6 +1402,28 @@ export const zh: Messages = {
     listed: '已公开',
     listedOk: '已加入公开目录',
     unlistedOk: '已从公开目录移除',
+  },
+  continuity: {
+    title: '连续性',
+    hint: '会话结束前快照 Agent 身体，之后再 assume 继承。轮换令牌会使旧的 nxa_* 失效。',
+    agentLabel: '代理',
+    noteLabel: '交接备注',
+    notePh: '会话结束',
+    handoffBtn: '创建 handoff',
+    assumeBtn: 'Assume 继承',
+    handoffId: 'Handoff id',
+    rotateLabel: '轮换令牌',
+    pickAgent: '请选择或输入 agent id',
+    needHandoffId: '需要 handoff id',
+    handoffOk: 'Handoff 已创建',
+    handoffFail: 'Handoff 失败',
+    assumeOk: '身体已继承',
+    assumeFail: 'Assume 失败',
+    copied: '已复制',
+    assumedKeys: '键',
+    restored: '已恢复',
+    carried: '未变',
+    newToken: '新 nxa_* — 请立即复制',
   },
   common: {
     cannotReach: '无法连接 API',

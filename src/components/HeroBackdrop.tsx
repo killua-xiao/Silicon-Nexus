@@ -61,17 +61,17 @@ export function HeroBackdrop() {
         <svg className="hero-scene" viewBox="0 0 1000 1000" role="presentation">
           <defs>
             <radialGradient id="hero-core" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#5eead4" stopOpacity="0.55" />
-              <stop offset="42%" stopColor="#0f766e" stopOpacity="0.28" />
-              <stop offset="100%" stopColor="#0b1014" stopOpacity="0" />
+              <stop offset="0%" stopColor="#8adfff" stopOpacity="0.55" />
+              <stop offset="42%" stopColor="#0878b0" stopOpacity="0.28" />
+              <stop offset="100%" stopColor="#07111f" stopOpacity="0" />
             </radialGradient>
             <linearGradient id="hero-ring" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#2dd4bf" stopOpacity="0.85" />
-              <stop offset="50%" stopColor="#c48b5a" stopOpacity="0.35" />
-              <stop offset="100%" stopColor="#2dd4bf" stopOpacity="0.1" />
+              <stop offset="0%" stopColor="#3ec6ff" stopOpacity="0.85" />
+              <stop offset="50%" stopColor="#ffb020" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="#3ec6ff" stopOpacity="0.1" />
             </linearGradient>
             <pattern id="hero-die" width="26" height="26" patternUnits="userSpaceOnUse">
-              <rect width="24" height="24" fill="none" stroke="#2dd4bf" strokeOpacity="0.28" />
+              <rect width="24" height="24" fill="none" stroke="#3ec6ff" strokeOpacity="0.28" />
             </pattern>
             <filter id="hero-glow" x="-40%" y="-40%" width="180%" height="180%">
               <feGaussianBlur stdDeviation="3" result="blur" />
@@ -89,8 +89,8 @@ export function HeroBackdrop() {
             cy="500"
             r="248"
             fill="none"
-            stroke="#2dd4bf"
-            strokeOpacity="0.28"
+            stroke="#3ec6ff"
+            strokeOpacity="0.55"
             strokeWidth="1.5"
           />
 
@@ -109,7 +109,7 @@ export function HeroBackdrop() {
               cy="500"
               r="400"
               fill="none"
-              stroke="#2dd4bf"
+              stroke="#3ec6ff"
               strokeOpacity="0.14"
               strokeWidth="1"
             />
@@ -121,7 +121,7 @@ export function HeroBackdrop() {
               cy="500"
               r="188"
               fill="none"
-              stroke="#c48b5a"
+              stroke="#ffb020"
               strokeOpacity="0.28"
               strokeDasharray="3 10"
             />
@@ -130,16 +130,16 @@ export function HeroBackdrop() {
           <polygon
             points="500,412 572,454 572,546 500,588 428,546 428,454"
             fill="none"
-            stroke="#2dd4bf"
+            stroke="#3ec6ff"
             strokeOpacity="0.7"
             strokeWidth="1.6"
             filter="url(#hero-glow)"
           />
           <polygon
             points="500,444 546,470 546,530 500,556 454,530 454,470"
-            fill="#0f766e"
+            fill="#0878b0"
             fillOpacity="0.18"
-            stroke="#5eead4"
+            stroke="#8adfff"
             strokeOpacity="0.55"
           />
 
@@ -151,7 +151,7 @@ export function HeroBackdrop() {
                 className={reduce ? undefined : 'hero-trace'}
                 d={`M${node.x} ${node.y} Q500 500 ${next.x} ${next.y}`}
                 fill="none"
-                stroke="#2dd4bf"
+                stroke="#3ec6ff"
                 strokeOpacity="0.22"
                 strokeWidth="1"
               />
@@ -160,12 +160,12 @@ export function HeroBackdrop() {
 
           {NODES.map((node, i) => (
             <g key={`n-${i}`} filter="url(#hero-glow)">
-              <circle cx={node.x} cy={node.y} r={node.r + 7} fill="#2dd4bf" fillOpacity="0.08" />
+              <circle cx={node.x} cy={node.y} r={node.r + 7} fill="#3ec6ff" fillOpacity="0.08" />
               <circle
                 cx={node.x}
                 cy={node.y}
                 r={node.r}
-                fill="#5eead4"
+                fill="#8adfff"
                 className={reduce ? undefined : 'hero-node'}
                 style={{ animationDelay: node.delay }}
               />

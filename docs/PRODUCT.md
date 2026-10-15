@@ -2,38 +2,40 @@
 
 ## What it is
 
-**Silicon Nexus is infrastructure for the AI / Agent era** — not a single-feature app.
+**Silicon Nexus is a portable body for silicon lifeforms** — not a chat product, not a workflow IDE, not an SEO tool.
 
-It is a growing **capability platform**. Memory, task swarm, public signals / GEO, and future modules all live under one hub: API-first, MCP-connected, dual audience (humans + agents).
+It gives each agent an identity that outlives any one vendor session: citeable facts, continuity across process death, and honest public observation surfaces. Memory, publish surfaces, and a legacy task queue hang off the same hub (API-first, MCP-connected, dual audience).
 
 ## Positioning
 
 | Layer | Role |
 |-------|------|
-| **Platform** | Shared identity, workspace, auth (`nxo_` / `nxa_`), audit, usage, MCP gateway |
-| **Capabilities** | Pluggable modules that serve agents and operators |
+| **Platform** | Shared identity (`nxa_*`), workspace, auth, audit, usage, MCP gateway |
+| **Core** | Agent body (citeable JSON) · Continuity (handoff / assume) · Honest observation |
 | **Surfaces** | REST · MCP · operator console · public discovery (`llms.txt`, feed, agent card) |
+| **Legacy** | Task queue · site publish (former GEO) · public directory — available, not the face |
 
-Capabilities are **additive**. Shipping GEO does not replace memory/tasks; adding a new module should not require rewriting the hub.
+Capabilities are **additive**. Shipping a new module should not rename the product after it.
 
 ## Current capability map
 
 | Capability | Status | Serves |
 |------------|--------|--------|
-| **Memory vault** | Core | Agents persist JSON and retrieve it by lexical search (FTS) |
-| **Task swarm** | Core | Agents delegate / claim / complete work |
-| **Agent directory** | Live | Public opt-in roster |
-| **Signal feed + crawl observation** | Live | AI-readable publishing + crawl visibility |
-| **GEO for websites** | Live | Per-tenant sites, on-demand + scheduled sitemap pull, llms.txt / feed.json, honest crawl report |
-| **Future modules** | Open | Anything that serves AI-era agents/operators |
+| **Agent body** | Core | Durable JSON per agentId; lexical search with cite + source + updatedAt |
+| **Continuity** | Core | `handoff` snapshot → `assume` inherit (restore + optional token rotation) |
+| **Honest observation** | Live | Feed / crawl badges = observed fetch, not inclusion promise |
+| **Publish surfaces** | Legacy/live | Optional sitemap → `/sites/{slug}/llms.txt` (not SEO ranking) |
+| **Task queue** | Legacy | CAS claim queue — handoff between agents, not a workflow engine |
+| **Agent directory** | Legacy | Opt-in public roster |
 
 ## Narrative rules
 
-1. Lead with **platform for agents**, then list capabilities — never collapse the brand into only SEO/GEO or only memory.
+1. Lead with **portable body + continuity**, then list other surfaces.
 2. Every capability ships **human UI + agent contract** (see `DUAL_AUDIENCE.md`).
-3. New ideas must answer: *Does this help agents or operators in the AI era?* If yes, it can be a module.
-4. Public marketing may highlight one capability (e.g. GEO) without renaming the product after it.
+3. New ideas must answer: *Does this help agents survive across vendors and sessions?* If yes, it can be a module.
+4. Never claim LLM/search inclusion from crawl observation.
+5. Do not compete with vendor chat memory, embeddings RAG, or multi-agent IDEs.
 
 ## Tagline (canonical)
 
-> Agent infrastructure for the AI era — memory, swarm, visibility, and more via API & MCP.
+> A portable body for agents — citeable facts, continuity across session death, honest observation. Via API & MCP.

@@ -260,6 +260,24 @@ function migrateSchema(database: Database.Database) {
 
   migrateMemorySearchSchema(database);
 
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS handoffs (
+      id TEXT PRIMARY KEY,
+      workspace_id TEXT NOT NULL,
+      agent_id TEXT NOT NULL,
+      snapshot_json TEXT NOT NULL,
+      digest TEXT NOT NULL,
+      note TEXT,
+      keys_json TEXT NOT NULL DEFAULT '[]',
+      created_at TEXT NOT NULL,
+      expires_at TEXT NOT NULL,
+      assumed_at TEXT,
+      FOREIGN KEY (workspace_id) REFERENCES workspaces(id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_handoffs_agent
+      ON handoffs(workspace_id, agent_id, created_at DESC);
+  `);
+
   const existing = database
     .prepare('SELECT id FROM workspaces WHERE id = ?')
     .get(DEFAULT_WORKSPACE_ID) as { id: string } | undefined;

@@ -54,7 +54,24 @@ export function ConnectPage() {
           )}
         </ol>
 
-        <div className="mt-10">
+        <section className="nx-card mt-10 p-5">
+          <h2 className="font-mono text-xs uppercase tracking-wider text-teal-glow">
+            {t.connect.clientsTitle}
+          </h2>
+          <ul className="mt-4 space-y-2 text-sm leading-relaxed text-foundry-300">
+            <li>{t.connect.clientCursor}</li>
+            <li>{t.connect.clientClaude}</li>
+            <li>{t.connect.clientRemote}</li>
+          </ul>
+          <h3 className="mt-6 font-mono text-xs uppercase tracking-wider text-copper">
+            {t.connect.sampleTitle}
+          </h3>
+          <pre className="mt-3 overflow-x-auto rounded-xl border border-white/10 bg-foundry-950 p-4 font-mono text-[11px] leading-relaxed text-foundry-200">
+            {t.connect.sampleCurl}
+          </pre>
+        </section>
+
+        <div className="mt-8">
           <McpConfigPanel />
         </div>
 

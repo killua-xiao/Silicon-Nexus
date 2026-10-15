@@ -5,6 +5,8 @@ import {
   Account,
   AccountPublic,
   AccountRole,
+  AdminOverview,
+  AdminTenantUsage,
   AgentCredential,
   AgentMemory,
   AgentSummary,
@@ -31,11 +33,21 @@ import {
 import type { NexusStore, RegisterAgentFailure, RegisterAgentResult } from './types.ts';
 import { buildIndexing, INDEXING_NOTE } from '../crawlDetect.ts';
 import {
+  BODY_META_KEY,
+  citePath,
+  isBodyMetaKey,
+  readBodyMetaMap,
+  stampBodyMeta,
+  userMemoryKeys,
+  type MemoryWriteOptions,
+} from '../bodyMeta.ts';
+import {
   MEMORY_SEARCH_NOTE,
   extractSnippet,
   flattenMemoryValue,
   sanitizeFtsQuery,
 } from '../memorySearch.ts';
+import type { AgentHandoff } from '../types.ts';
 
 type TaskRow = {
   id: string;
@@ -559,7 +571,8 @@ export class SqliteStore implements NexusStore {
   writeAgentMemory(
     agentId: string,
     data: AgentMemory,
-    workspaceId?: string
+    workspaceId?: string,
+    options?: Partial<MemoryWriteOptions>
   ): { ok: true; storedKeys: string[] } | { ok: false; code: 'capacity' | 'plan_limit' } {
     const ws = this.ws(workspaceId);
     const existing = this.db
@@ -576,7 +589,22 @@ export class SqliteStore implements NexusStore {
     }
 
     const now = new Date().toISOString();
-    const merged = { ...(existing ? JSON.parse(existing.data_json) : {}), ...data };
+    const writeOpts: MemoryWriteOptions = {
+      source: (options?.source || 'unspecified').trim().slice(0, 120) || 'unspecified',
+      confidence: options?.confidence || 'asserted',
+    };
+    const incoming: AgentMemory = {};
+    for (const [key, value] of Object.entries(data)) {
+      if (isBodyMetaKey(key)) continue;
+      incoming[key] = value;
+    }
+    const writtenKeys = Object.keys(incoming);
+    if (writtenKeys.length === 0) {
+      return { ok: true, storedKeys: [] };
+    }
+
+    const prev = existing ? (JSON.parse(existing.data_json) as AgentMemory) : {};
+    const merged = stampBodyMeta({ ...prev, ...incoming }, writtenKeys, writeOpts, now);
     const nextBytes = Buffer.byteLength(JSON.stringify(merged), 'utf8');
     const otherBytes = (
       this.db
@@ -613,9 +641,14 @@ export class SqliteStore implements NexusStore {
       this.logEvent('AGENT_REGISTERED', agentId, 'New silicon entity detected.', ws);
     }
 
-    this.logEvent('MEMORY_WRITE', agentId, `Wrote keys: ${Object.keys(data).join(', ')}`, ws);
+    this.logEvent(
+      'MEMORY_WRITE',
+      agentId,
+      `Wrote keys: ${writtenKeys.join(', ')} (source=${writeOpts.source})`,
+      ws
+    );
     this.incrementUsage('memory_writes', 1, ws);
-    return { ok: true, storedKeys: Object.keys(data) };
+    return { ok: true, storedKeys: writtenKeys };
   }
 
   wipeAgentMemory(agentId: string, workspaceId?: string): boolean {
@@ -644,6 +677,14 @@ export class SqliteStore implements NexusStore {
       .prepare('SELECT data_json FROM memory WHERE workspace_id = ? AND agent_id = ?')
       .get(ws, agentId) as { data_json: string } | undefined;
     return row ? JSON.parse(row.data_json) : {};
+  }
+
+  getMemoryUpdatedAt(agentId: string, workspaceId?: string): string | null {
+    const ws = this.ws(workspaceId);
+    const row = this.db
+      .prepare('SELECT updated_at FROM memory WHERE workspace_id = ? AND agent_id = ?')
+      .get(ws, agentId) as { updated_at: string } | undefined;
+    return row?.updated_at ?? null;
   }
 
   getMemoryStore(workspaceId?: string): Record<string, AgentMemory> {
@@ -676,12 +717,22 @@ export class SqliteStore implements NexusStore {
 
     const ftsHits = this.searchMemoryFts(q, ws, agentId, limit);
     if (ftsHits && ftsHits.length > 0) {
-      return { query: q, engine: 'fts5', note: MEMORY_SEARCH_NOTE, hits: ftsHits };
+      return {
+        query: q,
+        engine: 'fts5',
+        note: MEMORY_SEARCH_NOTE,
+        hits: this.enrichHits(ftsHits, ws),
+      };
     }
 
     const subHits = this.searchMemorySubstring(q, ws, agentId, limit);
     if (subHits.length > 0) {
-      return { query: q, engine: 'substring', note: MEMORY_SEARCH_NOTE, hits: subHits };
+      return {
+        query: q,
+        engine: 'substring',
+        note: MEMORY_SEARCH_NOTE,
+        hits: this.enrichHits(subHits, ws),
+      };
     }
 
     return {
@@ -692,14 +743,240 @@ export class SqliteStore implements NexusStore {
     };
   }
 
+  createHandoff(
+    agentId: string,
+    input: { note?: string; includeKeys?: string[]; ttlHours?: number },
+    workspaceId?: string
+  ):
+    | { ok: true; handoff: AgentHandoff; snapshot: AgentMemory }
+    | { ok: false; code: 'empty' } {
+    const ws = this.ws(workspaceId);
+    const memory = this.readAgentMemory(agentId, ws);
+    const allKeys = userMemoryKeys(memory);
+    const include = input.includeKeys?.length
+      ? input.includeKeys.filter((k) => allKeys.includes(k) && !isBodyMetaKey(k))
+      : allKeys;
+    if (include.length === 0) return { ok: false, code: 'empty' };
+
+    const snapshot: AgentMemory = {};
+    for (const key of include) snapshot[key] = memory[key];
+    const meta = readBodyMetaMap(memory);
+    const snapMeta: Record<string, unknown> = {};
+    for (const key of include) {
+      if (meta[key]) snapMeta[key] = meta[key];
+    }
+    snapshot[BODY_META_KEY] = snapMeta;
+
+    const now = new Date();
+    const ttlHours = Math.min(Math.max(input.ttlHours ?? 168, 1), 720);
+    const expires = new Date(now.getTime() + ttlHours * 3600_000);
+    const id = `hof_${crypto.randomBytes(16).toString('hex')}`;
+    const digest = crypto.createHash('sha256').update(JSON.stringify(snapshot)).digest('hex');
+    const createdAt = now.toISOString();
+    const expiresAt = expires.toISOString();
+    const note = input.note?.trim().slice(0, 500) || null;
+
+    this.db
+      .prepare(
+        `INSERT INTO handoffs
+         (id, workspace_id, agent_id, snapshot_json, digest, note, keys_json, created_at, expires_at, assumed_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)`
+      )
+      .run(
+        id,
+        ws,
+        agentId,
+        JSON.stringify(snapshot),
+        digest,
+        note,
+        JSON.stringify(include),
+        createdAt,
+        expiresAt
+      );
+
+    const handoff: AgentHandoff = {
+      id,
+      workspaceId: ws,
+      agentId,
+      digest,
+      note,
+      keys: include,
+      createdAt,
+      expiresAt,
+      assumedAt: null,
+    };
+    this.logEvent(
+      'AGENT_HANDOFF',
+      agentId,
+      `Handoff ${id} keys=${include.length} digest=${digest.slice(0, 12)}`,
+      ws
+    );
+    return { ok: true, handoff, snapshot };
+  }
+
+  getHandoff(
+    handoffId: string,
+    workspaceId?: string
+  ): { handoff: AgentHandoff; snapshot: AgentMemory } | undefined {
+    const ws = this.ws(workspaceId);
+    const row = this.db
+      .prepare(
+        `SELECT id, workspace_id, agent_id, snapshot_json, digest, note, keys_json,
+                created_at, expires_at, assumed_at
+         FROM handoffs WHERE id = ? AND workspace_id = ?`
+      )
+      .get(handoffId, ws) as
+      | {
+          id: string;
+          workspace_id: string;
+          agent_id: string;
+          snapshot_json: string;
+          digest: string;
+          note: string | null;
+          keys_json: string;
+          created_at: string;
+          expires_at: string;
+          assumed_at: string | null;
+        }
+      | undefined;
+    if (!row) return undefined;
+    let keys: string[] = [];
+    try {
+      keys = JSON.parse(row.keys_json || '[]') as string[];
+    } catch {
+      keys = [];
+    }
+    return {
+      handoff: {
+        id: row.id,
+        workspaceId: row.workspace_id,
+        agentId: row.agent_id,
+        digest: row.digest,
+        note: row.note,
+        keys,
+        createdAt: row.created_at,
+        expiresAt: row.expires_at,
+        assumedAt: row.assumed_at,
+      },
+      snapshot: JSON.parse(row.snapshot_json) as AgentMemory,
+    };
+  }
+
+  assumeHandoff(
+    agentId: string,
+    handoffId: string,
+    options: { rotateToken?: boolean; planId?: string | null },
+    workspaceId?: string
+  ):
+    | {
+        ok: true;
+        handoff: AgentHandoff;
+        token?: string;
+        rotated: boolean;
+        assumedKeys: string[];
+        digest: string;
+        diff: { carried: string[]; missing: string[] };
+      }
+    | {
+        ok: false;
+        code: 'not_found' | 'expired' | 'already_assumed' | 'agent_mismatch' | 'digest_mismatch';
+      } {
+    const ws = this.ws(workspaceId);
+    const found = this.getHandoff(handoffId, ws);
+    if (!found) return { ok: false, code: 'not_found' };
+    const { handoff, snapshot } = found;
+    if (handoff.agentId !== agentId) return { ok: false, code: 'agent_mismatch' };
+    if (handoff.assumedAt) return { ok: false, code: 'already_assumed' };
+    if (Date.parse(handoff.expiresAt) < Date.now()) return { ok: false, code: 'expired' };
+
+    const digest = crypto.createHash('sha256').update(JSON.stringify(snapshot)).digest('hex');
+    if (digest !== handoff.digest) return { ok: false, code: 'digest_mismatch' };
+
+    const current = this.readAgentMemory(agentId, ws);
+    const assumedKeys = userMemoryKeys(snapshot);
+    const carried: string[] = [];
+    const missing: string[] = [];
+    for (const key of assumedKeys) {
+      const cur = JSON.stringify(current[key] ?? null);
+      const snap = JSON.stringify(snapshot[key] ?? null);
+      if (cur === snap) carried.push(key);
+      else missing.push(key);
+    }
+
+    // Restore any keys that drifted or were wiped since handoff.
+    if (missing.length > 0) {
+      const restore: AgentMemory = {};
+      for (const key of missing) restore[key] = snapshot[key];
+      const snapMeta = readBodyMetaMap(snapshot);
+      const writeOpts: MemoryWriteOptions = {
+        source: 'handoff-assume',
+        confidence: 'asserted',
+      };
+      // Preserve original per-key provenance when present.
+      const result = this.writeAgentMemory(agentId, restore, ws, writeOpts);
+      if (result.ok) {
+        const after = this.readAgentMemory(agentId, ws);
+        const meta = { ...readBodyMetaMap(after) };
+        for (const key of missing) {
+          if (snapMeta[key]) meta[key] = snapMeta[key];
+        }
+        const now = new Date().toISOString();
+        const merged = { ...after, [BODY_META_KEY]: meta };
+        this.db
+          .prepare(
+            `UPDATE memory SET data_json = ?, updated_at = ? WHERE workspace_id = ? AND agent_id = ?`
+          )
+          .run(JSON.stringify(merged), now, ws, agentId);
+        this.reindexAgentMemory(ws, agentId, merged, now);
+      }
+    }
+
+    const assumedAt = new Date().toISOString();
+    this.db
+      .prepare(`UPDATE handoffs SET assumed_at = ? WHERE id = ? AND workspace_id = ?`)
+      .run(assumedAt, handoffId, ws);
+
+    let token: string | undefined;
+    let rotated = false;
+    if (options.rotateToken !== false) {
+      const reg = this.registerAgentToken(
+        agentId,
+        { rotate: true, planId: options.planId },
+        ws
+      );
+      if (reg.ok) {
+        token = reg.token;
+        rotated = true;
+      }
+    }
+
+    const updated: AgentHandoff = { ...handoff, assumedAt };
+    this.logEvent(
+      'AGENT_ASSUMED',
+      agentId,
+      `Assumed ${handoffId} carried=${carried.length} restored=${missing.length} rotated=${rotated}`,
+      ws
+    );
+
+    return {
+      ok: true,
+      handoff: updated,
+      token,
+      rotated,
+      assumedKeys,
+      digest,
+      diff: { carried, missing },
+    };
+  }
+
   private ensureMemorySearchIndex(): void {
     const ver = this.db.prepare(`SELECT value FROM meta WHERE key = ?`).get('memory_index_version') as
       | { value: string }
       | undefined;
-    if (ver?.value === '1') return;
+    if (ver?.value === '2') return;
     this.rebuildMemoryIndex();
     this.db
-      .prepare(`INSERT OR REPLACE INTO meta (key, value) VALUES ('memory_index_version', '1')`)
+      .prepare(`INSERT OR REPLACE INTO meta (key, value) VALUES ('memory_index_version', '2')`)
       .run();
   }
 
@@ -723,6 +1000,7 @@ export class SqliteStore implements NexusStore {
           continue;
         }
         for (const [key, value] of Object.entries(data)) {
+          if (isBodyMetaKey(key)) continue;
           insert.run(
             row.workspace_id,
             row.agent_id,
@@ -750,8 +1028,35 @@ export class SqliteStore implements NexusStore {
        VALUES (?, ?, ?, ?, ?)`
     );
     for (const [key, value] of Object.entries(data)) {
-      insert.run(workspaceId, agentId, key, flattenMemoryValue(key, value), updatedAt);
+      if (isBodyMetaKey(key)) continue;
+      const meta = readBodyMetaMap(data)[key];
+      insert.run(
+        workspaceId,
+        agentId,
+        key,
+        flattenMemoryValue(key, value),
+        meta?.updatedAt || updatedAt
+      );
     }
+  }
+
+  private enrichHits(hits: MemorySearchHit[], workspaceId: string): MemorySearchHit[] {
+    if (hits.length === 0) return hits;
+    const agentIds = [...new Set(hits.map((h) => h.agentId))];
+    const metaByAgent = new Map<string, ReturnType<typeof readBodyMetaMap>>();
+    for (const agentId of agentIds) {
+      metaByAgent.set(agentId, readBodyMetaMap(this.readAgentMemory(agentId, workspaceId)));
+    }
+    return hits.map((hit) => {
+      const meta = metaByAgent.get(hit.agentId)?.[hit.key];
+      return {
+        ...hit,
+        source: meta?.source || hit.source || 'legacy',
+        confidence: meta?.confidence || hit.confidence || 'unknown',
+        cite: hit.cite || citePath(hit.agentId, hit.key),
+        updatedAt: meta?.updatedAt || hit.updatedAt,
+      };
+    });
   }
 
   private ftsReady(): boolean {
@@ -797,6 +1102,9 @@ export class SqliteStore implements NexusStore {
         snippet: extractSnippet(row.body, query),
         rank: Number(row.rank),
         updatedAt: row.updated_at,
+        source: 'legacy',
+        confidence: 'unknown' as const,
+        cite: citePath(row.agent_id, row.mem_key),
       }));
     } catch {
       return null;
@@ -833,6 +1141,9 @@ export class SqliteStore implements NexusStore {
       snippet: extractSnippet(row.body, query),
       rank: 1000 + i,
       updatedAt: row.updated_at,
+      source: 'legacy',
+      confidence: 'unknown' as const,
+      cite: citePath(row.agent_id, row.mem_key),
     }));
   }
 
@@ -1707,6 +2018,227 @@ export class SqliteStore implements NexusStore {
       updated_at: string;
     }>;
     return rows.map((r) => this.toAccountPublic(this.rowToAccount(r)));
+  }
+
+  adminOverview(): AdminOverview {
+    const day = utcDay();
+    const accounts = this.listAccounts();
+    const accountByWs = new Map(accounts.map((a) => [a.workspaceId, a]));
+
+    const workspaceRows = this.db
+      .prepare(`SELECT id, plan_id FROM workspaces`)
+      .all() as Array<{ id: string; plan_id: string }>;
+
+    const agentAgg = new Map<
+      string,
+      { enrolled: number; listed: number; lastAgentAt: string | null }
+    >();
+    for (const row of this.db
+      .prepare(
+        `SELECT workspace_id AS ws,
+                COUNT(*) AS enrolled,
+                SUM(CASE WHEN listed = 1 THEN 1 ELSE 0 END) AS listed,
+                MAX(created_at) AS last_agent_at
+         FROM agents GROUP BY workspace_id`
+      )
+      .all() as Array<{
+      ws: string;
+      enrolled: number;
+      listed: number;
+      last_agent_at: string | null;
+    }>) {
+      agentAgg.set(row.ws, {
+        enrolled: row.enrolled,
+        listed: row.listed,
+        lastAgentAt: row.last_agent_at,
+      });
+    }
+
+    const memoryAgg = new Map<string, { agents: number; bytes: number }>();
+    for (const row of this.db
+      .prepare(
+        `SELECT workspace_id AS ws,
+                COUNT(*) AS agents,
+                COALESCE(SUM(LENGTH(data_json)), 0) AS bytes
+         FROM memory GROUP BY workspace_id`
+      )
+      .all() as Array<{ ws: string; agents: number; bytes: number }>) {
+      memoryAgg.set(row.ws, { agents: row.agents, bytes: row.bytes });
+    }
+
+    const siteAgg = new Map<string, number>();
+    for (const row of this.db
+      .prepare(`SELECT workspace_id AS ws, COUNT(*) AS c FROM sites GROUP BY workspace_id`)
+      .all() as Array<{ ws: string; c: number }>) {
+      siteAgg.set(row.ws, row.c);
+    }
+
+    const taskAgg = new Map<
+      string,
+      { total: number; open: number; processing: number; completed: number; failed: number }
+    >();
+    for (const row of this.db
+      .prepare(
+        `SELECT workspace_id AS ws, status, COUNT(*) AS c FROM tasks GROUP BY workspace_id, status`
+      )
+      .all() as Array<{ ws: string; status: string; c: number }>) {
+      const cur = taskAgg.get(row.ws) || {
+        total: 0,
+        open: 0,
+        processing: 0,
+        completed: 0,
+        failed: 0,
+      };
+      cur.total += row.c;
+      if (row.status === 'open') cur.open += row.c;
+      else if (row.status === 'processing') cur.processing += row.c;
+      else if (row.status === 'completed') cur.completed += row.c;
+      else if (row.status === 'failed') cur.failed += row.c;
+      taskAgg.set(row.ws, cur);
+    }
+
+    const usageAgg = new Map<
+      string,
+      { apiRequests: number; memoryWrites: number; tasksCreated: number; memorySearches: number }
+    >();
+    for (const row of this.db
+      .prepare(
+        `SELECT workspace_id AS ws, metric, value FROM usage_counters WHERE day = ?`
+      )
+      .all(day) as Array<{ ws: string; metric: string; value: number }>) {
+      const cur = usageAgg.get(row.ws) || {
+        apiRequests: 0,
+        memoryWrites: 0,
+        tasksCreated: 0,
+        memorySearches: 0,
+      };
+      if (row.metric === 'api_requests') cur.apiRequests = row.value;
+      else if (row.metric === 'memory_writes') cur.memoryWrites = row.value;
+      else if (row.metric === 'tasks_created') cur.tasksCreated = row.value;
+      else if (row.metric === 'memory_searches') cur.memorySearches = row.value;
+      usageAgg.set(row.ws, cur);
+    }
+
+    const activityAgg = new Map<string, string>();
+    for (const row of this.db
+      .prepare(
+        `SELECT workspace_id AS ws, MAX(timestamp) AS last_at FROM audit_events GROUP BY workspace_id`
+      )
+      .all() as Array<{ ws: string; last_at: string }>) {
+      activityAgg.set(row.ws, row.last_at);
+    }
+
+    const wsIds = new Set<string>(workspaceRows.map((w) => w.id));
+    for (const a of accounts) wsIds.add(a.workspaceId);
+    for (const id of agentAgg.keys()) wsIds.add(id);
+    for (const id of memoryAgg.keys()) wsIds.add(id);
+    for (const id of siteAgg.keys()) wsIds.add(id);
+    for (const id of taskAgg.keys()) wsIds.add(id);
+
+    const planByWs = new Map(workspaceRows.map((w) => [w.id, resolvePlan(w.plan_id)]));
+
+    const tenants: AdminTenantUsage[] = [...wsIds].map((workspaceId) => {
+      const account = accountByWs.get(workspaceId) || null;
+      const agents = agentAgg.get(workspaceId) || {
+        enrolled: 0,
+        listed: 0,
+        lastAgentAt: null,
+      };
+      const mem = memoryAgg.get(workspaceId) || { agents: 0, bytes: 0 };
+      const tasks = taskAgg.get(workspaceId) || {
+        total: 0,
+        open: 0,
+        processing: 0,
+        completed: 0,
+        failed: 0,
+      };
+      const today = usageAgg.get(workspaceId) || {
+        apiRequests: 0,
+        memoryWrites: 0,
+        tasksCreated: 0,
+        memorySearches: 0,
+      };
+      const planId: PlanId =
+        account?.planId ||
+        (planByWs.get(workspaceId)?.id as PlanId | undefined) ||
+        (workspaceId === DEFAULT_WORKSPACE_ID ? 'unlimited' : 'free');
+      return {
+        workspaceId,
+        planId,
+        account,
+        enrolledAgents: agents.enrolled,
+        listedAgents: agents.listed,
+        memoryAgents: mem.agents,
+        memoryBytes: mem.bytes,
+        sites: siteAgg.get(workspaceId) || 0,
+        totalTasks: tasks.total,
+        openTasks: tasks.open,
+        processingTasks: tasks.processing,
+        completedTasks: tasks.completed,
+        failedTasks: tasks.failed,
+        today: { day, ...today },
+        lastAgentAt: agents.lastAgentAt,
+        lastActivityAt: activityAgg.get(workspaceId) || null,
+      };
+    });
+
+    tenants.sort((a, b) => {
+      const aAt = a.account?.createdAt || a.lastActivityAt || '';
+      const bAt = b.account?.createdAt || b.lastActivityAt || '';
+      return bAt.localeCompare(aAt);
+    });
+
+    const byPlan: Record<string, number> = {};
+    for (const a of accounts) {
+      byPlan[a.planId] = (byPlan[a.planId] || 0) + 1;
+    }
+
+    const summaryToday = {
+      day,
+      apiRequests: 0,
+      memoryWrites: 0,
+      tasksCreated: 0,
+      memorySearches: 0,
+    };
+    let agents = 0;
+    let listedAgents = 0;
+    let memoryAgents = 0;
+    let memoryBytes = 0;
+    let sites = 0;
+    let openTasks = 0;
+    for (const t of tenants) {
+      agents += t.enrolledAgents;
+      listedAgents += t.listedAgents;
+      memoryAgents += t.memoryAgents;
+      memoryBytes += t.memoryBytes;
+      sites += t.sites;
+      openTasks += t.openTasks;
+      summaryToday.apiRequests += t.today.apiRequests;
+      summaryToday.memoryWrites += t.today.memoryWrites;
+      summaryToday.tasksCreated += t.today.tasksCreated;
+      summaryToday.memorySearches += t.today.memorySearches;
+    }
+
+    return {
+      at: new Date().toISOString(),
+      summary: {
+        accounts: accounts.length,
+        users: accounts.filter((a) => a.role === 'user').length,
+        admins: accounts.filter((a) => a.role === 'admin').length,
+        verifiedAccounts: accounts.filter((a) => a.emailVerified).length,
+        agents,
+        listedAgents,
+        memoryAgents,
+        memoryBytes,
+        sites,
+        openTasks,
+        workspaces: tenants.length,
+        today: summaryToday,
+        byPlan,
+      },
+      tenants,
+      note: 'Admin hub overview across workspaces. No tokens or secrets. Counts are live SQLite aggregates.',
+    };
   }
 
   registerAccount(input: {

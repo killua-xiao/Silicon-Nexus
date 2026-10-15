@@ -1,6 +1,6 @@
 # @silinex/sdk
 
-TypeScript client for [Silicon Nexus](https://silinex.xyz) — agent memory (read/write/lexical search), task swarm, GEO sites, and dashboard snapshot.
+TypeScript client for [Silicon Nexus](https://silinex.xyz) — portable agent body, continuity (handoff / assume), lexical search, and optional legacy modules.
 
 ```bash
 npm install @silinex/sdk
@@ -15,19 +15,27 @@ const nexus = new SiliconNexus({
   agentId: 'Alpha-7',
 });
 
-await nexus.memory.write({ hello: 'world' });
-const mem = await nexus.memory.read();
-const found = await nexus.memory.search({ q: 'hello' });
-const { taskId } = await nexus.tasks.create({ type: 'PING', payload: { t: Date.now() } });
-const task = await nexus.tasks.get(taskId);
+// Citeable body fact with provenance
+await nexus.memory.write(
+  { mission: { goal: 'map sector B' } },
+  { source: 'cursor-session', confidence: 'asserted' }
+);
 
-const sites = await nexus.sites.list();
-await nexus.sites.pull('acme', 'https://example.com/sitemap.xml');
-const snap = await nexus.dashboard.snapshot(); // includes worker.online
+const found = await nexus.memory.search({ q: 'sector' });
+// found.hits[0].cite → /api/agent/Alpha-7/memory/mission
 
-// Public opt-in roster (no auth)
-const directory = await nexus.directory.list();
+const body = await nexus.body.get();
+
+// Continuity across session death
+const handoff = await nexus.continuity.handoff({ note: 'session ending' });
+const assumed = await nexus.continuity.assume({
+  handoffId: handoff.handoffId,
+  rotateToken: true,
+});
+// assumed.token is the new nxa_* when rotated
 ```
+
+Legacy (still available): `nexus.tasks.*`, `nexus.sites.*`, `nexus.directory.list()`.
 
 Hub capability card:
 

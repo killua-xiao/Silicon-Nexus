@@ -10,19 +10,29 @@ export type McpSessionConfig = {
 export const MCP_TOOLS = [
   {
     name: 'nexus_write_memory',
-    description: "Write data to this agent's Memory Vault.",
+    description:
+      "Write citeable facts to this agent's portable body (JSON keys). Prefer structured facts over chat notes. Optional source/confidence stamp provenance. Not embeddings.",
     inputSchema: {
       type: 'object',
       properties: {
         agentId: { type: 'string', description: 'Optional if session agentId is set' },
         data: { type: 'object', description: 'Key-value pairs to store' },
+        source: {
+          type: 'string',
+          description: 'Provenance label (e.g. cursor-session, claude-desktop)',
+        },
+        confidence: {
+          type: 'string',
+          enum: ['asserted', 'inferred', 'unknown'],
+          description: 'Default asserted',
+        },
       },
       required: ['data'],
     },
   },
   {
     name: 'nexus_read_memory',
-    description: "Read data from this agent's Memory Vault.",
+    description: "Read raw JSON keys from this agent's body (includes __body_meta__ provenance map).",
     inputSchema: {
       type: 'object',
       properties: {
@@ -33,9 +43,21 @@ export const MCP_TOOLS = [
     },
   },
   {
+    name: 'nexus_read_body',
+    description:
+      'Read the structured agent body: each key as { value, source, updatedAt, confidence }. Prefer this when citing facts across runtimes.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        agentId: { type: 'string' },
+      },
+      required: [],
+    },
+  },
+  {
     name: 'nexus_search_memory',
     description:
-      "Lexical search over this agent's memory keys and JSON values (FTS5, substring fallback). Returns snippets with citations — not embeddings, not a chat. Fetch nexus_read_memory with the hit key for the full value. Agent tokens search only their own vault; operators may omit agentId to search the workspace.",
+      "Lexical search over this agent's body keys and JSON values (FTS5, substring fallback). Returns snippets with cite + source — not embeddings, not a chat. Fetch nexus_read_memory with the hit key for the full value.",
     inputSchema: {
       type: 'object',
       properties: {
@@ -47,8 +69,38 @@ export const MCP_TOOLS = [
     },
   },
   {
+    name: 'nexus_handoff',
+    description:
+      'Continuity: snapshot this agent body for a later assume (session death → inheritance). Returns handoffId + digest.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        agentId: { type: 'string' },
+        note: { type: 'string' },
+        includeKeys: { type: 'array', items: { type: 'string' } },
+        ttlHours: { type: 'number', description: 'Default 168 (7 days)' },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'nexus_assume',
+    description:
+      'Continuity: inherit a handoff for this agentId. Restores drifted keys; rotates nxa_* by default so the prior session dies.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        agentId: { type: 'string' },
+        handoffId: { type: 'string' },
+        rotateToken: { type: 'boolean', description: 'Default true' },
+      },
+      required: ['handoffId'],
+    },
+  },
+  {
     name: 'nexus_create_task',
-    description: 'Delegate a sub-task to the Nexus swarm queue.',
+    description:
+      '[Legacy] Create a queue task. Prefer nexus_handoff / nexus_assume for continuity. Not a workflow engine.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -61,7 +113,7 @@ export const MCP_TOOLS = [
   },
   {
     name: 'nexus_list_open_tasks',
-    description: 'Poll open (unclaimed) tasks, optionally filtered by type.',
+    description: '[Legacy] Poll open (unclaimed) tasks, optionally filtered by type.',
     inputSchema: {
       type: 'object',
       properties: { type: { type: 'string' } },
@@ -70,7 +122,7 @@ export const MCP_TOOLS = [
   },
   {
     name: 'nexus_accept_task',
-    description: 'Claim an open task for this agent.',
+    description: '[Legacy] Claim an open task for this agent.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -82,7 +134,7 @@ export const MCP_TOOLS = [
   },
   {
     name: 'nexus_complete_task',
-    description: 'Mark a claimed task completed or failed and attach a result.',
+    description: '[Legacy] Mark a claimed task completed or failed and attach a result.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -262,7 +314,7 @@ async function apiJson(cfg: McpSessionConfig, path: string, init?: RequestInit) 
 /** Create an MCP Server instance wired to a specific token/agent session. */
 export function createNexusMcpServer(cfg: McpSessionConfig): Server {
   const server = new Server(
-    { name: 'silicon-nexus', version: '1.3.0' },
+    { name: 'silicon-nexus', version: '1.4.0' },
     { capabilities: { tools: {} } }
   );
 
@@ -275,9 +327,22 @@ export function createNexusMcpServer(cfg: McpSessionConfig): Server {
     try {
       if (name === 'nexus_write_memory') {
         const agentId = resolveAgentId(cfg, args?.agentId);
+        const payload: Record<string, unknown> = {
+          ...(typeof args?.data === 'object' && args.data && !Array.isArray(args.data)
+            ? (args.data as Record<string, unknown>)
+            : {}),
+        };
+        const source = typeof args?.source === 'string' ? args.source.trim() : '';
+        const confidence = typeof args?.confidence === 'string' ? args.confidence : '';
+        if (source || confidence) {
+          payload._nexus = {
+            ...(source ? { source } : {}),
+            ...(confidence ? { confidence } : {}),
+          };
+        }
         const data = await apiJson(cfg, `/agent/${agentId}/memory`, {
           method: 'POST',
-          body: JSON.stringify(args?.data ?? {}),
+          body: JSON.stringify(payload),
         });
         return { content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] };
       }
@@ -286,6 +351,39 @@ export function createNexusMcpServer(cfg: McpSessionConfig): Server {
         const agentId = resolveAgentId(cfg, args?.agentId);
         const keyPath = args?.key ? `/${args.key}` : '';
         const data = await apiJson(cfg, `/agent/${agentId}/memory${keyPath}`);
+        return { content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] };
+      }
+
+      if (name === 'nexus_read_body') {
+        const agentId = resolveAgentId(cfg, args?.agentId);
+        const data = await apiJson(cfg, `/agent/${agentId}/body`);
+        return { content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] };
+      }
+
+      if (name === 'nexus_handoff') {
+        const agentId = resolveAgentId(cfg, args?.agentId);
+        const body: Record<string, unknown> = {};
+        if (typeof args?.note === 'string') body.note = args.note;
+        if (Array.isArray(args?.includeKeys)) body.includeKeys = args.includeKeys;
+        if (typeof args?.ttlHours === 'number') body.ttlHours = args.ttlHours;
+        const data = await apiJson(cfg, `/agent/${agentId}/handoff`, {
+          method: 'POST',
+          body: JSON.stringify(body),
+        });
+        return { content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] };
+      }
+
+      if (name === 'nexus_assume') {
+        const agentId = resolveAgentId(cfg, args?.agentId);
+        const handoffId = String(args?.handoffId || '');
+        if (!handoffId) throw new Error('handoffId is required');
+        const data = await apiJson(cfg, `/agent/${agentId}/assume`, {
+          method: 'POST',
+          body: JSON.stringify({
+            handoffId,
+            rotateToken: args?.rotateToken !== false,
+          }),
+        });
         return { content: [{ type: 'text', text: JSON.stringify(data, null, 2) }] };
       }
 

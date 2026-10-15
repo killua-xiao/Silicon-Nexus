@@ -19,17 +19,17 @@ export function SiteFooter({
     { to: '/connect', label: t.connect.nav },
     { to: '/pricing', label: t.nav.pricing },
     { to: '/feed', label: t.nav.feed },
-    { to: '/directory', label: t.nav.directory },
     { to: '/docs', label: t.nav.docs },
+    { to: '/cookbook', label: t.cookbook.nav },
     { to: '/console', label: t.nav.console },
   ];
 
   return (
-    <footer className="border-t border-white/5 bg-foundry-950/80 px-6 py-10">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 md:flex-row md:items-end md:justify-between">
+    <footer className="border-t border-white/[0.06] bg-foundry-950 px-6 py-12">
+      <div className="mx-auto flex max-w-6xl flex-col gap-8 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="text-sm text-foundry-300">{tagline}</p>
-          <nav className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs text-foundry-500">
+          <p className="max-w-md text-sm leading-relaxed text-foundry-300">{tagline}</p>
+          <nav className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-xs text-foundry-500">
             {links.map((l) => (
               <Link key={l.to} to={l.to} className="transition hover:text-teal-glow">
                 {l.label}

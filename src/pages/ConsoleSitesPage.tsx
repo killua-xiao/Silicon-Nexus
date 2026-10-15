@@ -26,6 +26,14 @@ type GeoStatus = {
   lastPulledAt: string | null;
   lastPullNote: string | null;
   honesty: string;
+  indexingNote?: string;
+  surfaces?: {
+    llmsTxt: string;
+    feedJson: string;
+    contentMd: string;
+    contentJson: string;
+    api: string;
+  };
 };
 
 type ContentRow = {
@@ -420,12 +428,41 @@ export function ConsoleSitesPage() {
               <p className="font-mono text-xs text-foundry-400">
                 {geo.contentCount} pages · {geo.crawledCount} crawled · {geo.unseenCount} unseen
               </p>
+              {geo.lastPulledAt ? (
+                <p className="mt-1 font-mono text-[11px] text-foundry-500">
+                  {t.consoleSites.lastPullAt}:{' '}
+                  {formatDistanceToNow(new Date(geo.lastPulledAt), {
+                    addSuffix: true,
+                    locale: dateLocale,
+                  })}
+                </p>
+              ) : null}
               {geo.lastPullNote ? (
                 <p className="mt-2 text-sm text-foundry-300">
                   {t.consoleSites.lastPull}: {geo.lastPullNote}
                 </p>
               ) : null}
+              {geo.surfaces ? (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {[
+                    { href: geo.surfaces.llmsTxt, label: 'llms.txt' },
+                    { href: geo.surfaces.feedJson, label: 'feed.json' },
+                    { href: geo.surfaces.api, label: 'api' },
+                  ].map((s) => (
+                    <a
+                      key={s.href}
+                      href={s.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded border border-white/10 px-2 py-1 font-mono text-[11px] text-foundry-300 hover:border-teal-glow/40 hover:text-teal-glow"
+                    >
+                      {s.label}
+                    </a>
+                  ))}
+                </div>
+              ) : null}
               <p className="mt-2 text-xs text-foundry-500">{t.consoleSites.honesty}</p>
+              <p className="mt-1 text-xs text-foundry-600">{t.consoleSites.sitemapTip}</p>
             </section>
           ) : null}
           <section className="nx-card p-4 md:p-5">

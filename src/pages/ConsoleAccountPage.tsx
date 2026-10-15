@@ -356,6 +356,12 @@ export function ConsoleAccountPage() {
               {t.account.adminTitle}
             </h2>
             <p className="mt-1 text-xs text-foundry-500">{t.account.adminHint}</p>
+            <Link
+              to="/console/admin"
+              className="mt-2 inline-block text-xs text-teal-glow hover:underline"
+            >
+              {t.nav.admin} →
+            </Link>
           </div>
           {accounts.length === 0 ? (
             <p className="px-4 py-6 text-sm text-foundry-500">{t.account.noAccounts}</p>

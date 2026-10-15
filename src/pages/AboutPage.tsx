@@ -101,6 +101,9 @@ export function AboutPage() {
             <Link to="/pricing" className="nx-btn nx-btn-ghost">
               {t.nav.pricing}
             </Link>
+            <Link to="/cookbook" className="nx-btn nx-btn-ghost">
+              {t.cookbook.nav}
+            </Link>
             <Link to="/docs" className="nx-btn nx-btn-ghost">
               {t.nav.docs}
             </Link>

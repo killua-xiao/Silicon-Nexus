@@ -11,6 +11,8 @@ import {
   createTaskSchema,
   completeTaskSchema,
   failTaskSchema,
+  handoffAssumeSchema,
+  handoffCreateSchema,
   idSchema,
   memoryDataSchema,
   memoryKeySchema,
@@ -19,19 +21,24 @@ import {
   searchMemoryQuerySchema,
 } from './schemas.ts';
 import {
+  assumeHandoff,
   claimOpenTask,
   completeTask,
   countSites,
+  createHandoff,
   createTask,
   dashboardStats,
   failTask,
   findTask,
   getAccountById,
   getEventLogs,
+  getHandoff,
   getMemoryStore,
+  getMemoryUpdatedAt,
   getTaskQueue,
   incrementUsage,
   listAccounts,
+  adminOverview,
   listAgentSummaries,
   listOpenTasks,
   listPublicAgents,
@@ -69,6 +76,7 @@ import {
   wipeAgentMemory,
   writeAgentMemory,
 } from './store.ts';
+import { buildBodyCells, splitMemoryWritePayload } from './bodyMeta.ts';
 import { logJson } from './log.ts';
 import { resolveLocaleFromRequest } from './locale.ts';
 import { DEFAULT_WORKSPACE_ID, PlanId, resolvePlan } from './types.ts';
@@ -93,8 +101,8 @@ function feedWorkspace(req: Request): string {
   return isSignedIn(req) ? tenantWs(req) : DEFAULT_WORKSPACE_ID;
 }
 
-function sitesListWorkspace(req: Request): string | undefined {
-  return isSignedIn(req) ? tenantWs(req) : undefined;
+function sitesListWorkspace(req: Request): string {
+  return isSignedIn(req) ? tenantWs(req) : DEFAULT_WORKSPACE_ID;
 }
 
 async function issueEmailLink(
@@ -509,6 +517,18 @@ export function createApiRouter(options: { openMode: boolean }): Router {
 
   router.get('/accounts', requireRole('operator'), requireAdmin(), (_req, res) => {
     res.json({ accounts: listAccounts() });
+  });
+
+  /** Hub-wide registered users + per-workspace usage (admin / operator key only). */
+  router.get('/admin/overview', requireRole('operator'), requireAdmin(), (_req, res) => {
+    const overview = adminOverview();
+    res.json({
+      ...overview,
+      audience: {
+        human: 'Browse tenants in /console/admin. Upgrade plans still via PATCH /api/accounts/:id/plan.',
+        agent: 'Admin-only machine contract. Not for agent tokens.',
+      },
+    });
   });
 
   router.patch('/accounts/:id/plan', requireRole('operator'), requireAdmin(), (req, res) => {
@@ -974,8 +994,16 @@ export function createApiRouter(options: { openMode: boolean }): Router {
     try {
       const agentId = idSchema.parse(req.params.agentId);
       if (!assertAgentMemoryAccess(req, agentId, res)) return;
-      const data = memoryDataSchema.parse(req.body);
-      const result = writeAgentMemory(agentId, data, tenantWs(req));
+      const { data: rawData, options } = splitMemoryWritePayload(req.body);
+      const headerSource =
+        typeof req.headers['x-nexus-source'] === 'string'
+          ? req.headers['x-nexus-source'].trim().slice(0, 120)
+          : '';
+      if (headerSource && options.source === 'unspecified') {
+        options.source = headerSource;
+      }
+      const data = memoryDataSchema.parse(rawData);
+      const result = writeAgentMemory(agentId, data, tenantWs(req), options);
       if (result.ok === false) {
         if (result.code === 'plan_limit') {
           const plan = resolvePlan(planIdFromRequest(req));
@@ -988,7 +1016,12 @@ export function createApiRouter(options: { openMode: boolean }): Router {
         }
         return res.status(429).json({ error: 'Maximum agent capacity reached in memory vault.' });
       }
-      res.json({ status: 'success', storedKeys: result.storedKeys });
+      res.json({
+        status: 'success',
+        storedKeys: result.storedKeys,
+        source: options.source,
+        confidence: options.confidence,
+      });
     } catch (err: any) {
       res.status(400).json({ error: 'Validation failed', details: err.errors || err.message });
     }
@@ -1005,6 +1038,109 @@ export function createApiRouter(options: { openMode: boolean }): Router {
       } else {
         res.json(memory);
       }
+    } catch (err: any) {
+      res.status(400).json({ error: 'Validation failed', details: err.errors || err.message });
+    }
+  });
+
+  /** Structured agent body: values + provenance (source / updatedAt / confidence). */
+  router.get('/agent/:agentId/body', (req, res) => {
+    try {
+      const agentId = idSchema.parse(req.params.agentId);
+      if (!assertAgentMemoryAccess(req, agentId, res)) return;
+      const ws = tenantWs(req);
+      const memory = readAgentMemory(agentId, ws);
+      const updatedAt = getMemoryUpdatedAt(agentId, ws) || new Date().toISOString();
+      res.json({
+        agentId,
+        updatedAt,
+        cells: buildBodyCells(memory, updatedAt),
+        note: 'Cite cells via GET /api/agent/{agentId}/memory/{key}. Lexical body — not embeddings.',
+      });
+    } catch (err: any) {
+      res.status(400).json({ error: 'Validation failed', details: err.errors || err.message });
+    }
+  });
+
+  /** Continuity: snapshot body for a later assume (session death → inheritance). */
+  router.post('/agent/:agentId/handoff', (req, res) => {
+    try {
+      const agentId = idSchema.parse(req.params.agentId);
+      if (!assertAgentMemoryAccess(req, agentId, res)) return;
+      const parsed = handoffCreateSchema.parse(req.body || {});
+      const result = createHandoff(agentId, parsed, tenantWs(req));
+      if (!result.ok) {
+        return res.status(400).json({
+          error: 'Nothing to hand off — write body keys first',
+          code: 'NEXUS_HANDOFF_EMPTY',
+        });
+      }
+      res.status(201).json({
+        handoffId: result.handoff.id,
+        agentId: result.handoff.agentId,
+        digest: result.handoff.digest,
+        keys: result.handoff.keys,
+        note: result.handoff.note,
+        createdAt: result.handoff.createdAt,
+        expiresAt: result.handoff.expiresAt,
+        snapshot: result.snapshot,
+      });
+    } catch (err: any) {
+      res.status(400).json({ error: 'Validation failed', details: err.errors || err.message });
+    }
+  });
+
+  router.get('/agent/:agentId/handoff/:handoffId', (req, res) => {
+    try {
+      const agentId = idSchema.parse(req.params.agentId);
+      if (!assertAgentMemoryAccess(req, agentId, res)) return;
+      const found = getHandoff(String(req.params.handoffId), tenantWs(req));
+      if (!found || found.handoff.agentId !== agentId) {
+        return res.status(404).json({ error: 'Handoff not found' });
+      }
+      res.json({
+        handoff: found.handoff,
+        snapshot: found.snapshot,
+      });
+    } catch (err: any) {
+      res.status(400).json({ error: 'Validation failed', details: err.errors || err.message });
+    }
+  });
+
+  /** Continuity: inherit a handoff; optionally rotate token so the prior session dies. */
+  router.post('/agent/:agentId/assume', (req, res) => {
+    try {
+      const agentId = idSchema.parse(req.params.agentId);
+      if (!assertAgentMemoryAccess(req, agentId, res)) return;
+      const parsed = handoffAssumeSchema.parse(req.body);
+      const result = assumeHandoff(
+        agentId,
+        parsed.handoffId,
+        { rotateToken: parsed.rotateToken, planId: planIdFromRequest(req) },
+        tenantWs(req)
+      );
+      if (result.ok === false) {
+        const code = result.code;
+        const status =
+          code === 'not_found' ? 404 : code === 'expired' || code === 'already_assumed' ? 409 : 400;
+        return res.status(status).json({
+          error: `Handoff assume failed: ${code}`,
+          code: `NEXUS_ASSUME_${code.toUpperCase()}`,
+        });
+      }
+      res.json({
+        agentId,
+        handoffId: result.handoff.id,
+        digest: result.digest,
+        assumedKeys: result.assumedKeys,
+        diff: result.diff,
+        rotated: result.rotated,
+        token: result.token,
+        assumedAt: result.handoff.assumedAt,
+        note: result.token
+          ? 'Store the new nxa_* token; the previous token is invalid after rotation.'
+          : 'Assumed without token rotation.',
+      });
     } catch (err: any) {
       res.status(400).json({ error: 'Validation failed', details: err.errors || err.message });
     }

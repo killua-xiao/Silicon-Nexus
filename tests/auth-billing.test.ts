@@ -102,4 +102,33 @@ describe('auth + billing', { concurrency: 1 }, () => {
     assert.ok(zhBiz && zhBiz.includes('¥') && zhBiz.replace(/,/g, '').includes('1788'));
     assert.equal(listPublicPlans().every((p) => p.priceMonthlyCny != null && p.priceMonthlyUsd != null), true);
   });
+
+  test('admin overview aggregates accounts and workspace usage', () => {
+    const user = store.registerAccount({
+      email: `admin-overview-${Date.now()}@example.com`,
+      password: 'password1',
+    });
+    assert.equal(user.ok, true);
+    if (!user.ok) return;
+
+    const enrolled = store.registerAgentToken(
+      `ov-${Date.now()}`,
+      { label: 'overview' },
+      user.account.workspaceId
+    );
+    assert.equal(enrolled.ok, true);
+
+    store.incrementUsage('api_requests', 3, user.account.workspaceId);
+    const overview = store.adminOverview();
+    assert.ok(overview.summary.accounts >= 1);
+    assert.ok(overview.summary.agents >= 1);
+    const row = overview.tenants.find((t) => t.workspaceId === user.account.workspaceId);
+    assert.ok(row);
+    assert.equal(row!.account?.email, user.account.email);
+    assert.ok(row!.enrolledAgents >= 1);
+    assert.ok(row!.today.apiRequests >= 3);
+    const raw = JSON.stringify(overview);
+    assert.equal(raw.includes('nxa_'), false);
+    assert.equal(raw.includes('nxu_'), false);
+  });
 });

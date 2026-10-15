@@ -1,7 +1,7 @@
 /** Lexical memory retrieval helpers. Not embeddings. */
 
 export const MEMORY_SEARCH_NOTE =
-  'Lexical match over memory keys and JSON values (FTS5, substring fallback). Not embeddings. Fetch GET /api/agent/{agentId}/memory/{key} for the full value.';
+  'Lexical match over agent body keys and JSON values (FTS5, substring fallback). Not embeddings. Each hit includes cite + source; fetch the cite path for the full value.';
 
 const BODY_CAP = 8000;
 const SNIPPET_LEN = 220;

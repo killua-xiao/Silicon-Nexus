@@ -9,9 +9,11 @@ import {
   upsertSiteContent,
 } from './store.ts';
 
-const MAX_PAGES = 20;
+const MAX_PAGES = 40;
 const MAX_BYTES = 1_500_000;
 const FETCH_MS = 12_000;
+const MAX_SITEMAP_INDEX_DEPTH = 2;
+const MAX_SITEMAP_FILES = 8;
 const USER_AGENT = 'SiliconNexus-GEO/1.3 (+https://silinex.xyz)';
 
 export type SitePullResult = {
@@ -72,14 +74,70 @@ export function parseSitemapLocs(xml: string): string[] {
   return [...new Set(locs)];
 }
 
-export function htmlToMarkdown(html: string): { title: string; body: string } {
+/** Skip hub feed mirrors, discovery endpoints, and binary assets from GEO sync. */
+export function shouldSkipGeoUrl(raw: string): boolean {
+  let parsed: URL;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    return true;
+  }
+  const path = parsed.pathname.toLowerCase();
+  if (
+    path.startsWith('/feed/') ||
+    path === '/feed' ||
+    path === '/feed.json' ||
+    path === '/feed.xml' ||
+    path === '/sitemap.xml' ||
+    path === '/geo-sitemap.xml' ||
+    path === '/robots.txt' ||
+    path === '/llms.txt' ||
+    path.startsWith('/.well-known/') ||
+    path.startsWith('/api/') ||
+    path.startsWith('/mcp') ||
+    path.startsWith('/console')
+  ) {
+    return true;
+  }
+  // Avoid pulling a site's own GEO surfaces back into itself.
+  if (/\/sites\/[^/]+\/(llms\.txt|feed\.json)$/i.test(path)) return true;
+  if (/\/sites\/[^/]+\/content\//i.test(path)) return true;
+  if (/\.(png|jpe?g|gif|webp|svg|ico|css|js|map|woff2?|ttf|zip|gz|mp4|mp3)$/i.test(path)) {
+    return true;
+  }
+  return false;
+}
+
+export function isSitemapLoc(raw: string): boolean {
+  try {
+    const path = new URL(raw).pathname.toLowerCase();
+    return path.endsWith('.xml') || path.includes('sitemap');
+  } catch {
+    return raw.toLowerCase().endsWith('.xml');
+  }
+}
+
+export function htmlToMarkdown(html: string): { title: string; body: string; summary: string } {
   const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
-  const ogMatch = html.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i);
-  let title = decodeEntities(stripTags(titleMatch?.[1] || ogMatch?.[1] || '')).trim().slice(0, 300);
-  let text = html
+  const ogTitle = metaContent(html, 'og:title') || metaContent(html, 'twitter:title');
+  const description =
+    metaContent(html, 'description') ||
+    metaContent(html, 'og:description') ||
+    metaContent(html, 'twitter:description');
+  let title = decodeEntities(stripTags(titleMatch?.[1] || ogTitle || '')).trim().slice(0, 300);
+
+  const mainMatch =
+    html.match(/<main[^>]*>([\s\S]*?)<\/main>/i) ||
+    html.match(/<article[^>]*>([\s\S]*?)<\/article>/i) ||
+    html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  const scope = mainMatch?.[1] || html;
+
+  let text = scope
     .replace(/<script[\s\S]*?<\/script>/gi, ' ')
     .replace(/<style[\s\S]*?<\/style>/gi, ' ')
     .replace(/<noscript[\s\S]*?<\/noscript>/gi, ' ')
+    .replace(/<nav[\s\S]*?<\/nav>/gi, ' ')
+    .replace(/<footer[\s\S]*?<\/footer>/gi, ' ')
     .replace(/<!--[\s\S]*?-->/g, ' ')
     .replace(/<\/(p|div|h[1-6]|li|tr|section|article)>/gi, '\n\n')
     .replace(/<br\s*\/?>/gi, '\n')
@@ -90,12 +148,35 @@ export function htmlToMarkdown(html: string): { title: string; body: string } {
     .replace(/\n{3,}/g, '\n\n')
     .trim()
     .slice(0, 80_000);
+
   if (!title) {
     const heading = text.match(/^#{1,3}\s+(.+)$/m);
     const firstLine = text.split('\n').map((line) => line.trim()).find(Boolean);
     title = (heading?.[1] || firstLine || 'Untitled').slice(0, 300);
   }
-  return { title, body: text || title };
+
+  const bodyParts = [
+    description ? `> ${description.trim()}\n` : '',
+    text || title,
+  ].filter(Boolean);
+  const body = bodyParts.join('\n').trim();
+  const summary = (description || body).replace(/\s+/g, ' ').trim().slice(0, 220);
+  return { title, body, summary };
+}
+
+export function markdownDocument(raw: string): { title: string; body: string; summary: string } {
+  let body = raw.replace(/^\uFEFF/, '');
+  // Strip YAML front matter if present.
+  if (body.startsWith('---')) {
+    const end = body.indexOf('\n---', 3);
+    if (end !== -1) body = body.slice(end + 4).trimStart();
+  }
+  body = body.trim().slice(0, 80_000);
+  const heading = body.match(/^#{1,3}\s+(.+)$/m);
+  const firstLine = body.split('\n').map((line) => line.trim()).find(Boolean) || 'Untitled';
+  const title = (heading?.[1] || firstLine).slice(0, 300);
+  const summary = body.replace(/\s+/g, ' ').trim().slice(0, 220);
+  return { title, body: body || title, summary };
 }
 
 export function slugFromUrl(url: string): string {
@@ -108,7 +189,7 @@ export function slugFromUrl(url: string): string {
         .filter(Boolean)
         .pop() || parsed.hostname;
     const cleaned = raw
-      .replace(/\.(html?|php|aspx?|xml|md)$/i, '')
+      .replace(/\.(html?|php|aspx?|xml|md|json)$/i, '')
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '')
@@ -140,6 +221,66 @@ export async function assertSafeHttpsUrl(raw: string): Promise<URL> {
     throw new Error('Host resolves to a private or reserved address');
   }
   return parsed;
+}
+
+export async function expandSitemapPageUrls(
+  sitemapUrl: string,
+  fetchXml: (url: string) => Promise<string> = fetchText,
+  options?: { maxPages?: number; maxFiles?: number }
+): Promise<{ pageUrls: string[]; fetched: number; skippedNoise: number }> {
+  const maxPages = Math.min(Math.max(options?.maxPages ?? MAX_PAGES, 1), MAX_PAGES);
+  const maxFiles = Math.min(Math.max(options?.maxFiles ?? MAX_SITEMAP_FILES, 1), MAX_SITEMAP_FILES);
+  const queue: Array<{ url: string; depth: number }> = [{ url: sitemapUrl, depth: 0 }];
+  const seenFiles = new Set<string>();
+  const pageUrls: string[] = [];
+  let fetched = 0;
+  let skippedNoise = 0;
+
+  while (queue.length && seenFiles.size < maxFiles && pageUrls.length < maxPages) {
+    const next = queue.shift()!;
+    if (seenFiles.has(next.url)) continue;
+    seenFiles.add(next.url);
+    const xml = await fetchXml(next.url);
+    fetched += 1;
+    const locs = parseSitemapLocs(xml);
+    for (const loc of locs) {
+      if (isSitemapLoc(loc) && next.depth < MAX_SITEMAP_INDEX_DEPTH) {
+        if (!seenFiles.has(loc) && seenFiles.size + queue.length < maxFiles) {
+          queue.push({ url: loc, depth: next.depth + 1 });
+        }
+        continue;
+      }
+      if (shouldSkipGeoUrl(loc)) {
+        skippedNoise += 1;
+        continue;
+      }
+      if (!pageUrls.includes(loc)) pageUrls.push(loc);
+      if (pageUrls.length >= maxPages) break;
+    }
+  }
+
+  return {
+    pageUrls: prioritizePageUrls(pageUrls).slice(0, maxPages),
+    fetched,
+    skippedNoise,
+  };
+}
+
+/** Prefer product/docs paths before long-tail URLs. */
+export function prioritizePageUrls(urls: string[]): string[] {
+  const score = (raw: string): number => {
+    try {
+      const path = new URL(raw).pathname.toLowerCase().replace(/\/+$/, '') || '/';
+      if (path === '/' || path === '') return 100;
+      if (['/about', '/connect', '/docs', '/pricing'].includes(path)) return 90;
+      if (['/directory', '/privacy', '/terms'].includes(path)) return 70;
+      if (path.split('/').filter(Boolean).length <= 2) return 40;
+      return 10;
+    } catch {
+      return 0;
+    }
+  };
+  return [...urls].sort((a, b) => score(b) - score(a) || a.localeCompare(b));
 }
 
 export async function pullSiteFromSitemap(input: {
@@ -199,31 +340,32 @@ export async function pullSiteFromSitemap(input: {
   const maxPages = Math.min(Math.max(input.maxPages ?? MAX_PAGES, 1), MAX_PAGES);
 
   try {
-    const sitemapXml = await fetchText(sitemapUrl);
-    fetched += 1;
-    const locs = parseSitemapLocs(sitemapXml).filter((loc) => !loc.toLowerCase().endsWith('.xml'));
-    const pageUrls = locs.slice(0, maxPages);
+    const expanded = await expandSitemapPageUrls(sitemapUrl, fetchText, { maxPages });
+    fetched += expanded.fetched;
+    skipped += expanded.skippedNoise;
+    const pageUrls = expanded.pageUrls;
     if (!pageUrls.length) {
-      const note = `Sitemap fetched but no page <loc> entries (index-only or empty). Crawl observation ≠ inclusion.`;
+      const note =
+        'Sitemap fetched but no usable page URLs after expanding indexes and filtering noise (feed/API/discovery). Crawl observation ≠ inclusion.';
       recordSitePull(site.slug, note, site.workspaceId);
       return {
-        ok: true,
+        ok: false,
         slug: site.slug,
         sitemapUrl,
         fetched,
         upserted,
         skipped,
-        errors,
+        errors: ['no_page_urls'],
         note,
       };
     }
 
     for (const pageUrl of pageUrls) {
       try {
-        const html = await fetchText(pageUrl);
+        const { text, contentType } = await fetchTextWithType(pageUrl);
         fetched += 1;
-        const { title, body } = htmlToMarkdown(html);
-        if (!body.trim()) {
+        const parsed = contentFromResponse(pageUrl, text, contentType);
+        if (!parsed.body.trim()) {
           skipped += 1;
           continue;
         }
@@ -231,9 +373,9 @@ export async function pullSiteFromSitemap(input: {
           site.slug,
           {
             slug: uniqueSlug(site.slug, slugFromUrl(pageUrl), pageUrl),
-            title,
-            summary: body.slice(0, 180).replace(/\s+/g, ' '),
-            bodyMd: body,
+            title: parsed.title,
+            summary: parsed.summary,
+            bodyMd: parsed.body,
             canonicalUrl: pageUrl,
             tags: ['sitemap-pull'],
           },
@@ -264,7 +406,7 @@ export async function pullSiteFromSitemap(input: {
   const note = `Pulled ${upserted} pages from sitemap (${skipped} skipped). This is local sync + crawl observation, not proof of search/LLM inclusion.`;
   recordSitePull(site.slug, note, site.workspaceId);
   return {
-    ok: upserted > 0 || errors.length === 0,
+    ok: upserted > 0,
     slug: site.slug,
     sitemapUrl,
     fetched,
@@ -273,6 +415,62 @@ export async function pullSiteFromSitemap(input: {
     errors: errors.slice(0, 8),
     note,
   };
+}
+
+export function contentFromResponse(
+  url: string,
+  text: string,
+  contentType = ''
+): { title: string; body: string; summary: string } {
+  const type = contentType.toLowerCase();
+  const path = (() => {
+    try {
+      return new URL(url).pathname.toLowerCase();
+    } catch {
+      return '';
+    }
+  })();
+  if (type.includes('markdown') || path.endsWith('.md') || looksLikeMarkdown(text)) {
+    return markdownDocument(text);
+  }
+  if (type.includes('html') || /<html[\s>]/i.test(text) || /<body[\s>]/i.test(text)) {
+    return htmlToMarkdown(text);
+  }
+  // Plain text / unknown — treat as markdown document.
+  return markdownDocument(text);
+}
+
+function looksLikeMarkdown(text: string): boolean {
+  const sample = text.slice(0, 400);
+  return /^#{1,3}\s/m.test(sample) || sample.startsWith('---\n') || sample.startsWith('---\r\n');
+}
+
+function metaContent(html: string, name: string): string {
+  const prop = name.startsWith('og:') || name.startsWith('twitter:');
+  const re = prop
+    ? new RegExp(
+        `<meta[^>]+(?:property|name)=["']${escapeReg(name)}["'][^>]+content=["']([^"']+)["'][^>]*>`,
+        'i'
+      )
+    : new RegExp(
+        `<meta[^>]+name=["']${escapeReg(name)}["'][^>]+content=["']([^"']+)["'][^>]*>`,
+        'i'
+      );
+  const alt = prop
+    ? new RegExp(
+        `<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${escapeReg(name)}["'][^>]*>`,
+        'i'
+      )
+    : new RegExp(
+        `<meta[^>]+content=["']([^"']+)["'][^>]+name=["']${escapeReg(name)}["'][^>]*>`,
+        'i'
+      );
+  const match = html.match(re) || html.match(alt);
+  return decodeEntities(match?.[1] || '').trim();
+}
+
+function escapeReg(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 function inferSitemapUrl(domain: string | null): string | null {
@@ -318,6 +516,11 @@ function hashString(value: string): number {
 }
 
 async function fetchText(rawUrl: string): Promise<string> {
+  const { text } = await fetchTextWithType(rawUrl);
+  return text;
+}
+
+async function fetchTextWithType(rawUrl: string): Promise<{ text: string; contentType: string }> {
   let current = rawUrl;
   for (let hop = 0; hop < 4; hop += 1) {
     const safe = await assertSafeHttpsUrl(current);
@@ -327,7 +530,10 @@ async function fetchText(rawUrl: string): Promise<string> {
       const response = await fetch(safe.toString(), {
         method: 'GET',
         redirect: 'manual',
-        headers: { 'User-Agent': USER_AGENT, Accept: 'text/*,application/xml,application/json' },
+        headers: {
+          'User-Agent': USER_AGENT,
+          Accept: 'text/html,text/markdown,text/plain,application/xml,text/xml,application/json',
+        },
         signal: controller.signal,
       });
       if (response.status >= 300 && response.status < 400) {
@@ -343,7 +549,10 @@ async function fetchText(rawUrl: string): Promise<string> {
       if (length > MAX_BYTES) throw new Error('Response too large');
       const buffer = Buffer.from(await response.arrayBuffer());
       if (buffer.length > MAX_BYTES) throw new Error('Response too large');
-      return buffer.toString('utf8');
+      return {
+        text: buffer.toString('utf8'),
+        contentType: response.headers.get('content-type') || '',
+      };
     } finally {
       clearTimeout(timer);
     }

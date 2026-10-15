@@ -20,6 +20,7 @@ import { createMcpHttpRouter } from './src/server/mcpHttp.ts';
 import { listFeedItems, getFeedItemBySlug, recordFeedCrawl, getSiteBySlug, listSiteContent, getSiteContent, recordSiteContentCrawl, listSites } from './src/server/store.ts';
 import {
   buildAtomFeed,
+  buildGeoSitemapXml,
   buildLlmsTxt,
   buildRobotsTxt,
   buildSitemapXml,
@@ -113,15 +114,20 @@ async function startServer() {
     res.type('text/plain; charset=utf-8').send(buildLlmsTxt(appUrl));
   });
   app.get('/sitemap.xml', (_req, res) => {
+    const sites = listSites();
+    const siteContent = sites.flatMap((site) =>
+      listSiteContent(site.slug, { limit: 40 }).map((item) => ({
+        siteSlug: site.slug,
+        slug: item.slug,
+        updatedAt: item.updatedAt || item.publishedAt,
+      }))
+    );
     res
       .type('application/xml')
-      .send(
-        buildSitemapXml(
-          appUrl,
-          listFeedItems({ limit: 200 }),
-          listSites().map((s) => s.slug)
-        )
-      );
+      .send(buildSitemapXml(appUrl, listFeedItems({ limit: 200 }), sites.map((s) => s.slug), siteContent));
+  });
+  app.get('/geo-sitemap.xml', (_req, res) => {
+    res.type('application/xml').send(buildGeoSitemapXml(appUrl));
   });
   app.get('/feed.json', (_req, res) => {
     const items = listFeedItems({ limit: 50 });
@@ -312,6 +318,7 @@ async function startServer() {
         req.path === '/robots.txt' ||
         req.path === '/llms.txt' ||
         req.path === '/sitemap.xml' ||
+        req.path === '/geo-sitemap.xml' ||
         req.path === '/feed.json' ||
         req.path === '/feed.xml' ||
         /\.md$/i.test(req.path) ||

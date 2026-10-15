@@ -18,6 +18,23 @@ export interface MemorySearchHit {
   snippet: string;
   rank: number;
   updatedAt: string;
+  /** Provenance source stamped on write (or "legacy" for pre-meta keys). */
+  source: string;
+  confidence: 'asserted' | 'inferred' | 'unknown';
+  /** Path to fetch the full value for citation. */
+  cite: string;
+}
+
+export interface AgentHandoff {
+  id: string;
+  workspaceId: string;
+  agentId: string;
+  digest: string;
+  note: string | null;
+  keys: string[];
+  createdAt: string;
+  expiresAt: string;
+  assumedAt: string | null;
 }
 
 export interface MemorySearchResult {
@@ -141,6 +158,47 @@ export interface UsageSnapshot {
     stripeConfigured: boolean;
     note: string;
   };
+}
+
+/** Hub-wide tenant row for admin console — no tokens or secrets. */
+export interface AdminTenantUsage {
+  workspaceId: string;
+  planId: PlanId;
+  account: AccountPublic | null;
+  enrolledAgents: number;
+  listedAgents: number;
+  memoryAgents: number;
+  memoryBytes: number;
+  sites: number;
+  totalTasks: number;
+  openTasks: number;
+  processingTasks: number;
+  completedTasks: number;
+  failedTasks: number;
+  today: UsageCounters & { memorySearches: number };
+  lastAgentAt: string | null;
+  lastActivityAt: string | null;
+}
+
+export interface AdminOverview {
+  at: string;
+  summary: {
+    accounts: number;
+    users: number;
+    admins: number;
+    verifiedAccounts: number;
+    agents: number;
+    listedAgents: number;
+    memoryAgents: number;
+    memoryBytes: number;
+    sites: number;
+    openTasks: number;
+    workspaces: number;
+    today: UsageCounters & { memorySearches: number };
+    byPlan: Record<string, number>;
+  };
+  tenants: AdminTenantUsage[];
+  note: string;
 }
 
 export interface AgentSummary {

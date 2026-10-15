@@ -77,6 +77,7 @@ function ConsoleShellInner() {
   const [selectedAgentId, setSelectedAgentId] = useState('');
   const [logQuery, setLogQuery] = useState('');
   const [paused, setPaused] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [hideOnboarding, setHideOnboarding] = useState(
     () => localStorage.getItem('nexus_onboarding_dismissed') === '1'
   );
@@ -113,18 +114,22 @@ function ConsoleShellInner() {
   const refresh = useCallback(async () => {
     if (protectedMode && !getOperatorKey()) {
       setLoading(false);
+      setIsAdmin(false);
       return;
     }
     try {
-      const snap = await apiJson<{
-        stats: Stats;
-        usage: Usage;
-        logs: LogRow[];
-        tasks: TaskRow[];
-        memory: Record<string, Record<string, unknown>>;
-        agents: AgentRow[];
-        worker?: WorkerStatusLite;
-      }>('/api/dashboard/snapshot');
+      const [snap, me] = await Promise.all([
+        apiJson<{
+          stats: Stats;
+          usage: Usage;
+          logs: LogRow[];
+          tasks: TaskRow[];
+          memory: Record<string, Record<string, unknown>>;
+          agents: AgentRow[];
+          worker?: WorkerStatusLite;
+        }>('/api/dashboard/snapshot'),
+        apiJson<{ account?: { role?: string } }>('/api/auth/me').catch(() => null),
+      ]);
       setStats(snap.stats);
       setUsage(snap.usage);
       setLogs(snap.logs);
@@ -132,6 +137,7 @@ function ConsoleShellInner() {
       setMemory(snap.memory);
       setAgents(snap.agents || []);
       setWorker(snap.worker || null);
+      setIsAdmin(me?.account?.role === 'admin');
       setConnected(true);
       setAuthError('');
     } catch {
@@ -253,9 +259,11 @@ function ConsoleShellInner() {
         <ConsoleNav
           connected={connected && (!protectedMode || !!getOperatorKey())}
           workerOnline={worker?.online}
+          isAdmin={isAdmin}
           onLock={() => {
             clearOperatorKey();
             setConnected(false);
+            setIsAdmin(false);
             setShowAuth(true);
           }}
         />
@@ -269,7 +277,7 @@ function ConsoleShellInner() {
             refresh();
           }}
         />
-        <main className="mx-auto max-w-[1400px] px-4 py-5 md:px-6">
+        <main className="mx-auto max-w-[1400px] px-4 py-7 md:px-6 md:py-8">
           {!hideOnboarding && (
             <OnboardingChecklist
               hasKey={!protectedMode || !!getOperatorKey()}

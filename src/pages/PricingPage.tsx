@@ -90,8 +90,9 @@ export function PricingPage() {
             <div
               key={plan.id}
               className={cn(
-                'nx-card nx-card-hover relative flex flex-col p-5',
-                plan.highlighted && 'border-teal-glow/40 ring-1 ring-teal-glow/20'
+                'nx-card nx-card-hover relative flex flex-col p-6',
+                plan.highlighted &&
+                  'border-teal-glow/45 bg-teal-glow/[0.05] shadow-[0_0_0_1px_rgba(62,198,255,0.45)]'
               )}
             >
               {plan.highlighted ? (

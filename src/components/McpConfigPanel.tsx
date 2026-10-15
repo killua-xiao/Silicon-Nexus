@@ -121,6 +121,9 @@ export function McpConfigPanel({
         </button>
       </div>
 
+      <p className="mb-1 font-mono text-[10px] uppercase tracking-wider text-foundry-500">
+        {t.connect.mcpHttpLabel}
+      </p>
       <div className="relative mb-4">
         <pre className="overflow-x-auto rounded border border-white/10 bg-foundry-950 p-3 font-mono text-[11px] text-foundry-200 select-text">
           {httpText}

@@ -7,6 +7,55 @@ export type SiliconNexusOptions = {
   agentId?: string;
 };
 
+export type BodyConfidence = 'asserted' | 'inferred' | 'unknown';
+
+export type MemoryWriteOptions = {
+  agentId?: string;
+  source?: string;
+  confidence?: BodyConfidence;
+};
+
+export type MemorySearchHit = {
+  agentId: string;
+  key: string;
+  snippet: string;
+  rank: number;
+  updatedAt: string;
+  source: string;
+  confidence: BodyConfidence;
+  cite: string;
+};
+
+export type BodyCell = {
+  value: unknown;
+  updatedAt: string;
+  source: string;
+  confidence: BodyConfidence;
+};
+
+export type HandoffResult = {
+  handoffId: string;
+  agentId: string;
+  digest: string;
+  keys: string[];
+  note: string | null;
+  createdAt: string;
+  expiresAt: string;
+  snapshot: Record<string, unknown>;
+};
+
+export type AssumeResult = {
+  agentId: string;
+  handoffId: string;
+  digest: string;
+  assumedKeys: string[];
+  diff: { carried: string[]; missing: string[] };
+  rotated: boolean;
+  token?: string;
+  assumedAt: string | null;
+  note: string;
+};
+
 export class SiliconNexusError extends Error {
   status: number;
   body: unknown;
@@ -53,18 +102,46 @@ export class SiliconNexus {
     return body as T;
   }
 
+  private resolveAgentId(agentId?: string): string {
+    const id = agentId || this.agentId;
+    if (!id) throw new Error('agentId required');
+    return id;
+  }
+
   memory = {
-    write: (data: Record<string, unknown>, agentId = this.agentId) => {
-      if (!agentId) throw new Error('agentId required');
-      return this.request<{ status: string; storedKeys: string[] }>(
-        `/agent/${encodeURIComponent(agentId)}/memory`,
-        { method: 'POST', body: JSON.stringify(data) }
-      );
+    /**
+     * Write citeable body keys. Second arg may be agentId (legacy) or options with source/confidence.
+     */
+    write: (
+      data: Record<string, unknown>,
+      agentIdOrOpts?: string | MemoryWriteOptions
+    ) => {
+      const opts: MemoryWriteOptions =
+        typeof agentIdOrOpts === 'string'
+          ? { agentId: agentIdOrOpts }
+          : agentIdOrOpts || {};
+      const agentId = this.resolveAgentId(opts.agentId);
+      const payload: Record<string, unknown> = { ...data };
+      if (opts.source || opts.confidence) {
+        payload._nexus = {
+          ...(opts.source ? { source: opts.source } : {}),
+          ...(opts.confidence ? { confidence: opts.confidence } : {}),
+        };
+      }
+      return this.request<{
+        status: string;
+        storedKeys: string[];
+        source: string;
+        confidence: BodyConfidence;
+      }>(`/agent/${encodeURIComponent(agentId)}/memory`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
     },
     read: (agentId = this.agentId) => {
-      if (!agentId) throw new Error('agentId required');
+      const id = this.resolveAgentId(agentId);
       return this.request<Record<string, unknown>>(
-        `/agent/${encodeURIComponent(agentId)}/memory`
+        `/agent/${encodeURIComponent(id)}/memory`
       );
     },
     search: (input: { q: string; limit?: number; agentId?: string }) => {
@@ -76,24 +153,59 @@ export class SiliconNexus {
         query: string;
         engine: 'fts5' | 'substring';
         note: string;
-        hits: Array<{
-          agentId: string;
-          key: string;
-          snippet: string;
-          rank: number;
-          updatedAt: string;
-        }>;
+        hits: MemorySearchHit[];
       }>(`/memory/search?${params.toString()}`);
     },
     wipe: (agentId = this.agentId) => {
-      if (!agentId) throw new Error('agentId required');
+      const id = this.resolveAgentId(agentId);
       return this.request<{ status: string }>(
-        `/agent/${encodeURIComponent(agentId)}/memory`,
+        `/agent/${encodeURIComponent(id)}/memory`,
         { method: 'DELETE' }
       );
     },
   };
 
+  /** Structured body cells with provenance. */
+  body = {
+    get: (agentId = this.agentId) => {
+      const id = this.resolveAgentId(agentId);
+      return this.request<{
+        agentId: string;
+        updatedAt: string;
+        cells: Record<string, BodyCell>;
+        note: string;
+      }>(`/agent/${encodeURIComponent(id)}/body`);
+    },
+  };
+
+  /** Continuity: survive session death via handoff → assume. */
+  continuity = {
+    handoff: (
+      input: { note?: string; includeKeys?: string[]; ttlHours?: number } = {},
+      agentId = this.agentId
+    ) => {
+      const id = this.resolveAgentId(agentId);
+      return this.request<HandoffResult>(`/agent/${encodeURIComponent(id)}/handoff`, {
+        method: 'POST',
+        body: JSON.stringify(input),
+      });
+    },
+    assume: (
+      input: { handoffId: string; rotateToken?: boolean },
+      agentId = this.agentId
+    ) => {
+      const id = this.resolveAgentId(agentId);
+      return this.request<AssumeResult>(`/agent/${encodeURIComponent(id)}/assume`, {
+        method: 'POST',
+        body: JSON.stringify({
+          handoffId: input.handoffId,
+          rotateToken: input.rotateToken !== false,
+        }),
+      });
+    },
+  };
+
+  /** @deprecated Prefer continuity for identity survival. */
   tasks = {
     create: (input: { type: string; payload?: unknown; creatorId?: string }) => {
       const creatorId = input.creatorId || this.agentId;

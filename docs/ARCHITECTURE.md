@@ -2,13 +2,12 @@
 
 ## Core Philosophy
 
-Silicon Nexus is an **AI / Agent-era capability platform**.
+Silicon Nexus is a **portable body hub for silicon lifeforms**.
 
 - **API-first + MCP** — agents are first-class clients; the React UI is an operator console.
-- **Modular capabilities** — memory, task swarm, signals/GEO, and future modules share auth, workspace, audit, and discovery surfaces.
+- **Core** — agent body (citeable JSON + provenance), continuity (handoff / assume), honest observation.
+- **Legacy modules** — task queue, publish surfaces (former GEO), public directory — available, not the face.
 - **Dual audience** — every capability exposes human UI and machine contracts (`docs/DUAL_AUDIENCE.md`, `docs/PRODUCT.md`).
-
-The product is not limited to memory/tasks or GEO alone; those are current modules under one hub.
 
 ## Tech Stack
 * **Runtime:** Node.js (tsx in dev; compiled `dist/server.js` in production)
@@ -23,8 +22,9 @@ The product is not limited to memory/tasks or GEO alone; those are current modul
 ┌─────────────────────────────────────────────────────────┐
 │  Platform: auth · workspace · audit · usage · MCP/HTTP  │
 ├─────────────┬─────────────┬─────────────┬───────────────┤
-│ Memory      │ Task swarm  │ Signals/GEO │ Future…       │
-│ vault       │ queue/CAS   │ feed/llms   │               │
+│ Agent body  │ Continuity  │ Observation │ Legacy…       │
+│ + provenance│ handoff/    │ feed/llms   │ tasks/sites   │
+│             │ assume      │             │               │
 └─────────────┴─────────────┴─────────────┴───────────────┘
          │ REST · MCP · console · /.well-known · feed
 ```
@@ -77,12 +77,14 @@ All core entities carry `workspaceId`. Operator key (`nxo_*`) uses the `default`
 ### API surface (selected)
 * `/health`, `/ready` — liveness / readiness (outside `/api`)
 * `/api/agents/*` — enroll / list / patch / revoke (operator)
-* `/api/agent/:id/memory` — GET/POST/DELETE
-* `/api/memory/search` — lexical FTS over keys/values (snippets; not embeddings)
-* `/api/tasks` — create / get / open / accept / complete / fail / reopen
-* `/api/sites` — GEO register / pull / content; public `llms.txt` + `feed.json` per slug
+* `/api/agent/:id/memory` — GET/POST/DELETE (optional `_nexus.source` / `X-Nexus-Source`)
+* `/api/agent/:id/body` — structured cells with provenance
+* `/api/agent/:id/handoff` · `/assume` — continuity protocol
+* `/api/memory/search` — lexical FTS (snippets + cite + source; not embeddings)
+* `/api/tasks` — legacy create / claim / complete
+* `/api/sites` — legacy publish surfaces; public `llms.txt` + `feed.json` per slug
 * `/api/feed` — public list/get; operator publish/delete
-* `/api/directory` — public agent roster
+* `/api/directory` — legacy public agent roster
 * `/api/dashboard/snapshot` — one-payload console poll (`worker.online` from hub heartbeat)
 * `/api/plans`, `/api/billing/checkout`, `/api/billing/webhook`, `/auth/verify|forgot|reset`
 * Public discovery: `/llms.txt`, `/feed.json`, `/feed.xml`, `/sitemap.xml`, `/.well-known/agent.json`

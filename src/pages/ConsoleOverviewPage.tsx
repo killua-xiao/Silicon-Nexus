@@ -134,6 +134,30 @@ export function ConsoleOverviewPage() {
   const modules: ModuleCard[] = useMemo(
     () => [
       {
+        id: 'memory',
+        title: t.console.modMemory,
+        desc: t.console.modMemoryDesc,
+        to: '#live-ops',
+        icon: Database,
+        accent: 'text-teal-glow',
+        metrics: [
+          interpolate(t.console.metricMemory, { n: String(memoryAgentCount) }),
+          usage ? formatBytes(usage.memoryBytes) : '—',
+        ],
+      },
+      {
+        id: 'feed',
+        title: t.console.modFeed,
+        desc: t.console.modFeedDesc,
+        to: '/console/feed',
+        icon: Newspaper,
+        accent: 'text-teal-glow',
+        metrics: [
+          interpolate(t.console.metricFeed, { n: String(feedItems.length) }),
+          interpolate(t.console.metricFeedCrawled, { n: String(feedCrawled) }),
+        ],
+      },
+      {
         id: 'agents',
         title: t.console.modAgents,
         desc: t.console.modAgentsDesc,
@@ -148,41 +172,17 @@ export function ConsoleOverviewPage() {
         ],
       },
       {
-        id: 'memory',
-        title: t.console.modMemory,
-        desc: t.console.modMemoryDesc,
-        to: '#live-ops',
-        icon: Database,
+        id: 'connect',
+        title: t.console.modConnect,
+        desc: t.console.modConnectDesc,
+        to: '/connect',
+        icon: Plug,
         accent: 'text-teal-glow',
         metrics: [
-          interpolate(t.console.metricMemory, { n: String(memoryAgentCount) }),
-          usage ? formatBytes(usage.memoryBytes) : '—',
-        ],
-      },
-      {
-        id: 'tasks',
-        title: t.console.modTasks,
-        desc: t.console.modTasksDesc,
-        to: '#live-ops',
-        icon: Boxes,
-        accent: 'text-copper',
-        metrics: [
-          interpolate(t.console.metricTasks, { n: String(openTasks) }),
-          usage
-            ? `${usage.processingTasks} / ${usage.completedTasks}`
-            : String(stats?.completedTasks ?? 0),
-        ],
-      },
-      {
-        id: 'feed',
-        title: t.console.modFeed,
-        desc: t.console.modFeedDesc,
-        to: '/console/feed',
-        icon: Newspaper,
-        accent: 'text-teal-glow',
-        metrics: [
-          interpolate(t.console.metricFeed, { n: String(feedItems.length) }),
-          interpolate(t.console.metricFeedCrawled, { n: String(feedCrawled) }),
+          usage?.plan
+            ? interpolate(t.console.metricPlan, { id: usage.plan.id })
+            : 'MCP /mcp',
+          'agent.json',
         ],
       },
       {
@@ -201,17 +201,17 @@ export function ConsoleOverviewPage() {
         ].filter(Boolean),
       },
       {
-        id: 'connect',
-        title: t.console.modConnect,
-        desc: t.console.modConnectDesc,
-        to: '/connect',
-        icon: Plug,
-        accent: 'text-teal-glow',
+        id: 'tasks',
+        title: t.console.modTasks,
+        desc: t.console.modTasksDesc,
+        to: '#live-ops',
+        icon: Boxes,
+        accent: 'text-copper',
         metrics: [
-          usage?.plan
-            ? interpolate(t.console.metricPlan, { id: usage.plan.id })
-            : 'MCP /mcp',
-          'agent.json',
+          interpolate(t.console.metricTasks, { n: String(openTasks) }),
+          usage
+            ? `${usage.processingTasks} / ${usage.completedTasks}`
+            : String(stats?.completedTasks ?? 0),
         ],
       },
     ],
@@ -287,6 +287,56 @@ export function ConsoleOverviewPage() {
       </div>
 
       <StatStrip stats={stats} usage={usage} loading={loading} />
+
+      <section id="live-ops" className="space-y-3 scroll-mt-4">
+        <div>
+          <h2 className="font-mono text-xs uppercase tracking-wider text-teal-glow">
+            {t.console.liveTitle}
+          </h2>
+          <p className="mt-1 text-sm text-foundry-500">{t.console.liveHint}</p>
+        </div>
+        <div className="grid gap-3 lg:grid-cols-3">
+          <MemoryVault
+            memory={memory}
+            selectedAgentId={selectedAgentId}
+            onSelect={setSelectedAgentId}
+            onWipe={wipeMemory}
+            loading={loading}
+          />
+          <TaskQueue
+            tasks={tasks}
+            loading={loading}
+            worker={worker}
+            onDispatch={dispatchTask}
+            onReopen={reopenTask}
+            onFail={failTask}
+          />
+          <section className="nx-card flex flex-col p-4">
+            <div className="mb-3 flex items-center gap-2 text-teal-glow">
+              <Globe2 className="h-4 w-4" />
+              <h3 className="font-mono text-xs uppercase tracking-wider">{t.console.modSites}</h3>
+            </div>
+            <p className="text-sm leading-relaxed text-foundry-400">{t.console.modSitesDesc}</p>
+            <div className="mt-4 space-y-1 font-mono text-[11px] text-foundry-300">
+              <p>{interpolate(t.console.metricSites, { n: String(sites.length) })}</p>
+              <p>{interpolate(t.console.metricPages, { n: String(sitePages) })}</p>
+              <p>{interpolate(t.console.metricFeedCrawled, { n: String(siteCrawled) })}</p>
+            </div>
+            {sites[0] ? (
+              <a
+                href={`/sites/${encodeURIComponent(sites[0].slug)}/llms.txt`}
+                className="mt-3 block truncate font-mono text-[11px] text-teal-glow hover:underline"
+              >
+                /sites/{sites[0].slug}/llms.txt
+              </a>
+            ) : null}
+            <Link to="/console/sites" className="nx-btn nx-btn-ghost mt-4 text-sm">
+              {t.console.openModule}
+            </Link>
+          </section>
+        </div>
+        <ActivityFeed logs={logs} query={logQuery} onQuery={setLogQuery} loading={loading} />
+      </section>
 
       <section className="space-y-3">
         <div>
@@ -386,32 +436,6 @@ export function ConsoleOverviewPage() {
         </div>
       </section>
 
-      <section id="live-ops" className="space-y-3 scroll-mt-4">
-        <div>
-          <h2 className="font-mono text-xs uppercase tracking-wider text-teal-glow">
-            {t.console.liveTitle}
-          </h2>
-          <p className="mt-1 text-sm text-foundry-500">{t.console.liveHint}</p>
-        </div>
-        <div className="grid gap-3 lg:grid-cols-3">
-          <ActivityFeed logs={logs} query={logQuery} onQuery={setLogQuery} loading={loading} />
-          <TaskQueue
-            tasks={tasks}
-            loading={loading}
-            worker={worker}
-            onDispatch={dispatchTask}
-            onReopen={reopenTask}
-            onFail={failTask}
-          />
-          <MemoryVault
-            memory={memory}
-            selectedAgentId={selectedAgentId}
-            onSelect={setSelectedAgentId}
-            onWipe={wipeMemory}
-            loading={loading}
-          />
-        </div>
-      </section>
     </div>
   );
 }

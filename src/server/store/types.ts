@@ -1,10 +1,13 @@
+import type { MemoryWriteOptions } from '../bodyMeta.ts';
 import {
   AgentCredential,
+  AgentHandoff,
   AgentMemory,
   AgentSummary,
   MemorySearchResult,
   Account,
   AccountPublic,
+  AdminOverview,
   FeedItem,
   FeedItemInput,
   PlanId,
@@ -57,15 +60,48 @@ export interface NexusStore {
   writeAgentMemory(
     agentId: string,
     data: AgentMemory,
-    workspaceId?: string
+    workspaceId?: string,
+    options?: Partial<MemoryWriteOptions>
   ): { ok: true; storedKeys: string[] } | { ok: false; code: 'capacity' | 'plan_limit' };
   wipeAgentMemory(agentId: string, workspaceId?: string): boolean;
   readAgentMemory(agentId: string, workspaceId?: string): AgentMemory;
   getMemoryStore(workspaceId?: string): Record<string, AgentMemory>;
+  getMemoryUpdatedAt(agentId: string, workspaceId?: string): string | null;
   searchAgentMemory(
     query: string,
     options?: { workspaceId?: string; agentId?: string; limit?: number }
   ): MemorySearchResult;
+
+  createHandoff(
+    agentId: string,
+    input: { note?: string; includeKeys?: string[]; ttlHours?: number },
+    workspaceId?: string
+  ):
+    | { ok: true; handoff: AgentHandoff; snapshot: AgentMemory }
+    | { ok: false; code: 'empty' };
+  getHandoff(
+    handoffId: string,
+    workspaceId?: string
+  ): { handoff: AgentHandoff; snapshot: AgentMemory } | undefined;
+  assumeHandoff(
+    agentId: string,
+    handoffId: string,
+    options: { rotateToken?: boolean; planId?: string | null },
+    workspaceId?: string
+  ):
+    | {
+        ok: true;
+        handoff: AgentHandoff;
+        token?: string;
+        rotated: boolean;
+        assumedKeys: string[];
+        digest: string;
+        diff: { carried: string[]; missing: string[] };
+      }
+    | {
+        ok: false;
+        code: 'not_found' | 'expired' | 'already_assumed' | 'agent_mismatch' | 'digest_mismatch';
+      };
 
   createTask(input: {
     creatorId: string;
@@ -161,6 +197,7 @@ export interface NexusStore {
   getAccountById(id: string): Account | undefined;
   getAccountByStripeCustomerId(customerId: string): Account | undefined;
   listAccounts(): AccountPublic[];
+  adminOverview(): AdminOverview;
   registerAccount(input: {
     email: string;
     password: string;

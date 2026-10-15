@@ -5,6 +5,7 @@ import { LandingPage } from './pages/LandingPage';
 import { AboutPage } from './pages/AboutPage';
 import { DocsPage } from './pages/DocsPage';
 import { ConnectPage } from './pages/ConnectPage';
+import { CookbookPage } from './pages/CookbookPage';
 import { PricingPage } from './pages/PricingPage';
 import { ConsoleLayout } from './pages/ConsoleLayout';
 import { ConsoleOverviewPage } from './pages/ConsoleOverviewPage';
@@ -12,6 +13,7 @@ import { AgentsPage } from './pages/AgentsPage';
 import { ConsoleFeedPage } from './pages/ConsoleFeedPage';
 import { ConsoleSitesPage } from './pages/ConsoleSitesPage';
 import { ConsoleAccountPage } from './pages/ConsoleAccountPage';
+import { ConsoleAdminPage } from './pages/ConsoleAdminPage';
 import { VerifyPage } from './pages/VerifyPage';
 import { ResetPage } from './pages/ResetPage';
 import { DirectoryPage } from './pages/DirectoryPage';
@@ -28,6 +30,7 @@ export default function App() {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/docs" element={<DocsPage />} />
             <Route path="/connect" element={<ConnectPage />} />
+            <Route path="/cookbook" element={<CookbookPage />} />
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/privacy" element={<LegalPage />} />
             <Route path="/terms" element={<LegalPage />} />
@@ -42,6 +45,7 @@ export default function App() {
               <Route path="feed" element={<ConsoleFeedPage />} />
               <Route path="sites" element={<ConsoleSitesPage />} />
               <Route path="account" element={<ConsoleAccountPage />} />
+              <Route path="admin" element={<ConsoleAdminPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

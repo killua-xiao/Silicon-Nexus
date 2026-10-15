@@ -51,3 +51,20 @@ export const patchAgentSchema = z
 export const failTaskSchema = z.object({
   lastError: z.string().min(1).max(2000),
 });
+
+export const handoffCreateSchema = z.object({
+  note: z.string().max(500).optional(),
+  includeKeys: z.array(memoryKeySchema).max(200).optional(),
+  /** Hours until the handoff expires. Default 168 (7 days). */
+  ttlHours: z.coerce.number().int().min(1).max(720).optional().default(168),
+});
+
+export const handoffAssumeSchema = z.object({
+  handoffId: z
+    .string()
+    .min(8)
+    .max(80)
+    .regex(/^hof_[a-f0-9]+$/i),
+  /** Rotate nxa_* so the prior session cannot keep writing. Default true. */
+  rotateToken: z.boolean().optional().default(true),
+});

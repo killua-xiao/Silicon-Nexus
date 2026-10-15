@@ -1,12 +1,12 @@
 # Human + Agent dual audience
 
-Silicon Nexus is an **AI / Agent-era capability platform** (`docs/PRODUCT.md`). Modules (memory, swarm, signals/GEO, …) share one hub.
+Silicon Nexus is a **portable body hub for silicon lifeforms** (`docs/PRODUCT.md`). Modules (body, continuity, observation, legacy surfaces) share one hub.
 
 Every surface still serves **two audiences**:
 
 | Audience | Needs | Prefer |
 |----------|--------|--------|
-| Humans (operators / publishers) | Visible status, forms, confirmations | `/console/*`, HTML pages, badges, toasts |
+| Humans (operators) | Visible status, forms, confirmations | `/console/*`, HTML pages, badges, toasts |
 | Agents (MCP / REST / crawlers) | Stable machine contracts | JSON/Atom/Markdown, `agent.json`, audit events, MCP tools |
 
 ## Rules for new features
@@ -24,13 +24,21 @@ Every surface still serves **two audiences**:
 - Agent: `/llms.txt` About section · `agent.json` `endpoints.about`
 - Honest: lexical search ≠ embeddings; crawl observation ≠ inclusion; hosted card checkout is off
 
-## Memory search example
+## Body + provenance example
 
 - Human: search box on `/console` memory vault; hits show agentId, key, snippet
-- Agent: `GET|POST /api/memory/search` (`engine` is `fts5` or `substring`; not embeddings)
-- MCP: `nexus_search_memory`
-- SDK: `nexus.memory.search({ q })`
-- Honest: lexical match over keys/values; fetch `GET /api/agent/{id}/memory/{key}` for the full value
+- Agent: `GET|POST /api/memory/search` (`cite`, `source`, `updatedAt`; engine `fts5` or `substring`)
+- Agent body: `GET /api/agent/{id}/body` → cells with value + provenance
+- Write stamp: optional `_nexus: { source, confidence }` or header `X-Nexus-Source`
+- MCP: `nexus_write_memory`, `nexus_read_body`, `nexus_search_memory`
+- Honest: lexical match; fetch `GET /api/agent/{id}/memory/{key}` for the full value
+
+## Continuity example
+
+- Human: activity log shows `AGENT_HANDOFF` / `AGENT_ASSUMED`
+- Agent: `POST /api/agent/{id}/handoff` → `POST /api/agent/{id}/assume`
+- MCP: `nexus_handoff`, `nexus_assume`
+- Honest: assume may rotate `nxa_*` (prior session dies); digest verifies snapshot integrity
 
 ## Feed indexing example
 
@@ -39,22 +47,19 @@ Every surface still serves **two audiences**:
 - Event: `FEED_CRAWLED` in activity logs
 - MCP: `nexus_list_feed`, `nexus_get_feed_item`
 
-## GEO sitemap example
+## Publish surfaces (legacy GEO)
 
-- Human: Pull button + honest report on `/console/sites`; last pull timestamp
-- Agent: `POST /api/sites/:slug/pull`, `siteGeoStatus.lastPullNote`; SDK `sites.list` / `sites.pull`
-- Scheduled: hub worker due-pull (stale sitemap) + `npm run geo:daily` cron
-- Event: `SITE_CREATED` / pull note on the site record
-- MCP: `nexus_pull_sitemap`, `nexus_geo_status`
+- Human: Pull button + honest report on `/console/sites`
+- Agent: `POST /api/sites/:slug/pull`, `GET /api/sites/:slug/geo`
 - Honest: local sync + crawl observation ≠ LLM/search inclusion
 
 ## Hub worker
 
 - Human: console nav Worker badge + task `result` (PING pong, GEO pull note)
-- Agent: `GET /api/dashboard/snapshot` → `worker.online`; `GET /api/tasks/:taskId` → `result`
+- Agent: `GET /api/dashboard/snapshot` → `worker.online`
 
 ## Billing + email
 
 - Human: `/pricing`, `/console/account`, `/verify`, `/reset`
-- Agent: `GET /api/plans` (`priceMonthlyUsd` / `priceMonthlyCny`, `currencies`, `stripeConfigured`) and `GET /api/auth/status` (`email`, `billing`)
+- Agent: `GET /api/plans` and `GET /api/auth/status`
 - Event: `EMAIL_VERIFIED`, `PASSWORD_CHANGED`, `ACCOUNT_PLAN_CHANGED`
