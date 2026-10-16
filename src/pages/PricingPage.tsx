@@ -76,9 +76,9 @@ export function PricingPage() {
   return (
     <div className="min-h-screen bg-foundry-950 foundry-grid">
       <SiteHeader compact />
-      <main className="mx-auto max-w-6xl px-6 py-12">
+      <main className="mx-auto max-w-6xl px-5 py-8 md:px-6">
         <p className="nx-kicker mb-2">{t.pricing.eyebrow}</p>
-        <h1 className="text-3xl font-semibold tracking-tight text-foundry-100 md:text-4xl">
+        <h1 className="text-[1.75rem] font-semibold tracking-tight text-foundry-100 md:text-[2rem]">
           {t.pricing.title}
         </h1>
         <p className="mt-3 max-w-2xl text-foundry-400 leading-relaxed">{t.pricing.intro}</p>
@@ -92,7 +92,7 @@ export function PricingPage() {
               className={cn(
                 'nx-card nx-card-hover relative flex flex-col p-6',
                 plan.highlighted &&
-                  'border-teal-glow/45 bg-teal-glow/[0.05] shadow-[0_0_0_1px_rgba(62,198,255,0.45)]'
+                  'border-accent/40 bg-accent/[0.04]'
               )}
             >
               {plan.highlighted ? (

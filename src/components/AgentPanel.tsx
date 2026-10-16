@@ -72,7 +72,7 @@ export function AgentPanel({
 
   return (
     <div className="space-y-6">
-      <section className="border border-white/5 bg-foundry-900/60 p-4 md:p-5">
+      <section className="nx-panel p-4">
         <h2 className="mb-3 flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-teal-glow">
           <UserPlus className="h-3.5 w-3.5" />
           {t.agents.issueTitle}
@@ -108,13 +108,13 @@ export function AgentPanel({
           </button>
         </div>
         {issued ? (
-          <div className="mt-4 rounded border border-teal-glow/30 bg-teal-950/30 p-3">
+          <div className="mt-4 rounded border border-accent/30 bg-accent/[0.06] p-3">
             <p className="mb-1 text-xs text-foundry-400">
               {t.agents.oneTime}{' '}
               <span className="text-teal-glow">{issued.agentId}</span> {t.agents.copyNow}
             </p>
             <div className="flex items-start gap-2">
-              <code className="flex-1 break-all font-mono text-xs text-teal-50 select-text">
+              <code className="flex-1 break-all font-mono text-xs text-foundry-100 select-text">
                 {issued.token}
               </code>
               <button
@@ -133,7 +133,7 @@ export function AgentPanel({
         ) : null}
       </section>
 
-      <section className="border border-white/5 bg-foundry-900/60">
+      <section className="nx-panel">
         <div className="border-b border-white/5 px-4 py-3">
           <h2 className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-teal-glow">
             <KeyRound className="h-3.5 w-3.5" />

@@ -74,7 +74,7 @@ export function McpConfigPanel({
   );
 
   return (
-    <section className="border border-white/5 bg-foundry-900/60 p-4 md:p-5">
+    <section className="nx-panel p-4">
       <h2 className="mb-2 flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-teal-glow">
         <Terminal className="h-3.5 w-3.5" />
         {t.connect.mcpTitle}

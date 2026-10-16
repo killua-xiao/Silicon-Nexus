@@ -10,9 +10,9 @@ export function ConnectPage() {
   return (
     <div className="min-h-screen bg-foundry-950 foundry-grid text-foundry-100">
       <SiteHeader compact />
-      <main className="mx-auto max-w-3xl px-6 py-12">
+      <main className="mx-auto max-w-3xl px-5 py-8 md:px-6">
         <p className="nx-kicker mb-2">{t.connect.eyebrow}</p>
-        <h1 className="text-3xl font-semibold tracking-tight text-foundry-100">
+        <h1 className="text-[1.75rem] font-semibold tracking-tight text-foundry-100">
           {t.connect.pageTitle}
         </h1>
         <p className="mt-3 text-foundry-400 leading-relaxed">{t.connect.pageIntro}</p>
@@ -66,7 +66,7 @@ export function ConnectPage() {
           <h3 className="mt-6 font-mono text-xs uppercase tracking-wider text-copper">
             {t.connect.sampleTitle}
           </h3>
-          <pre className="mt-3 overflow-x-auto rounded-xl border border-white/10 bg-foundry-950 p-4 font-mono text-[11px] leading-relaxed text-foundry-200">
+          <pre className="mt-3 overflow-x-auto rounded border border-white/10 bg-foundry-950 p-3 font-mono text-[11px] leading-relaxed text-foundry-200">
             {t.connect.sampleCurl}
           </pre>
         </section>
