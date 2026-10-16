@@ -11,9 +11,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PUBLIC = ROOT / "public"
 
-BG = (0x11, 0x18, 0x20)
-TEAL = (0x2D, 0xD4, 0xBF)
-BORDER = (0x2D, 0xD4, 0xBF)
+# foundry-950 canvas + brass accent (DESIGN.md)
+BG = (0x0E, 0x0F, 0x12)
+BRASS = (0xC4, 0xA5, 0x74)
+BORDER = (0xC4, 0xA5, 0x74)
 
 
 def write_png(width: int, height: int, rgba: bytes) -> bytes:
@@ -128,9 +129,9 @@ def render_icon(size: int, *, padded: bool = False, samples: int = 4) -> bytes:
                 border_a = cover(abs(plate) - border_stroke * 0.5) * 0.40
                 rgb = mix(rgb, BORDER, border_a)
                 fill_a = cover(hex_d) * 0.12
-                rgb = mix(rgb, TEAL, fill_a)
+                rgb = mix(rgb, BRASS, fill_a)
                 stroke_a = cover(abs(hex_d) - hex_stroke * 0.5)
-                rgb = mix(rgb, TEAL, stroke_a)
+                rgb = mix(rgb, BRASS, stroke_a)
 
             ox = x // samples
             oy = y // samples
