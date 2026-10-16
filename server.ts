@@ -28,6 +28,7 @@ import {
 import { buildSiteFeedJson, buildSiteLlmsTxt } from './src/server/geoPublic.ts';
 import { detectCrawler } from './src/server/crawlDetect.ts';
 import { handleStripeWebhook } from './src/server/stripeBilling.ts';
+import { isSpaCatchAllExcluded } from './src/server/spaSurfaces.ts';
 
 const DEFAULT_PUBLIC_URL = 'https://silinex.xyz';
 
@@ -94,6 +95,10 @@ async function startServer() {
   app.get('/openapi.yaml', (_req, res) => {
     res.type('text/yaml').sendFile(path.join(process.cwd(), 'docs', 'openapi.yaml'));
   });
+  // Common clients probe /openapi.json; the contract lives at /openapi.yaml.
+  app.get('/openapi.json', (_req, res) => {
+    res.redirect(301, '/openapi.yaml');
+  });
 
   const agentCard = buildAgentCard(appUrl);
   const mcpCard = buildMcpServerCard(appUrl);
@@ -111,6 +116,9 @@ async function startServer() {
     res.type('text/plain').send(buildRobotsTxt(appUrl));
   });
   app.get('/llms.txt', (_req, res) => {
+    res.type('text/plain; charset=utf-8').send(buildLlmsTxt(appUrl));
+  });
+  app.get('/.well-known/llms.txt', (_req, res) => {
     res.type('text/plain; charset=utf-8').send(buildLlmsTxt(appUrl));
   });
   app.get('/sitemap.xml', (_req, res) => {
@@ -307,29 +315,7 @@ async function startServer() {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res, next) => {
-      if (
-        req.path.startsWith('/api') ||
-        req.path === '/health' ||
-        req.path === '/ready' ||
-        req.path === '/openapi.yaml' ||
-        req.path === '/agent.json' ||
-        req.path === '/.well-known/agent.json' ||
-        req.path === '/.well-known/mcp/server-card.json' ||
-        req.path === '/robots.txt' ||
-        req.path === '/llms.txt' ||
-        req.path === '/sitemap.xml' ||
-        req.path === '/geo-sitemap.xml' ||
-        req.path === '/feed.json' ||
-        req.path === '/feed.xml' ||
-        /\.md$/i.test(req.path) ||
-        (req.path.startsWith('/feed/') && /\.json$/i.test(req.path)) ||
-        (req.path.startsWith('/sites/') &&
-          (/llms\.txt$/i.test(req.path) ||
-            /feed\.json$/i.test(req.path) ||
-            /\.json$/i.test(req.path))) ||
-        req.path === '/mcp' ||
-        req.path.startsWith('/mcp/')
-      ) {
+      if (isSpaCatchAllExcluded(req.path)) {
         return next();
       }
       res.sendFile(path.join(distPath, 'index.html'));
