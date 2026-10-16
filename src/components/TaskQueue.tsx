@@ -97,7 +97,7 @@ export function TaskQueue({
           <button
             type="button"
             onClick={() => setShowForm((v) => !v)}
-            className="inline-flex items-center gap-1 rounded-sm bg-teal-deep/80 px-2 py-1 text-[11px] font-medium text-teal-50 hover:bg-teal-deep"
+            className="inline-flex items-center gap-1 rounded-sm bg-accent-dim px-2 py-1 text-[11px] font-medium text-foundry-100 hover:bg-accent-dim/80"
           >
             <Send className="h-3 w-3" />
             {t.tasks.dispatch}
@@ -109,7 +109,7 @@ export function TaskQueue({
         <p
           className={cn(
             'border-b border-white/5 px-3 py-1.5 text-[10px] leading-relaxed',
-            worker.online ? 'text-teal-glow/90' : 'text-copper'
+            worker.online ? 'text-ok' : 'text-copper'
           )}
         >
           {worker.online ? t.tasks.workerOnline : t.tasks.workerOffline}

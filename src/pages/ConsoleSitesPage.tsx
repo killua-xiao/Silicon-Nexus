@@ -372,7 +372,7 @@ export function ConsoleSitesPage() {
                         setPulling(false);
                       }
                     }}
-                    className="inline-flex items-center gap-1 rounded border border-teal-glow/30 px-2.5 py-1 text-xs text-teal-glow hover:bg-teal-950/40 disabled:opacity-50"
+                    className="inline-flex items-center gap-1 rounded border border-accent/30 px-2.5 py-1 text-xs text-accent hover:bg-accent/10 disabled:opacity-50"
                   >
                     <RefreshCw className={`h-3 w-3 ${pulling ? 'animate-spin' : ''}`} />
                     {pulling ? t.consoleSites.pulling : t.consoleSites.pullSitemap}

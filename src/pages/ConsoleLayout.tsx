@@ -255,7 +255,7 @@ function ConsoleShellInner() {
 
   return (
     <ConsoleContext.Provider value={value}>
-      <div className="min-h-screen bg-foundry-950 foundry-grid">
+      <div className="min-h-screen bg-foundry-950">
         <ConsoleNav
           connected={connected && (!protectedMode || !!getOperatorKey())}
           workerOnline={worker?.online}
@@ -277,7 +277,7 @@ function ConsoleShellInner() {
             refresh();
           }}
         />
-        <main className="mx-auto max-w-[1400px] px-4 py-7 md:px-6 md:py-8">
+        <main className="mx-auto max-w-[1400px] px-4 py-4 md:px-6 md:py-5">
           {!hideOnboarding && (
             <OnboardingChecklist
               hasKey={!protectedMode || !!getOperatorKey()}

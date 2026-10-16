@@ -33,7 +33,7 @@ export function ResetPage() {
   return (
     <div className="min-h-screen bg-foundry-950 foundry-grid">
       <SiteHeader compact />
-      <main className="mx-auto max-w-lg px-6 py-16">
+      <main className="mx-auto max-w-lg px-5 py-8">
         <h1 className="text-2xl font-semibold text-foundry-100">{t.reset.title}</h1>
         {done ? (
           <p className="mt-4 text-sm text-foundry-300">{t.reset.ok}</p>

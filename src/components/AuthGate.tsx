@@ -54,11 +54,11 @@ export function AuthGate({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foundry-950/85 p-4 backdrop-blur-sm">
-      <div className="nx-card w-full max-w-md p-6 shadow-2xl animate-foundry-rise">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foundry-950/80 p-4">
+      <div className="nx-card w-full max-w-md p-5">
         <div className="mb-4 flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-md border border-teal-glow/30 bg-foundry-950">
-            <Shield className="h-5 w-5 text-teal-glow" />
+          <span className="flex h-9 w-9 items-center justify-center rounded border border-accent/30 bg-foundry-950">
+            <Shield className="h-4 w-4 text-accent" />
           </span>
           <div>
             <h2 className="text-lg font-semibold text-foundry-100">{t.auth.title}</h2>
@@ -72,7 +72,7 @@ export function AuthGate({
             onClick={() => setTab('key')}
             className={cn(
               'flex-1 rounded px-2 py-1.5 text-xs font-medium',
-              tab === 'key' ? 'bg-foundry-800 text-teal-glow' : 'text-foundry-400'
+              tab === 'key' ? 'bg-foundry-800 text-accent' : 'text-foundry-400'
             )}
           >
             {t.auth.tabKey}
@@ -82,7 +82,7 @@ export function AuthGate({
             onClick={() => setTab('account')}
             className={cn(
               'flex-1 rounded px-2 py-1.5 text-xs font-medium',
-              tab === 'account' ? 'bg-foundry-800 text-teal-glow' : 'text-foundry-400'
+              tab === 'account' ? 'bg-foundry-800 text-accent' : 'text-foundry-400'
             )}
           >
             {t.auth.tabAccount}
@@ -110,7 +110,7 @@ export function AuthGate({
             ) : null}
             <button
               type="button"
-              className="w-full rounded-sm bg-teal-glow py-2.5 text-sm font-semibold text-foundry-950 hover:bg-teal-300"
+              className="w-full rounded-sm bg-accent py-2 text-sm font-semibold text-foundry-950 hover:bg-accent-hover"
               onClick={() => {
                 const key = value.trim();
                 if (!key) return;
@@ -164,7 +164,7 @@ export function AuthGate({
               <button
                 type="button"
                 disabled={busy}
-                className="flex-1 rounded-sm bg-teal-glow py-2.5 text-sm font-semibold text-foundry-950 hover:bg-teal-300 disabled:opacity-50"
+                className="flex-1 rounded-sm bg-accent py-2 text-sm font-semibold text-foundry-950 hover:bg-accent-hover disabled:opacity-50"
                 onClick={() => submitAccount('login')}
               >
                 {t.auth.login}
@@ -239,9 +239,9 @@ export function OnboardingChecklist({
   ];
 
   return (
-    <div className="mb-4 border border-teal-glow/20 bg-teal-950/20 px-4 py-3">
+    <div className="mb-4 border border-accent/20 bg-accent/[0.04] px-3 py-2.5">
       <div className="mb-2 flex items-center justify-between gap-2">
-        <h3 className="text-sm font-medium text-teal-glow">{t.onboarding.title}</h3>
+        <h3 className="text-sm font-medium text-accent">{t.onboarding.title}</h3>
         <button
           type="button"
           onClick={onDismiss}
@@ -256,7 +256,7 @@ export function OnboardingChecklist({
             <span
               className={
                 s.done
-                  ? 'flex h-5 w-5 items-center justify-center rounded-full bg-teal-glow text-[10px] font-bold text-foundry-950'
+                  ? 'flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-foundry-950'
                   : 'flex h-5 w-5 items-center justify-center rounded-full border border-white/20 font-mono text-[10px] text-foundry-500'
               }
             >

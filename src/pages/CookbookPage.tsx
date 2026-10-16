@@ -15,7 +15,7 @@ export function CookbookPage() {
   return (
     <div className="min-h-screen bg-foundry-950 foundry-grid text-foundry-100">
       <SiteHeader compact />
-      <main className="mx-auto max-w-3xl px-6 py-12">
+      <main className="mx-auto max-w-3xl px-5 py-8 md:px-6">
         <p className="nx-kicker mb-2">{c.eyebrow}</p>
         <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">{c.title}</h1>
         <p className="mt-4 leading-relaxed text-foundry-400">{c.lead}</p>
@@ -27,7 +27,7 @@ export function CookbookPage() {
               </p>
               <h2 className="mt-2 text-xl font-semibold">{recipe.title}</h2>
               <p className="mt-2 text-sm leading-relaxed text-foundry-400">{recipe.body}</p>
-              <pre className="mt-4 overflow-x-auto rounded-xl border border-white/10 bg-foundry-950 p-4 font-mono text-[11px] leading-relaxed text-foundry-200">
+              <pre className="mt-4 overflow-x-auto rounded border border-white/10 bg-foundry-950 p-3 font-mono text-[11px] leading-relaxed text-foundry-200">
                 {recipe.code}
               </pre>
             </li>

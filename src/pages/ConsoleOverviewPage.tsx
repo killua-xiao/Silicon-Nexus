@@ -249,13 +249,13 @@ export function ConsoleOverviewPage() {
   ];
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-white/5 pb-5">
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-end justify-between gap-3 border-b border-white/5 pb-3">
         <div className="max-w-2xl">
-          <p className="mb-1 font-mono text-[11px] uppercase tracking-[0.22em] text-teal-glow">
+          <p className="mb-1 font-mono text-[11px] uppercase tracking-[0.14em] text-accent">
             Silicon Nexus
           </p>
-          <h1 className="text-2xl font-semibold tracking-tight text-foundry-100 md:text-3xl">
+          <h1 className="text-xl font-semibold tracking-tight text-foundry-100 md:text-2xl">
             {t.console.operations}
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-foundry-500">
@@ -346,7 +346,7 @@ export function ConsoleOverviewPage() {
           <p className="mt-1 text-sm text-foundry-500">{t.console.modulesHint}</p>
         </div>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {modules.map((mod, idx) => {
+          {modules.map((mod) => {
             const Icon = mod.icon;
             const body = (
               <>
@@ -380,12 +380,11 @@ export function ConsoleOverviewPage() {
               </>
             );
 
-            const className =
-              'nx-card nx-card-hover group block p-4 animate-foundry-rise';
+            const className = 'nx-card nx-card-hover group block p-4';
 
             if (mod.to.startsWith('#')) {
               return (
-                <a key={mod.id} href={mod.to} className={className} style={{ animationDelay: `${idx * 40}ms` }}>
+                <a key={mod.id} href={mod.to} className={className}>
                   {body}
                 </a>
               );
@@ -395,7 +394,6 @@ export function ConsoleOverviewPage() {
                 key={mod.id}
                 to={mod.to}
                 className={className}
-                style={{ animationDelay: `${idx * 40}ms` }}
               >
                 {body}
               </Link>

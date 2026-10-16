@@ -25,27 +25,27 @@ export function SiteFooter({
   ];
 
   return (
-    <footer className="border-t border-white/[0.06] bg-foundry-950 px-6 py-12">
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 md:flex-row md:items-end md:justify-between">
+    <footer className="border-t border-white/[0.06] bg-foundry-950 px-5 py-8 md:px-8">
+      <div className="mx-auto flex max-w-6xl flex-col gap-5 md:flex-row md:items-end md:justify-between">
         <div>
-          <p className="max-w-md text-sm leading-relaxed text-foundry-300">{tagline}</p>
-          <nav className="mt-5 flex flex-wrap gap-x-4 gap-y-2 text-xs text-foundry-500">
+          <p className="max-w-md text-sm leading-relaxed text-foundry-400">{tagline}</p>
+          <nav className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs text-foundry-500">
             {links.map((l) => (
-              <Link key={l.to} to={l.to} className="transition hover:text-teal-glow">
+              <Link key={l.to} to={l.to} className="transition hover:text-accent">
                 {l.label}
               </Link>
             ))}
-            <a href="/llms.txt" className="font-mono transition hover:text-teal-glow">
+            <a href="/llms.txt" className="font-mono transition hover:text-accent">
               llms.txt
             </a>
-            <Link to="/privacy" className="transition hover:text-teal-glow">
+            <Link to="/privacy" className="transition hover:text-accent">
               {t.legal.privacyNav}
             </Link>
-            <Link to="/terms" className="transition hover:text-teal-glow">
+            <Link to="/terms" className="transition hover:text-accent">
               {t.legal.termsNav}
             </Link>
             <a
-              className="transition hover:text-teal-glow"
+              className="transition hover:text-accent"
               href={`mailto:${SITE_LEGAL.contactEmail}`}
             >
               {SITE_LEGAL.contactEmail}
@@ -54,22 +54,22 @@ export function SiteFooter({
               href={SITE_LEGAL.githubUrl}
               target="_blank"
               rel="noreferrer"
-              className="transition hover:text-teal-glow"
+              className="transition hover:text-accent"
             >
               GitHub
             </a>
-            <a href="/.well-known/agent.json" className="font-mono transition hover:text-teal-glow">
+            <a href="/.well-known/agent.json" className="font-mono transition hover:text-accent">
               agent.json
             </a>
           </nav>
         </div>
-        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-foundry-600">
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] text-foundry-600">
           <span>{copyright.replace('{year}', String(COPYRIGHT_YEAR))}</span>
           <a
             href={ICP_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-foundry-500 transition hover:text-teal-glow"
+            className="text-foundry-500 transition hover:text-accent"
           >
             {ICP_NUMBER}
           </a>

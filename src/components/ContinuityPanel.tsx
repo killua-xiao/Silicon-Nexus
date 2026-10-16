@@ -114,7 +114,7 @@ export function ContinuityPanel({
   };
 
   return (
-    <section className="border border-white/5 bg-foundry-900/60 p-4 md:p-5">
+    <section className="nx-panel p-4">
       <h2 className="mb-1 flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-teal-glow">
         <GitBranch className="h-3.5 w-3.5" />
         {c.title}
@@ -128,7 +128,7 @@ export function ContinuityPanel({
             <select
               value={agentId}
               onChange={(e) => setAgentId(e.target.value)}
-              className="rounded-xl border border-white/10 bg-foundry-950 px-3 py-2 text-sm text-foundry-100"
+              className="rounded border border-white/10 bg-foundry-950 px-3 py-2 font-mono text-sm text-foundry-100"
             >
               {agentOptions.map((id) => (
                 <option key={id} value={id}>
@@ -141,7 +141,7 @@ export function ContinuityPanel({
               value={agentId}
               onChange={(e) => setAgentId(e.target.value)}
               placeholder="Alpha-7"
-              className="rounded-xl border border-white/10 bg-foundry-950 px-3 py-2 text-sm text-foundry-100"
+              className="rounded border border-white/10 bg-foundry-950 px-3 py-2 font-mono text-sm text-foundry-100"
             />
           )}
         </label>
@@ -151,7 +151,7 @@ export function ContinuityPanel({
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder={c.notePh}
-            className="rounded-xl border border-white/10 bg-foundry-950 px-3 py-2 text-sm text-foundry-100"
+            className="rounded border border-white/10 bg-foundry-950 px-3 py-2 font-mono text-sm text-foundry-100"
           />
         </label>
         <div className="flex items-end">
@@ -167,7 +167,7 @@ export function ContinuityPanel({
       </div>
 
       {lastHandoff ? (
-        <div className="mt-4 rounded-xl border border-teal-glow/20 bg-foundry-950/70 p-4 font-mono text-[11px] leading-relaxed text-foundry-300">
+        <div className="mt-4 rounded border border-accent/20 bg-foundry-950 p-3 font-mono text-[11px] leading-relaxed text-foundry-300">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="text-teal-glow">{c.handoffId}</span>
             <button
@@ -193,7 +193,7 @@ export function ContinuityPanel({
             value={handoffId}
             onChange={(e) => setHandoffId(e.target.value)}
             placeholder="hof_…"
-            className="rounded-xl border border-white/10 bg-foundry-950 px-3 py-2 font-mono text-sm text-foundry-100"
+            className="rounded border border-white/10 bg-foundry-950 px-3 py-2 font-mono text-sm text-foundry-100"
           />
         </label>
         <label className="flex items-end gap-2 pb-2 text-xs text-foundry-400">
@@ -219,7 +219,7 @@ export function ContinuityPanel({
       </div>
 
       {lastAssume ? (
-        <div className="mt-4 rounded-xl border border-white/10 bg-foundry-950/70 p-4 text-sm text-foundry-300">
+        <div className="mt-4 rounded border border-white/10 bg-foundry-950 p-3 text-sm text-foundry-300">
           <p>
             {c.assumedKeys}: {lastAssume.assumedKeys.length} · {c.restored}:{' '}
             {lastAssume.diff.missing.length} · {c.carried}: {lastAssume.diff.carried.length}

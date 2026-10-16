@@ -32,9 +32,9 @@ export function AboutPage() {
   return (
     <div className="min-h-screen bg-foundry-950 foundry-grid text-foundry-100">
       <SiteHeader compact />
-      <main className="mx-auto max-w-3xl px-6 py-12">
+      <main className="mx-auto max-w-3xl px-5 py-8 md:px-6">
         <p className="nx-kicker mb-2">{a.eyebrow}</p>
-        <h1 className="text-3xl font-semibold tracking-tight text-foundry-100 md:text-4xl">
+        <h1 className="text-[1.75rem] font-semibold tracking-tight text-foundry-100 md:text-[2rem]">
           {a.title}
         </h1>
         <p className="mt-4 leading-relaxed text-foundry-400">{a.lead}</p>

@@ -25,7 +25,7 @@ export function DocsPage() {
   return (
     <div className="min-h-screen bg-foundry-950 foundry-grid">
       <SiteHeader compact />
-      <main className="mx-auto max-w-3xl px-6 py-12">
+      <main className="mx-auto max-w-3xl px-5 py-8 md:px-6">
         <h1 className="text-3xl font-semibold tracking-tight text-foundry-100">{t.docs.title}</h1>
         <p className="mt-3 text-foundry-400">
           {t.docs.introBefore}{' '}

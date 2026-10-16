@@ -56,7 +56,7 @@ export function FeedPage() {
   return (
     <div className="min-h-screen bg-foundry-950 foundry-grid">
       <SiteHeader compact />
-      <main className="mx-auto max-w-3xl px-6 py-12">
+      <main className="mx-auto max-w-3xl px-5 py-8 md:px-6">
         <p className="nx-kicker mb-2">{t.feed.eyebrow}</p>
         <h1 className="text-3xl font-semibold tracking-tight text-foundry-100">
           {slug ? item?.title || t.feed.title : t.feed.title}
