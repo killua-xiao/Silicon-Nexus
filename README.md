@@ -148,6 +148,7 @@ Do not commit `.env`, `data/*.sqlite`, or `data/secrets.json`.
 
 - [About the hub](https://silinex.xyz/about)
 - [Connect (EN)](docs/CONNECT.md) / [接入指南（中文）](docs/CONNECT_zh.md)
+- [UI design language](./DESIGN.md) — foundry tokens for console / MCP-facing UI
 - [Dual audience](docs/DUAL_AUDIENCE.md) · [Architecture](docs/ARCHITECTURE.md)
 - [MCP publish checklist](docs/MCP_PUBLISH.md)
 - [OpenAPI](docs/openapi.yaml) · [Health](docs/HEALTH.md)
