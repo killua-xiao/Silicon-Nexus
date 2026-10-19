@@ -99,6 +99,12 @@ async function startServer() {
   app.get('/openapi.json', (_req, res) => {
     res.redirect(301, '/openapi.yaml');
   });
+  app.get('/.well-known/openapi.json', (_req, res) => {
+    res.redirect(301, '/openapi.yaml');
+  });
+  app.get('/.well-known/openapi.yaml', (_req, res) => {
+    res.redirect(301, '/openapi.yaml');
+  });
 
   const agentCard = buildAgentCard(appUrl);
   const mcpCard = buildMcpServerCard(appUrl);

@@ -10,6 +10,8 @@ export function isSpaCatchAllExcluded(path: string): boolean {
     path === '/.well-known/agent.json' ||
     path === '/.well-known/llms.txt' ||
     path === '/.well-known/mcp/server-card.json' ||
+    path === '/.well-known/openapi.json' ||
+    path === '/.well-known/openapi.yaml' ||
     path === '/robots.txt' ||
     path === '/llms.txt' ||
     path === '/sitemap.xml' ||
