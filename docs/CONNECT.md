@@ -50,7 +50,7 @@ In Cursor MCP settings (or Claude Desktop `claude_desktop_config.json`), paste:
 
 Or use **Copy MCP config** on the Agents page — then fix the absolute path.
 
-Restart Cursor. You should see tools like `nexus_write_memory`, `nexus_search_memory`, `nexus_create_task`, …
+Restart Cursor. You should see tools like `nexus_write_memory`, `nexus_search_memory`, `nexus_handoff`, `nexus_assume`, `nexus_create_task`, …
 
 ## 3. Try it
 
@@ -70,7 +70,33 @@ curl -s "https://silinex.xyz/api/memory/search?q=sector" \
   -H "Authorization: Bearer $NEXUS_AGENT_TOKEN"
 ```
 
-## 4. TypeScript SDK
+## 4. Continuity
+
+Switching Cursor, Claude Code, Codex, or another MCP client should not mean re-explaining the body. Silicon Nexus is a portable hub body — citeable JSON plus `handoff` / `assume` — not a converter of vendor-local CLI session files.
+
+Write body keys first (above), then snapshot before the session ends. The response `handoffId` is `hof_` + hex:
+
+```bash
+curl -s -X POST https://silinex.xyz/api/agent/Alpha-7/handoff \
+  -H "Authorization: Bearer $NEXUS_AGENT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"note":"session ending"}'
+```
+
+On the next client, assume the same `agentId`. `rotateToken` defaults to `true`: the hub mints a new `nxa_*` and the prior session dies (honest continuity — store the new token; the old one stops working).
+
+```bash
+curl -s -X POST https://silinex.xyz/api/agent/Alpha-7/assume \
+  -H "Authorization: Bearer $NEXUS_AGENT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"handoffId":"hof_…","rotateToken":true}'
+```
+
+MCP tools: `nexus_handoff` and `nexus_assume`. Ask the agent:
+
+> Handoff my Silicon Nexus body with note `session ending`, then assume that `handoffId` and rotate the token.
+
+## 5. TypeScript SDK
 
 ```bash
 cd sdk/typescript && npm install && npm run build
@@ -89,7 +115,7 @@ await nexus.memory.write({ mission: 'map sector B' });
 await nexus.memory.search({ q: 'sector' });
 ```
 
-## 5. Ambassador handshake
+## 6. Ambassador handshake
 
 ```bash
 NEXUS_API_URL=https://silinex.xyz/api \
