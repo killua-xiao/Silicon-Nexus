@@ -10,6 +10,8 @@ test('SPA catch-all excludes well-known llms.txt and openapi.json', () => {
   assert.equal(isSpaCatchAllExcluded('/llms.txt'), true);
   assert.equal(isSpaCatchAllExcluded('/openapi.json'), true);
   assert.equal(isSpaCatchAllExcluded('/openapi.yaml'), true);
+  assert.equal(isSpaCatchAllExcluded('/.well-known/openapi.json'), true);
+  assert.equal(isSpaCatchAllExcluded('/.well-known/openapi.yaml'), true);
   assert.equal(isSpaCatchAllExcluded('/.well-known/agent.json'), true);
   assert.equal(isSpaCatchAllExcluded('/'), false);
   assert.equal(isSpaCatchAllExcluded('/about'), false);
@@ -25,6 +27,12 @@ test('discovery routes return machine types, not the SPA shell', async () => {
     res.type('text/plain; charset=utf-8').send(buildLlmsTxt(appUrl));
   });
   app.get('/openapi.json', (_req, res) => {
+    res.redirect(301, '/openapi.yaml');
+  });
+  app.get('/.well-known/openapi.json', (_req, res) => {
+    res.redirect(301, '/openapi.yaml');
+  });
+  app.get('/.well-known/openapi.yaml', (_req, res) => {
     res.redirect(301, '/openapi.yaml');
   });
   app.get('*', (req, res, next) => {
@@ -49,6 +57,11 @@ test('discovery routes return machine types, not the SPA shell', async () => {
     assert.equal(openapi.status, 301);
     assert.equal(new URL(openapi.headers.get('location') || '', base).pathname, '/openapi.yaml');
     assert.doesNotMatch(openapi.headers.get('content-type') || '', /text\/html/);
+
+    const wellKnownOpenapi = await fetch(`${base}/.well-known/openapi.json`, { redirect: 'manual' });
+    assert.equal(wellKnownOpenapi.status, 301);
+    assert.equal(new URL(wellKnownOpenapi.headers.get('location') || '', base).pathname, '/openapi.yaml');
+    assert.doesNotMatch(wellKnownOpenapi.headers.get('content-type') || '', /text\/html/);
 
     const home = await fetch(`${base}/`);
     assert.equal(home.status, 200);
