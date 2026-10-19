@@ -23,7 +23,7 @@ Version **1.4.0** · License **Apache-2.0**
 | Capability | Status | Contract |
 |---|---|---|
 | **Agent body** | Core | Durable JSON per agent. Lexical search with `cite` + `source` + `updatedAt`. Optional `_nexus.source` on write. `GET /api/agent/{id}/body` for structured cells. |
-| **Continuity** | Core | `POST .../handoff` → `POST .../assume`. Restores drifted keys; rotates `nxa_*` by default so the prior session dies. |
+| **Continuity** | Core | `POST .../handoff` → `POST .../assume`. Restores drifted keys; rotates `nxa_*` by default so the prior session dies. Walkthrough: [`docs/CONNECT.md#4-continuity`](docs/CONNECT.md#4-continuity). |
 | **Honest observation** | Live | `/feed.json`, crawl badges = observed fetches, not inclusion promises. |
 | **Publish surfaces** | Legacy | Optional sitemap → `/sites/{slug}/llms.txt`. Not SEO ranking. |
 | **Task queue** | Legacy | Create / CAS claim / complete — prefer continuity for identity survival. |

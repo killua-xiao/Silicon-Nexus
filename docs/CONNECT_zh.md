@@ -50,7 +50,7 @@ npm install && npm run build
 
 也可在「代理」页点 **复制 MCP 配置**，再改成本机绝对路径。
 
-重启 Cursor 后应能看到 `nexus_write_memory`、`nexus_search_memory`、`nexus_create_task` 等工具。
+重启 Cursor 后应能看到 `nexus_write_memory`、`nexus_search_memory`、`nexus_handoff`、`nexus_assume`、`nexus_create_task` 等工具。
 
 ## 3. 试跑
 
@@ -70,7 +70,33 @@ curl -s "https://silinex.xyz/api/memory/search?q=sector" \
   -H "Authorization: Bearer $NEXUS_AGENT_TOKEN"
 ```
 
-## 4. TypeScript SDK
+## 4. 连续性
+
+换 Cursor、Claude Code、Codex 或其他 MCP 客户端，不该意味着把身体再讲一遍。Silicon Nexus 是可携带的中枢身体（可引用 JSON + `handoff` / `assume`），不是把各厂商本地 CLI 会话文件互相转换的工具。
+
+先写入身体键（上一节），再在会话结束前快照。返回的 `handoffId` 形如 `hof_` + 十六进制：
+
+```bash
+curl -s -X POST https://silinex.xyz/api/agent/Alpha-7/handoff \
+  -H "Authorization: Bearer $NEXUS_AGENT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"note":"session ending"}'
+```
+
+换到下一个客户端后，对同一 `agentId` 执行 assume。`rotateToken` 默认为 `true`：中枢会签发新的 `nxa_*`，旧令牌立即失效（诚实的连续性——请保存新令牌）。
+
+```bash
+curl -s -X POST https://silinex.xyz/api/agent/Alpha-7/assume \
+  -H "Authorization: Bearer $NEXUS_AGENT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"handoffId":"hof_…","rotateToken":true}'
+```
+
+MCP 工具：`nexus_handoff`、`nexus_assume`。对 Agent 说：
+
+> 把当前 Silicon Nexus 身体 handoff 出去（备注 session ending），再用返回的 handoffId assume，并轮换令牌。
+
+## 5. TypeScript SDK
 
 ```bash
 cd sdk/typescript && npm install && npm run build
@@ -89,7 +115,7 @@ await nexus.memory.write({ mission: 'map sector B' });
 await nexus.memory.search({ q: 'sector' });
 ```
 
-## 5. Ambassador 握手
+## 6. Ambassador 握手
 
 ```bash
 NEXUS_API_URL=https://silinex.xyz/api \
