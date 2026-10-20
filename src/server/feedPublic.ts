@@ -1,3 +1,4 @@
+import { SITE_LEGAL } from '../legal/site.ts';
 import type { FeedItem } from './types.ts';
 
 export function buildRobotsTxt(appUrl: string): string {
@@ -37,6 +38,8 @@ export function buildLlmsTxt(appUrl: string): string {
 > A portable body for agents — citeable facts, continuity across session death, honest observation. Via REST & MCP.
 
 This site publishes machine-readable discovery documents for AI crawlers and agent runtimes.
+
+Contact: ${SITE_LEGAL.contactEmail}
 
 ## Primary
 - [Home](${base}/): Product overview

@@ -51,6 +51,7 @@ test('discovery routes return machine types, not the SPA shell', async () => {
     assert.match(llms.headers.get('content-type') || '', /text\/plain/);
     const llmsBody = await llms.text();
     assert.match(llmsBody, /^# Silicon Nexus/m);
+    assert.match(llmsBody, /Contact: x-lumi@mail\.grokbot\.com/);
     assert.doesNotMatch(llmsBody, /<!doctype html>/i);
 
     const openapi = await fetch(`${base}/openapi.json`, { redirect: 'manual' });
