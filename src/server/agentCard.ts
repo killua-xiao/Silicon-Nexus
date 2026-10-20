@@ -80,7 +80,7 @@ export function buildAgentCard(appUrl: string): AgentCard {
         id: 'body.continuity',
         name: 'Continuity Protocol',
         description:
-          'Handoff a body snapshot; assume it later (restore drifted keys, optional token rotation) so identity survives session death.',
+          'Handoff a body snapshot plus an optional continuity packet (decisions, constraints, evidence, nextAction, provenance); assume it later (restore drifted keys, optional token rotation) so identity survives session death.',
         tags: ['continuity', 'handoff', 'assume', 'identity'],
       },
       {

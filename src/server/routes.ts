@@ -1081,6 +1081,7 @@ export function createApiRouter(options: { openMode: boolean }): Router {
         digest: result.handoff.digest,
         keys: result.handoff.keys,
         note: result.handoff.note,
+        packet: result.handoff.packet,
         createdAt: result.handoff.createdAt,
         expiresAt: result.handoff.expiresAt,
         snapshot: result.snapshot,
@@ -1137,6 +1138,7 @@ export function createApiRouter(options: { openMode: boolean }): Router {
         rotated: result.rotated,
         token: result.token,
         assumedAt: result.handoff.assumedAt,
+        packet: result.handoff.packet,
         note: result.token
           ? 'Store the new nxa_* token; the previous token is invalid after rotation.'
           : 'Assumed without token rotation.',

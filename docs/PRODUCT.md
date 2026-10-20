@@ -36,6 +36,8 @@ Capabilities are **additive**. Shipping a new module should not rename the produ
 4. Never claim LLM/search inclusion from crawl observation.
 5. Do not compete with vendor chat memory, embeddings RAG, or multi-agent IDEs.
 
+Intentional forgetting of search/session state while keeping the best citeable facts is aligned with continuity; a compact/forget API is not shipped yet.
+
 ## Tagline (canonical)
 
 > A portable body for agents — citeable facts, continuity across session death, honest observation. Via API & MCP.

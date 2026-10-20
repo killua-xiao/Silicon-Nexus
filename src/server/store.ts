@@ -127,7 +127,16 @@ export function getMemoryStore(workspaceId?: string) {
 
 export function createHandoff(
   agentId: string,
-  input: { note?: string; includeKeys?: string[]; ttlHours?: number },
+  input: {
+    note?: string;
+    includeKeys?: string[];
+    ttlHours?: number;
+    decisions?: string[];
+    constraints?: string[];
+    evidence?: string[];
+    nextAction?: string;
+    provenance?: { actor?: string; task?: string; conditions?: string };
+  },
   workspaceId?: string
 ) {
   return getStore().createHandoff(agentId, input, workspaceId);

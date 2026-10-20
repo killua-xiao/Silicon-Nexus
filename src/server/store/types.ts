@@ -74,7 +74,16 @@ export interface NexusStore {
 
   createHandoff(
     agentId: string,
-    input: { note?: string; includeKeys?: string[]; ttlHours?: number },
+    input: {
+      note?: string;
+      includeKeys?: string[];
+      ttlHours?: number;
+      decisions?: string[];
+      constraints?: string[];
+      evidence?: string[];
+      nextAction?: string;
+      provenance?: { actor?: string; task?: string; conditions?: string };
+    },
     workspaceId?: string
   ):
     | { ok: true; handoff: AgentHandoff; snapshot: AgentMemory }

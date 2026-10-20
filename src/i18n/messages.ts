@@ -721,6 +721,7 @@ Pull, then open https://silinex.xyz/sites/YOUR_SLUG/llms.txt`,
     restored: 'restored',
     carried: 'unchanged',
     newToken: 'New nxa_* — copy now',
+    packetLabel: 'Continuity packet',
   },
   common: {
     cannotReach: 'Cannot reach API',
@@ -1424,6 +1425,7 @@ curl -s -X POST https://silinex.xyz/api/agent/Alpha-7/assume \\
     restored: '已恢复',
     carried: '未变',
     newToken: '新 nxa_* — 请立即复制',
+    packetLabel: '连续性数据包',
   },
   common: {
     cannotReach: '无法连接 API',
