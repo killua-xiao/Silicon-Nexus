@@ -27,6 +27,46 @@ Disallow: /api/agents
 Disallow: /api/agent/
 Disallow: /api/memory
 
+# OpenAI — search citation vs training (independent)
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /console
+Disallow: /api/dashboard
+Disallow: /api/agents
+Disallow: /api/agent/
+Disallow: /api/memory
+
+User-agent: GPTBot
+Allow: /
+Disallow: /console
+Disallow: /api/dashboard
+Disallow: /api/agents
+Disallow: /api/agent/
+Disallow: /api/memory
+
+# Anthropic
+User-agent: Claude-SearchBot
+User-agent: Claude-User
+User-agent: ClaudeBot
+User-agent: anthropic-ai
+Allow: /
+Disallow: /console
+Disallow: /api/dashboard
+Disallow: /api/agents
+Disallow: /api/agent/
+Disallow: /api/memory
+
+# Perplexity
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+Allow: /
+Disallow: /console
+Disallow: /api/dashboard
+Disallow: /api/agents
+Disallow: /api/agent/
+Disallow: /api/memory
+
 Sitemap: ${base}/sitemap.xml
 Sitemap: ${base}/geo-sitemap.xml
 `;
