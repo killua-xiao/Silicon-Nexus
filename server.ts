@@ -17,7 +17,7 @@ import { logJson } from './src/server/log.ts';
 import { buildAgentCard } from './src/server/agentCard.ts';
 import { buildMcpServerCard } from './src/server/mcpCard.ts';
 import { createMcpHttpRouter } from './src/server/mcpHttp.ts';
-import { listFeedItems, getFeedItemBySlug, recordFeedCrawl, getSiteBySlug, listSiteContent, getSiteContent, recordSiteContentCrawl, listSites } from './src/server/store.ts';
+import { listFeedItems, getFeedItemBySlug, recordFeedCrawl, getSiteBySlug, listSiteContent, listSites } from './src/server/store.ts';
 import {
   buildAtomFeed,
   buildGeoSitemapXml,
@@ -26,6 +26,7 @@ import {
   buildSitemapXml,
 } from './src/server/feedPublic.ts';
 import { buildSiteFeedJson, buildSiteLlmsTxt } from './src/server/geoPublic.ts';
+import { registerSiteContentMirrorRoutes } from './src/server/siteContentMirrors.ts';
 import { detectCrawler } from './src/server/crawlDetect.ts';
 import { handleStripeWebhook } from './src/server/stripeBilling.ts';
 import { isSpaCatchAllExcluded } from './src/server/spaSurfaces.ts';
@@ -129,16 +130,9 @@ async function startServer() {
   });
   app.get('/sitemap.xml', (_req, res) => {
     const sites = listSites();
-    const siteContent = sites.flatMap((site) =>
-      listSiteContent(site.slug, { limit: 40 }).map((item) => ({
-        siteSlug: site.slug,
-        slug: item.slug,
-        updatedAt: item.updatedAt || item.publishedAt,
-      }))
-    );
     res
       .type('application/xml')
-      .send(buildSitemapXml(appUrl, listFeedItems({ limit: 200 }), sites.map((s) => s.slug), siteContent));
+      .send(buildSitemapXml(appUrl, listFeedItems({ limit: 200 }), sites.map((s) => s.slug)));
   });
   app.get('/geo-sitemap.xml', (_req, res) => {
     res.type('application/xml').send(buildGeoSitemapXml(appUrl));
@@ -212,53 +206,7 @@ async function startServer() {
     const items = listSiteContent(site.slug, { limit: 50 });
     res.type('application/json').json(buildSiteFeedJson(appUrl, site, items));
   });
-  app.get('/sites/:siteSlug/content/:slug.json', (req, res) => {
-    const siteSlug = req.params.siteSlug;
-    const slug = req.params.slug.replace(/\.json$/i, '');
-    const crawler = detectCrawler(req.get('user-agent') || undefined);
-    if (crawler) {
-      try {
-        recordSiteContentCrawl(siteSlug, slug, crawler);
-      } catch {
-        // ignore
-      }
-    }
-    const item = getSiteContent(siteSlug, slug);
-    if (!item) return res.status(404).json({ error: 'Content not found' });
-    res.type('application/json').json(item);
-  });
-  app.get('/sites/:siteSlug/content/:slug.md', (req, res) => {
-    const siteSlug = req.params.siteSlug;
-    const slug = req.params.slug.replace(/\.md$/i, '');
-    const crawler = detectCrawler(req.get('user-agent') || undefined);
-    if (crawler) {
-      try {
-        recordSiteContentCrawl(siteSlug, slug, crawler);
-      } catch {
-        // ignore
-      }
-    }
-    const item = getSiteContent(siteSlug, slug);
-    if (!item) return res.status(404).type('text/plain').send('Not found');
-    const site = getSiteBySlug(siteSlug);
-    const header = [
-      `---`,
-      `title: ${JSON.stringify(item.title)}`,
-      `site: ${siteSlug}`,
-      `slug: ${item.slug}`,
-      `published: ${item.publishedAt}`,
-      `indexing_status: ${item.indexing.status}`,
-      `crawl_hits: ${item.indexing.crawlHits}`,
-      `crawlers: ${item.indexing.crawlersSeen.join(', ') || 'none'}`,
-      site?.domain ? `domain: ${site.domain}` : null,
-      item.canonicalUrl ? `canonical: ${item.canonicalUrl}` : null,
-      `---`,
-      '',
-    ]
-      .filter((line) => line !== null)
-      .join('\n');
-    res.type('text/markdown; charset=utf-8').send(`${header}${item.bodyMd}\n`);
-  });
+  registerSiteContentMirrorRoutes(app);
 
   // Remote Streamable HTTP MCP (Smithery / HTTP clients)
   // Call the local API loopback so tools never round-trip through the public edge.

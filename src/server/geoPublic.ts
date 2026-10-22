@@ -88,3 +88,90 @@ export function buildSiteFeedJson(appUrl: string, site: Site, items: SiteContent
     })),
   };
 }
+
+/** Origin for composing source-page URLs: `https://{domain}` unless the domain already has a scheme. */
+export function siteCanonicalOrigin(domain: string | null | undefined): string | null {
+  const raw = domain?.trim();
+  if (!raw) return null;
+  const withScheme = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+  if (/[\r\n<>]/.test(withScheme)) return null;
+  try {
+    const url = new URL(withScheme);
+    if (url.protocol !== 'https:' && url.protocol !== 'http:') return null;
+    return `${url.protocol}//${url.host}`;
+  } catch {
+    return null;
+  }
+}
+
+function isSafeAbsoluteHttpUrl(value: string): boolean {
+  if (/[\r\n<>]/.test(value)) return false;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' || url.protocol === 'http:';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Absolute canonical for a mirrored content item.
+ * Prefer stored frontmatter `canonical`; else compose `https://{domain}/{slug}`
+ * the same way MD generation would write a source URL when only domain + path exist.
+ */
+export function resolveSiteContentCanonical(
+  item: Pick<SiteContent, 'canonicalUrl' | 'slug'>,
+  site?: Pick<Site, 'domain'> | null
+): string | null {
+  const explicit = item.canonicalUrl?.trim() || '';
+  if (explicit && isSafeAbsoluteHttpUrl(explicit)) return explicit;
+
+  const origin = siteCanonicalOrigin(site?.domain);
+  if (!origin) return null;
+
+  if (explicit && !explicit.includes('://') && !/[\r\n<>]/.test(explicit)) {
+    const path = explicit.startsWith('/') ? explicit : `/${explicit}`;
+    return `${origin}${path}`;
+  }
+
+  const slug = item.slug?.trim();
+  if (!slug) return null;
+  return `${origin}/${encodeURIComponent(slug)}`;
+}
+
+export function applySiteContentMirrorHeaders(
+  res: { setHeader(name: string, value: string): unknown },
+  item: Pick<SiteContent, 'canonicalUrl' | 'slug'>,
+  site?: Pick<Site, 'domain'> | null
+): string | null {
+  const canonical = resolveSiteContentCanonical(item, site);
+  res.setHeader('X-Robots-Tag', 'noindex, follow');
+  if (canonical) {
+    res.setHeader('Link', `<${canonical}>; rel="canonical"`);
+  }
+  return canonical;
+}
+
+export function renderSiteContentMarkdown(
+  item: SiteContent,
+  siteSlug: string,
+  site?: Pick<Site, 'domain'> | null
+): string {
+  const header = [
+    `---`,
+    `title: ${JSON.stringify(item.title)}`,
+    `site: ${siteSlug}`,
+    `slug: ${item.slug}`,
+    `published: ${item.publishedAt}`,
+    `indexing_status: ${item.indexing.status}`,
+    `crawl_hits: ${item.indexing.crawlHits}`,
+    `crawlers: ${item.indexing.crawlersSeen.join(', ') || 'none'}`,
+    site?.domain ? `domain: ${site.domain}` : null,
+    item.canonicalUrl ? `canonical: ${item.canonicalUrl}` : null,
+    `---`,
+    '',
+  ]
+    .filter((line) => line !== null)
+    .join('\n');
+  return `${header}${item.bodyMd}\n`;
+}
