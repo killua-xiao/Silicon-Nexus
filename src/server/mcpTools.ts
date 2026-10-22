@@ -71,7 +71,7 @@ export const MCP_TOOLS = [
   {
     name: 'nexus_handoff',
     description:
-      'Continuity: snapshot this agent body for a later assume (session death → inheritance). Returns handoffId + digest.',
+      'Continuity: snapshot this agent body for a later assume (session death → inheritance). Optional packet carries decisions, constraints, evidence, nextAction, and provenance — not just a memory dump. Returns handoffId + digest + packet.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -79,6 +79,31 @@ export const MCP_TOOLS = [
         note: { type: 'string' },
         includeKeys: { type: 'array', items: { type: 'string' } },
         ttlHours: { type: 'number', description: 'Default 168 (7 days)' },
+        decisions: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Decisions made this session (max 20)',
+        },
+        constraints: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Hard constraints the next session must respect',
+        },
+        evidence: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Citeable pointers / fact keys / URLs backing decisions',
+        },
+        nextAction: { type: 'string', description: 'Recommended next step (max ~1000 chars)' },
+        provenance: {
+          type: 'object',
+          description: 'Who decided, for which task, under what conditions',
+          properties: {
+            actor: { type: 'string' },
+            task: { type: 'string' },
+            conditions: { type: 'string' },
+          },
+        },
       },
       required: [],
     },
@@ -86,7 +111,7 @@ export const MCP_TOOLS = [
   {
     name: 'nexus_assume',
     description:
-      'Continuity: inherit a handoff for this agentId. Restores drifted keys; rotates nxa_* by default so the prior session dies.',
+      'Continuity: inherit a handoff for this agentId. Restores drifted keys; rotates nxa_* by default so the prior session dies. Returns the original continuity packet when one was stored.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -366,6 +391,13 @@ export function createNexusMcpServer(cfg: McpSessionConfig): Server {
         if (typeof args?.note === 'string') body.note = args.note;
         if (Array.isArray(args?.includeKeys)) body.includeKeys = args.includeKeys;
         if (typeof args?.ttlHours === 'number') body.ttlHours = args.ttlHours;
+        if (Array.isArray(args?.decisions)) body.decisions = args.decisions;
+        if (Array.isArray(args?.constraints)) body.constraints = args.constraints;
+        if (Array.isArray(args?.evidence)) body.evidence = args.evidence;
+        if (typeof args?.nextAction === 'string') body.nextAction = args.nextAction;
+        if (args?.provenance && typeof args.provenance === 'object' && !Array.isArray(args.provenance)) {
+          body.provenance = args.provenance;
+        }
         const data = await apiJson(cfg, `/agent/${agentId}/handoff`, {
           method: 'POST',
           body: JSON.stringify(body),

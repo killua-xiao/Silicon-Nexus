@@ -36,9 +36,9 @@ Every surface still serves **two audiences**:
 ## Continuity example
 
 - Human: activity log shows `AGENT_HANDOFF` / `AGENT_ASSUMED`
-- Agent: `POST /api/agent/{id}/handoff` → `POST /api/agent/{id}/assume`
+- Agent: `POST /api/agent/{id}/handoff` → `POST /api/agent/{id}/assume` (optional `packet`: decisions, constraints, evidence, nextAction, provenance)
 - MCP: `nexus_handoff`, `nexus_assume`
-- Honest: assume may rotate `nxa_*` (prior session dies); digest verifies snapshot integrity
+- Honest: assume may rotate `nxa_*` (prior session dies); digest verifies snapshot integrity; packet is session intent, not a second memory dump
 
 ## Feed indexing example
 

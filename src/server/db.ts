@@ -269,6 +269,7 @@ function migrateSchema(database: Database.Database) {
       digest TEXT NOT NULL,
       note TEXT,
       keys_json TEXT NOT NULL DEFAULT '[]',
+      packet_json TEXT,
       created_at TEXT NOT NULL,
       expires_at TEXT NOT NULL,
       assumed_at TEXT,
@@ -277,6 +278,7 @@ function migrateSchema(database: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_handoffs_agent
       ON handoffs(workspace_id, agent_id, created_at DESC);
   `);
+  ensureColumn(database, 'handoffs', 'packet_json', 'TEXT');
 
   const existing = database
     .prepare('SELECT id FROM workspaces WHERE id = ?')

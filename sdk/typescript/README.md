@@ -27,7 +27,11 @@ const found = await nexus.memory.search({ q: 'sector' });
 const body = await nexus.body.get();
 
 // Continuity across session death
-const handoff = await nexus.continuity.handoff({ note: 'session ending' });
+const handoff = await nexus.continuity.handoff({
+  note: 'session ending',
+  nextAction: 'Assume on the next vendor session and rotate the token.',
+  constraints: ['Do not leak nxa_* on public surfaces.'],
+});
 const assumed = await nexus.continuity.assume({
   handoffId: handoff.handoffId,
   rotateToken: true,

@@ -44,6 +44,46 @@ components:
         processingTasks: { type: integer }
         completedTasks: { type: integer }
         failedTasks: { type: integer }
+    HandoffPacket:
+      type: object
+      description: >
+        Optional structured continuity packet. Portable handoff should carry more than a
+        raw memory dump — decisions, constraints, evidence, next action, and provenance.
+      properties:
+        decisions:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            maxLength: 500
+        constraints:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            maxLength: 500
+        evidence:
+          type: array
+          maxItems: 20
+          items:
+            type: string
+            maxLength: 500
+          description: Citeable pointers, fact keys, or URLs backing decisions
+        nextAction:
+          type: string
+          maxLength: 1000
+        provenance:
+          type: object
+          properties:
+            actor:
+              type: string
+              description: Who decided
+            task:
+              type: string
+              description: Which task this packet belongs to
+            conditions:
+              type: string
+              description: Under what conditions the decisions were made
 
 security:
   - OperatorOrAgentToken: []
@@ -334,9 +374,57 @@ paths:
                 ttlHours:
                   type: integer
                   default: 168
+                decisions:
+                  type: array
+                  maxItems: 20
+                  items:
+                    type: string
+                    maxLength: 500
+                constraints:
+                  type: array
+                  maxItems: 20
+                  items:
+                    type: string
+                    maxLength: 500
+                evidence:
+                  type: array
+                  maxItems: 20
+                  items:
+                    type: string
+                    maxLength: 500
+                nextAction:
+                  type: string
+                  maxLength: 1000
+                provenance:
+                  type: object
+                  properties:
+                    actor: { type: string }
+                    task: { type: string }
+                    conditions: { type: string }
       responses:
         '201':
-          description: Handoff created with digest and snapshot
+          description: Handoff created with digest, snapshot, and optional packet
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  handoffId: { type: string }
+                  agentId: { type: string }
+                  digest: { type: string }
+                  keys:
+                    type: array
+                    items: { type: string }
+                  note:
+                    type: string
+                    nullable: true
+                  packet:
+                    allOf:
+                      - $ref: '#/components/schemas/HandoffPacket'
+                    nullable: true
+                  createdAt: { type: string }
+                  expiresAt: { type: string }
+                  snapshot: { type: object }
         '400':
           description: Empty body
 
@@ -365,7 +453,37 @@ paths:
                   default: true
       responses:
         '200':
-          description: Assumed; may include new nxa_* token
+          description: Assumed; may include new nxa_* token and the original continuity packet
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agentId: { type: string }
+                  handoffId: { type: string }
+                  digest: { type: string }
+                  assumedKeys:
+                    type: array
+                    items: { type: string }
+                  diff:
+                    type: object
+                    properties:
+                      carried:
+                        type: array
+                        items: { type: string }
+                      missing:
+                        type: array
+                        items: { type: string }
+                  rotated: { type: boolean }
+                  token: { type: string }
+                  assumedAt:
+                    type: string
+                    nullable: true
+                  packet:
+                    allOf:
+                      - $ref: '#/components/schemas/HandoffPacket'
+                    nullable: true
+                  note: { type: string }
         '404':
           description: Handoff not found
         '409':

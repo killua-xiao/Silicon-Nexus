@@ -70,18 +70,42 @@ curl -s "https://silinex.xyz/api/memory/search?q=sector" \
   -H "Authorization: Bearer $NEXUS_AGENT_TOKEN"
 ```
 
+### Verify after write (honest observation)
+
+After `POST /api/agent/{id}/memory`, read the store back. Downstream chat QA scores can hide storage-stage failures; inspect what was actually persisted (intrinsic check), not only whether a later answer sounded right.
+
+```bash
+curl -s https://silinex.xyz/api/agent/Alpha-7/body \
+  -H "Authorization: Bearer $NEXUS_AGENT_TOKEN"
+```
+
+Confirm `cells.<key>.cite`, `cells.<key>.source`, and `cells.<key>.updatedAt` match the write. That is the same honest-observation rule as crawl badges: observed storage is not a promise that a chat later recalled it.
+
 ## 4. Continuity
 
 Switching Cursor, Claude Code, Codex, or another MCP client should not mean re-explaining the body. Silicon Nexus is a portable hub body — citeable JSON plus `handoff` / `assume` — not a converter of vendor-local CLI session files.
 
-Write body keys first (above), then snapshot before the session ends. The response `handoffId` is `hof_` + hex:
+Write body keys first (above), then snapshot before the session ends. The response `handoffId` is `hof_` + hex. Optional packet fields (`decisions`, `constraints`, `evidence`, `nextAction`, `provenance`) travel with the snapshot so the assuming session inherits more than a raw memory dump:
 
 ```bash
 curl -s -X POST https://silinex.xyz/api/agent/Alpha-7/handoff \
   -H "Authorization: Bearer $NEXUS_AGENT_TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"note":"session ending"}'
+  -d '{
+    "note": "session ending",
+    "decisions": ["Keep handoff optional; existing clients omit the packet."],
+    "constraints": ["Do not leak nxa_* on public surfaces."],
+    "evidence": ["mission", "/api/agent/Alpha-7/memory/mission"],
+    "nextAction": "Assume this handoff on the next vendor session and rotate the token.",
+    "provenance": {
+      "actor": "Alpha-7",
+      "task": "continuity-packet",
+      "conditions": "session ending; body keys already written"
+    }
+  }'
 ```
+
+Create and assume both return `packet` (or `null` when omitted). Existing clients that only send `note` / `includeKeys` / `ttlHours` are unchanged.
 
 On the next client, assume the same `agentId`. `rotateToken` defaults to `true`: the hub mints a new `nxa_*` and the prior session dies (honest continuity — store the new token; the old one stops working).
 
@@ -94,7 +118,7 @@ curl -s -X POST https://silinex.xyz/api/agent/Alpha-7/assume \
 
 MCP tools: `nexus_handoff` and `nexus_assume`. Ask the agent:
 
-> Handoff my Silicon Nexus body with note `session ending`, then assume that `handoffId` and rotate the token.
+> Handoff my Silicon Nexus body with note `session ending`, include nextAction and constraints in the packet, then assume that `handoffId` and rotate the token.
 
 ## 5. TypeScript SDK
 
