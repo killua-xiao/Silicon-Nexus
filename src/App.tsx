@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { I18nProvider } from './i18n/I18nProvider';
+import { DocumentTitle } from './components/DocumentTitle';
 import { ToastProvider } from './components/Toast';
 import { LandingPage } from './pages/LandingPage';
 import { AboutPage } from './pages/AboutPage';
@@ -25,6 +26,7 @@ export default function App() {
     <I18nProvider>
       <ToastProvider>
         <BrowserRouter>
+          <DocumentTitle />
           <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/about" element={<AboutPage />} />

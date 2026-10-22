@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { createServer as createViteServer } from 'vite';
+import fs from 'fs';
 import path from 'path';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
@@ -30,6 +31,7 @@ import { registerSiteContentMirrorRoutes } from './src/server/siteContentMirrors
 import { detectCrawler } from './src/server/crawlDetect.ts';
 import { handleStripeWebhook } from './src/server/stripeBilling.ts';
 import { isSpaCatchAllExcluded } from './src/server/spaSurfaces.ts';
+import { rewriteSpaHtml } from './src/server/spaHtml.ts';
 
 const DEFAULT_PUBLIC_URL = 'https://silinex.xyz';
 
@@ -267,12 +269,14 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
+    const spaShell = fs.readFileSync(path.join(distPath, 'index.html'), 'utf8');
+    // `index: false` so `/` hits the rewriter instead of express.static's default index.html.
+    app.use(express.static(distPath, { index: false }));
     app.get('*', (req, res, next) => {
       if (isSpaCatchAllExcluded(req.path)) {
         return next();
       }
-      res.sendFile(path.join(distPath, 'index.html'));
+      res.type('html').send(rewriteSpaHtml(spaShell, req.path, appUrl));
     });
   }
 
