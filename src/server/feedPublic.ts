@@ -127,11 +127,16 @@ Honest: crawl observation ≠ index inclusion; hosted Stripe checkout is off; si
 `;
 }
 
+/**
+ * Google-facing sitemap. Site content mirrors under /sites/{slug}/content/*.md
+ * and *.json are omitted so they are not advertised as independent indexable
+ * URLs; agents still discover them via llms.txt and feed.json. lastmod is only
+ * the feed item's own updatedAt — never a Nexus pull/sync day.
+ */
 export function buildSitemapXml(
   appUrl: string,
   items: FeedItem[],
-  siteSlugs: string[] = [],
-  siteContent: Array<{ siteSlug: string; slug: string; updatedAt?: string }> = []
+  siteSlugs: string[] = []
 ): string {
   const base = appUrl.replace(/\/$/, '');
   const staticUrls = [
@@ -153,26 +158,16 @@ export function buildSitemapXml(
     '/.well-known/mcp/server-card.json',
   ];
   const urls = [
-    ...staticUrls.map(
-      (p) => `  <url><loc>${base}${p || '/'}</loc><changefreq>daily</changefreq><priority>${p === '' || p === '/feed' ? '1.0' : '0.7'}</priority></url>`
+    ...staticUrls.map((p) => `  <url><loc>${base}${p || '/'}</loc></url>`),
+    ...siteSlugs.map(
+      (slug) => `  <url><loc>${base}/sites/${encodeURIComponent(slug)}/llms.txt</loc></url>`
     ),
     ...siteSlugs.map(
-      (slug) =>
-        `  <url><loc>${base}/sites/${encodeURIComponent(slug)}/llms.txt</loc><changefreq>daily</changefreq><priority>0.8</priority></url>`
-    ),
-    ...siteSlugs.map(
-      (slug) =>
-        `  <url><loc>${base}/sites/${encodeURIComponent(slug)}/feed.json</loc><changefreq>daily</changefreq><priority>0.7</priority></url>`
-    ),
-    ...siteContent.slice(0, 200).map(
-      (c) =>
-        `  <url><loc>${base}/sites/${encodeURIComponent(c.siteSlug)}/content/${encodeURIComponent(c.slug)}.md</loc>${
-          c.updatedAt ? `<lastmod>${c.updatedAt.slice(0, 10)}</lastmod>` : ''
-        }<changefreq>weekly</changefreq><priority>0.65</priority></url>`
+      (slug) => `  <url><loc>${base}/sites/${encodeURIComponent(slug)}/feed.json</loc></url>`
     ),
     ...items.slice(0, 200).map(
       (i) =>
-        `  <url><loc>${base}/feed/${encodeURIComponent(i.slug)}.md</loc><lastmod>${i.updatedAt.slice(0, 10)}</lastmod><changefreq>weekly</changefreq><priority>0.6</priority></url>`
+        `  <url><loc>${base}/feed/${encodeURIComponent(i.slug)}.md</loc><lastmod>${i.updatedAt.slice(0, 10)}</lastmod></url>`
     ),
   ];
   return `<?xml version="1.0" encoding="UTF-8"?>
