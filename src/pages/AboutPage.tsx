@@ -40,6 +40,25 @@ export function AboutPage() {
         <p className="mt-4 leading-relaxed text-foundry-400">{a.lead}</p>
 
         <section className="mt-12">
+          <h2 className="text-xl font-semibold tracking-tight text-foundry-100">{a.stackTitle}</h2>
+          <p className="mt-3 leading-relaxed text-foundry-400">{a.stackLead}</p>
+          <dl className="mt-4 space-y-3 text-sm leading-relaxed text-foundry-400">
+            {[
+              { title: a.stackMcpTitle, body: a.stackMcpBody },
+              { title: a.stackSkillsTitle, body: a.stackSkillsBody },
+              { title: a.stackNexusTitle, body: a.stackNexusBody },
+            ].map((row) => (
+              <div key={row.title} className="flex gap-4">
+                <dt className="w-32 shrink-0 pt-0.5 font-mono text-[11px] uppercase tracking-wider text-accent">
+                  {row.title}
+                </dt>
+                <dd>{row.body}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        <section className="mt-12">
           <h2 className="text-xl font-semibold tracking-tight text-foundry-100">{a.platformTitle}</h2>
           <p className="mt-3 leading-relaxed text-foundry-400">{a.platformBody}</p>
         </section>

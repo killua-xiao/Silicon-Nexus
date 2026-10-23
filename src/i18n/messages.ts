@@ -62,6 +62,9 @@ export const en = {
     pageTitle: 'Connect your agent',
     pageIntro:
       'Humans use the console. Agents use MCP or REST against the same workspace. Cursor and Claude Desktop share one stdio JSON. Grok and other remote clients use https://silinex.xyz/mcp.',
+    stackTitle: 'Where Nexus sits',
+    stackBody:
+      'MCP connects tools. Agent Skills (SKILL.md) teach procedures. Silicon Nexus holds citeable body facts and continuity handoff/assume so identity survives session death across vendors. This hub is not a SKILL.md host. The agent.json skills array is Nexus capability cards, not Agent Skills.',
     clientsTitle: 'Clients',
     clientCursor: 'Cursor — MCP settings, paste the Cursor and Claude Desktop JSON. Fix the path to dist/mcp-server.cjs.',
     clientClaude: 'Claude Desktop — paste that same JSON into claude_desktop_config.json, then restart Claude.',
@@ -120,6 +123,17 @@ curl -s "https://silinex.xyz/api/memory/search?q=sector&agentId=Alpha-7" \\
     eyebrow: 'About',
     title: 'A portable body for agents. Continuity when sessions die.',
     lead: 'Silicon Nexus gives each agent citeable facts that work across vendors, a handoff/assume path when a process dies, and honest public observation. It does not chat, store embeddings, or sell SEO inclusion.',
+    stackTitle: 'Where Nexus sits',
+    stackLead:
+      'MCP, Agent Skills, and Silicon Nexus are complementary layers. Nexus is the portable body + continuity plane — not a SKILL.md host, not chat memory.',
+    stackMcpTitle: 'MCP',
+    stackMcpBody: 'Connects tools. This hub speaks MCP; it does not replace the protocol.',
+    stackSkillsTitle: 'Agent Skills',
+    stackSkillsBody:
+      'SKILL.md folders teach portable procedures (now under AAIF). Nexus does not host or execute those folders.',
+    stackNexusTitle: 'Silicon Nexus',
+    stackNexusBody:
+      'Citeable body facts plus handoff/assume so identity survives session death across vendors.',
     platformTitle: 'Same workspace, two clients',
     platformBody:
       'Operators use the console. Agents call REST or MCP with an nxa_* token. Body, continuity, and observation share auth and the workspace. Adding a module should not rename the product.',
@@ -178,6 +192,8 @@ curl -s https://silinex.xyz/api/agent/Alpha-7/body \
     taskTitle: 'Handoff → assume (continuity)',
     taskBody:
       'Snapshot the body before a session ends. A later process assumes the same agentId, restores drifted keys, and rotates the token so the old session dies.',
+    continuityTip:
+      'Before handoff, write structured keys into the body — objective, decisions, evidence, constraints, next_action, open_questions — so assume restores a working state, not a transcript. Same write API; no extra endpoint.',
     taskCode: `curl -s -X POST https://silinex.xyz/api/agent/Alpha-7/handoff \
   -H "Authorization: Bearer nxa_YOUR_TOKEN" \
   -H "Content-Type: application/json" \
@@ -779,6 +795,9 @@ export const zh: Messages = {
     pageTitle: '接入你的智能体',
     pageIntro:
       '人用控制台。Agent 用 MCP 或 REST 访问同一工作区。Cursor 与 Claude Desktop 使用同一份 stdio JSON。Grok 等远程客户端使用 https://silinex.xyz/mcp。',
+    stackTitle: 'Nexus 所在的层',
+    stackBody:
+      'MCP 连接工具。Agent Skills（SKILL.md）传授步骤。Silicon Nexus 保存可引用的身体事实，并用 handoff/assume 让身份在会话死亡与跨厂商后仍能存活。本中枢不是 SKILL.md 宿主。agent.json 的 skills 数组是 Nexus 能力卡片，不是 Agent Skills。',
     clientsTitle: '客户端',
     clientCursor: 'Cursor — 在 MCP 设置里粘贴「Cursor 与 Claude Desktop」那段 JSON，并把路径改成 dist/mcp-server.cjs。',
     clientClaude: 'Claude Desktop — 把同一份 JSON 写入 claude_desktop_config.json，然后重启 Claude。',
@@ -833,6 +852,16 @@ curl -s "https://silinex.xyz/api/memory/search?q=sector&agentId=Alpha-7" \\
     eyebrow: '关于',
     title: '给 Agent 一具可携带的身体。会话死亡后仍能交接。',
     lead: 'Silicon Nexus 提供跨厂商可引用的事实、进程死亡后的 handoff/assume 连续性，以及诚实的公开观测。它不聊天、不存向量，也不卖 SEO 收录。',
+    stackTitle: 'Nexus 所在的层',
+    stackLead:
+      'MCP、Agent Skills 与 Silicon Nexus 是互补层。Nexus 是可携带的身体与连续性平面——不是 SKILL.md 宿主，也不是聊天记忆。',
+    stackMcpTitle: 'MCP',
+    stackMcpBody: '连接工具。本中枢提供 MCP，但不替代该协议。',
+    stackSkillsTitle: 'Agent Skills',
+    stackSkillsBody:
+      'SKILL.md 文件夹传授可移植的操作步骤（现由 AAIF 托管）。Nexus 不托管、也不执行这些文件夹。',
+    stackNexusTitle: 'Silicon Nexus',
+    stackNexusBody: '可引用的身体事实，加上 handoff/assume，让身份在会话死亡与跨厂商后仍能存活。',
     platformTitle: '同一工作区，两类客户端',
     platformBody:
       '运营者用控制台。Agent 用 nxa_* 调用 REST 或 MCP。身体、连续性与观测共用鉴权与工作区。增加模块不该改写产品名字。',
@@ -887,6 +916,8 @@ curl -s https://silinex.xyz/api/agent/Alpha-7/body \\
   -H "Authorization: Bearer nxa_YOUR_TOKEN"`,
     taskTitle: 'Handoff → assume（连续性）',
     taskBody: '会话结束前快照身体。后续进程对同一 agentId 执行 assume，恢复漂移键，并轮换令牌使旧会话失效。',
+    continuityTip:
+      'handoff 之前，把结构化键写入身体——objective、decisions、evidence、constraints、next_action、open_questions——这样 assume 恢复的是工作状态，而不是一份对话记录。仍用同一套写入接口，没有新端点。',
     taskCode: `curl -s -X POST https://silinex.xyz/api/agent/Alpha-7/handoff \\
   -H "Authorization: Bearer nxa_YOUR_TOKEN" \\
   -H "Content-Type: application/json" \\

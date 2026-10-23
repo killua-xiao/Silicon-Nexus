@@ -312,6 +312,11 @@ paths:
   /agent/{agentId}/handoff:
     post:
       summary: Continuity — snapshot body for later assume
+      description: >
+        Snapshot the current body. Write structured keys first
+        (objective, decisions, evidence, constraints, next_action, open_questions)
+        so a later assume restores a working state, not a transcript.
+        Request schema is unchanged.
       operationId: createAgentHandoff
       parameters:
         - name: agentId

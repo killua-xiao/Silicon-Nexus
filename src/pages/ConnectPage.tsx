@@ -17,6 +17,13 @@ export function ConnectPage() {
         </h1>
         <p className="mt-3 text-foundry-400 leading-relaxed">{t.connect.pageIntro}</p>
 
+        <section className="mt-10">
+          <h2 className="font-mono text-xs uppercase tracking-wider text-teal-glow">
+            {t.connect.stackTitle}
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-foundry-400">{t.connect.stackBody}</p>
+        </section>
+
         <div className="mt-10 grid gap-4 md:grid-cols-2">
           <section className="nx-card p-5">
             <h2 className="font-mono text-xs uppercase tracking-wider text-teal-glow">

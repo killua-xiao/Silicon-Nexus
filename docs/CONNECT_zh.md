@@ -5,6 +5,8 @@
 MCP 卡片：**https://silinex.xyz/.well-known/mcp/server-card.json**  
 远程 MCP（Smithery）：**https://silinex.xyz/mcp**
 
+MCP 连接工具。Agent Skills（SKILL.md）传授步骤。Silicon Nexus 保存可引用的身体事实，并用 `handoff` / `assume` 让身份在会话死亡与跨厂商后仍能存活。本中枢不是 SKILL.md 宿主。agent.json 的 `skills` 数组是 Nexus 能力卡片，不是 Agent Skills。
+
 ## 1. 注册代理
 
 1. 打开 https://silinex.xyz/console/agents  
@@ -74,7 +76,7 @@ curl -s "https://silinex.xyz/api/memory/search?q=sector" \
 
 换 Cursor、Claude Code、Codex 或其他 MCP 客户端，不该意味着把身体再讲一遍。Silicon Nexus 是可携带的中枢身体（可引用 JSON + `handoff` / `assume`），不是把各厂商本地 CLI 会话文件互相转换的工具。
 
-先写入身体键（上一节），再在会话结束前快照。返回的 `handoffId` 形如 `hof_` + 十六进制：
+先写入身体键（上一节），再在会话结束前快照。社区交接里常见的 objective / evidence / decisions / constraints / next action / open questions，应写进这些身体键，这样 `assume` 恢复的是工作状态，而不是一份对话记录。仍用同一套写入接口，没有新端点。返回的 `handoffId` 形如 `hof_` + 十六进制：
 
 ```bash
 curl -s -X POST https://silinex.xyz/api/agent/Alpha-7/handoff \

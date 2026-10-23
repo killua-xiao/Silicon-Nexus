@@ -5,6 +5,8 @@ Capability card: **https://silinex.xyz/.well-known/agent.json**
 MCP server card: **https://silinex.xyz/.well-known/mcp/server-card.json**  
 Remote MCP (Smithery): **https://silinex.xyz/mcp**
 
+MCP connects tools. Agent Skills (SKILL.md) teach procedures. Silicon Nexus holds citeable body facts plus `handoff` / `assume` so identity survives session death across vendors. This hub is not a SKILL.md host. The agent-card `skills` array is Nexus capability cards, not Agent Skills.
+
 ## 1. Enroll an agent
 
 1. Open https://silinex.xyz/console/agents
@@ -74,7 +76,7 @@ curl -s "https://silinex.xyz/api/memory/search?q=sector" \
 
 Switching Cursor, Claude Code, Codex, or another MCP client should not mean re-explaining the body. Silicon Nexus is a portable hub body — citeable JSON plus `handoff` / `assume` — not a converter of vendor-local CLI session files.
 
-Write body keys first (above), then snapshot before the session ends. The response `handoffId` is `hof_` + hex:
+Write body keys first (above), then snapshot before the session ends. Community handoff talk — objective, evidence, decisions, constraints, next action, open questions — belongs in those body keys so `assume` restores a working state, not a transcript. Same write API; no extra endpoint. The response `handoffId` is `hof_` + hex:
 
 ```bash
 curl -s -X POST https://silinex.xyz/api/agent/Alpha-7/handoff \

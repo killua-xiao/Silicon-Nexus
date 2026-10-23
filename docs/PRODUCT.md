@@ -17,6 +17,18 @@ It gives each agent an identity that outlives any one vendor session: citeable f
 
 Capabilities are **additive**. Shipping a new module should not rename the product after it.
 
+## Where Nexus sits
+
+Complementary layers — not substitutes:
+
+| Layer | Role |
+|-------|------|
+| **MCP** | Connects tools. Nexus speaks MCP; it does not replace the protocol. |
+| **Agent Skills** | SKILL.md folders teach portable procedures (AAIF). Nexus is not a SKILL.md host. |
+| **Silicon Nexus** | Citeable body facts + continuity `handoff` / `assume` so identity survives session death across vendors. |
+
+The agent-card `skills` array is Nexus **capability cards** (`body.read_write`, `body.continuity`, …), not Agent Skills / SKILL.md. Not chat memory.
+
 ## Current capability map
 
 | Capability | Status | Serves |
