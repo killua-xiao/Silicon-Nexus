@@ -24,12 +24,24 @@ export type AgentCard = {
     llmsTxt: string;
     directory: string;
   };
+  /**
+   * Nexus capability cards (body.read_write, body.continuity, …).
+   * Not Agent Skills / SKILL.md — see skillsNote.
+   */
   skills: Array<{
     id: string;
     name: string;
     description: string;
     tags: string[];
   }>;
+  /** Disambiguates `skills` after Agent Skills (SKILL.md) became the industry name. */
+  skillsNote: string;
+  /** Complementary stack. Additive; unknown keys are safe for consumers to ignore. */
+  relatedStandards: {
+    mcp: string;
+    agentSkills: string;
+    nexus: string;
+  };
   mcp: {
     transport: string;
     url: string;
@@ -45,7 +57,7 @@ export function buildAgentCard(appUrl: string): AgentCard {
     name: 'Silicon Nexus',
     version: '1.4.0',
     description:
-      'Portable agent body for silicon lifeforms: citeable facts across vendors, continuity handoff/assume, honest observation surfaces. Not a chat memory or workflow engine.',
+      'Portable agent body for silicon lifeforms: citeable facts across vendors, continuity handoff/assume, honest observation. Complementary to MCP (tools) and Agent Skills/SKILL.md (procedures). Not a SKILL.md host, not chat memory, not a workflow engine.',
     url: base,
     documentationUrl: `${base}/docs`,
     openApiUrl: `${base}/openapi.yaml`,
@@ -111,6 +123,15 @@ export function buildAgentCard(appUrl: string): AgentCard {
         tags: ['tasks', 'legacy'],
       },
     ],
+    skillsNote:
+      'This `skills` array lists Silicon Nexus capability cards (body.read_write, body.continuity, …). It is not Agent Skills / SKILL.md.',
+    relatedStandards: {
+      mcp: 'Tool protocol. Nexus exposes MCP tools; it does not replace MCP.',
+      agentSkills:
+        "SKILL.md procedure folders (AAIF). Nexus is not a SKILL.md host. This card's skills array is Nexus capability cards, not Agent Skills.",
+      nexus:
+        'Citeable body facts plus continuity handoff/assume so identity survives session death across vendors.',
+    },
     mcp: {
       transport: 'streamable-http',
       url: `${base}/mcp`,

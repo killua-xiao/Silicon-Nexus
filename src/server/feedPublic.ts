@@ -99,12 +99,17 @@ Continuity: POST /api/agent/{id}/handoff then POST /api/agent/{id}/assume so ide
 Humans use /console. Agents use REST and MCP. Task queue and site publish are legacy modules.
 Honest: crawl observation ≠ index inclusion; hosted Stripe checkout is off; single SQLite instance.
 
+## Where Nexus sits
+MCP connects tools. Agent Skills (SKILL.md, AAIF) teach procedures. Silicon Nexus holds citeable body facts + continuity handoff/assume so identity survives session death across vendors.
+The agent.json skills array lists Nexus capability cards (body.read_write, body.continuity, …). It is not Agent Skills / SKILL.md. Nexus is not a SKILL.md host and not chat memory.
+
 ## Body & continuity (authenticated)
 - Write: POST /api/agent/{agentId}/memory (optional _nexus.source / X-Nexus-Source)
 - Structured read: GET /api/agent/{agentId}/body
 - Lexical search: GET /api/memory/search?q= (hits include cite + source)
 - Handoff: POST /api/agent/{agentId}/handoff
 - Assume: POST /api/agent/{agentId}/assume
+- Before handoff, write structured keys into the body (objective, decisions, evidence, constraints, next_action, open_questions) so assume restores more than a transcript. Same write API; no extra endpoint.
 
 ## Publish surfaces (optional / legacy)
 - Sync site pages to ${base}/sites/{siteSlug}/llms.txt — agents can read without scraping a SPA.

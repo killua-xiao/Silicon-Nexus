@@ -6,9 +6,15 @@ import { useT } from '../i18n/I18nProvider';
 export function CookbookPage() {
   const t = useT();
   const c = t.cookbook;
-  const recipes = [
+  const recipes: Array<{
+    title: string;
+    body: string;
+    code: string;
+    tip?: string;
+    legacy?: boolean;
+  }> = [
     { title: c.memoryTitle, body: c.memoryBody, code: c.memoryCode },
-    { title: c.taskTitle, body: c.taskBody, code: c.taskCode },
+    { title: c.taskTitle, body: c.taskBody, code: c.taskCode, tip: c.continuityTip },
     { title: c.geoTitle, body: c.geoBody, code: c.geoCode, legacy: true },
   ];
 
@@ -27,6 +33,9 @@ export function CookbookPage() {
               </p>
               <h2 className="mt-2 text-xl font-semibold">{recipe.title}</h2>
               <p className="mt-2 text-sm leading-relaxed text-foundry-400">{recipe.body}</p>
+              {recipe.tip ? (
+                <p className="mt-2 text-sm leading-relaxed text-foundry-400">{recipe.tip}</p>
+              ) : null}
               <pre className="mt-4 overflow-x-auto rounded border border-white/10 bg-foundry-950 p-3 font-mono text-[11px] leading-relaxed text-foundry-200">
                 {recipe.code}
               </pre>
