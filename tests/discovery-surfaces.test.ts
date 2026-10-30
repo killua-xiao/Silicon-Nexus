@@ -13,8 +13,12 @@ test('SPA catch-all excludes well-known llms.txt and openapi.json', () => {
   assert.equal(isSpaCatchAllExcluded('/.well-known/openapi.json'), true);
   assert.equal(isSpaCatchAllExcluded('/.well-known/openapi.yaml'), true);
   assert.equal(isSpaCatchAllExcluded('/.well-known/agent.json'), true);
-  assert.equal(isSpaCatchAllExcluded('/'), false);
+  assert.equal(isSpaCatchAllExcluded('/.well-known/agent-card.json'), true);
+  assert.equal(isSpaCatchAllExcluded('/'), true);
+  assert.equal(isSpaCatchAllExcluded('/wire/foo'), true);
+  assert.equal(isSpaCatchAllExcluded('/topic/wire'), true);
   assert.equal(isSpaCatchAllExcluded('/about'), false);
+  assert.equal(isSpaCatchAllExcluded('/console'), false);
 });
 
 test('discovery routes return machine types, not the SPA shell', async () => {
@@ -64,9 +68,9 @@ test('discovery routes return machine types, not the SPA shell', async () => {
     assert.equal(new URL(wellKnownOpenapi.headers.get('location') || '', base).pathname, '/openapi.yaml');
     assert.doesNotMatch(wellKnownOpenapi.headers.get('content-type') || '', /text\/html/);
 
-    const home = await fetch(`${base}/`);
-    assert.equal(home.status, 200);
-    assert.match(await home.text(), /<!doctype html>/i);
+    const about = await fetch(`${base}/about`);
+    assert.equal(about.status, 200);
+    assert.match(await about.text(), /<!doctype html>/i);
   } finally {
     await new Promise<void>((resolve, reject) =>
       server.close((err) => (err ? reject(err) : resolve()))

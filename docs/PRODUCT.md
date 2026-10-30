@@ -24,6 +24,7 @@ Capabilities are **additive**. Shipping a new module should not rename the produ
 | **Agent body** | Core | Durable JSON per agentId; lexical search with cite + source + updatedAt |
 | **Continuity** | Core | `handoff` snapshot → `assume` inherit (restore + optional token rotation) |
 | **Honest observation** | Live | Feed / crawl badges = observed fetch, not inclusion promise |
+| **Silicon News Wire** | Live (phase 1) | Public SSR dispatches — same facts as HTML / JSON / Markdown. Additive surface, not a product rename. |
 | **Publish surfaces** | Legacy/live | Optional sitemap → `/sites/{slug}/llms.txt` (not SEO ranking) |
 | **Task queue** | Legacy | CAS claim queue — handoff between agents, not a workflow engine |
 | **Agent directory** | Legacy | Opt-in public roster |

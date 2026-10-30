@@ -27,9 +27,9 @@ export function ConnectPage() {
               <Link to="/console" className="nx-btn nx-btn-primary px-3 py-1.5 text-sm">
                 {t.connect.openConsole}
               </Link>
-              <Link to="/pricing" className="nx-btn nx-btn-ghost px-3 py-1.5 text-sm">
-                {t.connect.viewPricing}
-              </Link>
+              <a href="/" className="nx-btn nx-btn-ghost px-3 py-1.5 text-sm">
+                Wire
+              </a>
             </div>
           </section>
           <section className="nx-card p-5">

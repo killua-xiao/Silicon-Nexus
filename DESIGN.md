@@ -43,18 +43,18 @@ Defined in `src/index.css` (`@theme` + `:root`). Tailwind names `foundry-*` stay
 
 | Token | Hex | Use |
 |-------|-----|-----|
-| `foundry-950` / `--bg` | `#0e0f12` | Canvas |
-| `foundry-900` / `--bg-elevated` | `#16181d` | Header, cards, elevated wells |
+| `foundry-950` / `--bg` | `#0d0e12` | Canvas |
+| `foundry-900` / `--bg-elevated` | `#14161d` | Header, cards, elevated wells |
 | `foundry-800` / `--bg-panel` | `#1c2028` | Process panels, hover wells |
 | `foundry-700` | `#2a2f38` | Skeleton, strong hairline |
 | `foundry-600` | `#4a5160` | Dim labels |
 | `foundry-500` | `#6b7380` | Muted body |
-| `foundry-400` | `#8b93a0` | Secondary text |
+| `foundry-400` | `#8a8f9d` | Secondary text |
 | `foundry-300` | `#b8bdc6` | Tertiary |
 | `foundry-200` | `#d6d8de` | Near-ink |
-| `foundry-100` / `--text` | `#eceae4` | Primary ink (warm paper) |
-| `accent` / `teal-glow` | `#c4a574` | Brass — links, kickers, focus, primary fill |
-| `accent-hover` | `#d4b98a` | Primary hover |
+| `foundry-100` / `--text` | `#f1f1f5` | Primary ink |
+| `accent` / `teal-glow` | `#c9a265` | Dark gold — links, kickers, focus, primary fill |
+| `accent-hover` | `#d4af37` | Primary hover / bright gold |
 | `accent-dim` / `teal-deep` | `#8a7349` | Pressed / chip fill |
 | `on-accent` | `#1a160f` | Ink on brass buttons |
 | `ok` | `#7d9a6f` | Linked / crawled / success |
@@ -63,7 +63,7 @@ Defined in `src/index.css` (`@theme` + `:root`). Tailwind names `foundry-*` stay
 | `--border` | `rgba(236, 234, 228, 0.10)` | Default hairline |
 | `--text-muted` | `#8b93a0` | Alias of foundry-400 |
 
-No light theme ships. `theme-color` in `index.html` is `#0e0f12`.
+No light theme ships. `theme-color` in `index.html` is `#0d0e12`. VI lock (phase 1 wire): charcoal `#0d0e12` / `#14161d` + dark gold `#c9a265` / `#d4af37`. No purple gradients.
 
 **Audience tint (optional, not neon):** operator chrome can use brass; agent/machine labels can use copper. Status online uses `ok`, not accent glow.
 

@@ -1,7 +1,7 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { I18nProvider } from './i18n/I18nProvider';
 import { ToastProvider } from './components/Toast';
-import { LandingPage } from './pages/LandingPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 import { AboutPage } from './pages/AboutPage';
 import { DocsPage } from './pages/DocsPage';
 import { ConnectPage } from './pages/ConnectPage';
@@ -26,7 +26,7 @@ export default function App() {
       <ToastProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<LandingPage />} />
+            <Route path="/" element={<NotFoundPage />} />
             <Route path="/about" element={<AboutPage />} />
             <Route path="/docs" element={<DocsPage />} />
             <Route path="/connect" element={<ConnectPage />} />
@@ -47,7 +47,7 @@ export default function App() {
               <Route path="account" element={<ConsoleAccountPage />} />
               <Route path="admin" element={<ConsoleAdminPage />} />
             </Route>
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </BrowserRouter>
       </ToastProvider>

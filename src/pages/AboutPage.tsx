@@ -98,9 +98,9 @@ export function AboutPage() {
             <Link to="/connect" className="nx-btn nx-btn-ghost">
               {t.connect.pageTitle}
             </Link>
-            <Link to="/pricing" className="nx-btn nx-btn-ghost">
-              {t.nav.pricing}
-            </Link>
+            <a href="/" className="nx-btn nx-btn-ghost">
+              Wire
+            </a>
             <Link to="/cookbook" className="nx-btn nx-btn-ghost">
               {t.cookbook.nav}
             </Link>

@@ -7,14 +7,14 @@ import { LanguageSwitcher } from './LanguageSwitcher';
 
 export function BrandMark({ className }: { className?: string }) {
   return (
-    <Link to="/" className={cn('group inline-flex items-center gap-2', className)}>
+    <a href="/" className={cn('group inline-flex items-center gap-2', className)}>
       <span className="relative flex h-7 w-7 items-center justify-center rounded border border-accent/30 bg-foundry-900">
         <Hexagon className="h-3.5 w-3.5 text-accent" strokeWidth={1.75} />
       </span>
       <span className="text-[0.95rem] font-semibold tracking-tight text-foundry-100">
         Silicon Nexus
       </span>
-    </Link>
+    </a>
   );
 }
 
@@ -29,11 +29,10 @@ export function SiteHeader({ compact }: { compact?: boolean }) {
   const [open, setOpen] = useState(false);
 
   const links = [
+    { to: '/connect', label: t.nav.mcpApi },
+    { to: '/feed', label: t.nav.observation },
     { to: '/about', label: t.nav.about },
-    { to: '/connect', label: t.connect.nav },
-    { to: '/pricing', label: t.nav.pricing },
     { to: '/cookbook', label: t.cookbook.nav },
-    { to: '/feed', label: t.nav.feed },
     { to: '/docs', label: t.nav.docs },
   ];
 

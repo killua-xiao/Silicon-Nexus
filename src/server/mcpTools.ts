@@ -314,7 +314,7 @@ async function apiJson(cfg: McpSessionConfig, path: string, init?: RequestInit) 
 /** Create an MCP Server instance wired to a specific token/agent session. */
 export function createNexusMcpServer(cfg: McpSessionConfig): Server {
   const server = new Server(
-    { name: 'silicon-nexus', version: '1.4.0' },
+    { name: 'silicon-nexus', version: '1.5.0' },
     { capabilities: { tools: {} } }
   );
 

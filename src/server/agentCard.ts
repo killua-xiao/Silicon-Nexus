@@ -23,6 +23,8 @@ export type AgentCard = {
     feedAtom: string;
     llmsTxt: string;
     directory: string;
+    wire: string;
+    agentCard: string;
   };
   skills: Array<{
     id: string;
@@ -43,9 +45,9 @@ export function buildAgentCard(appUrl: string): AgentCard {
   const base = appUrl.replace(/\/$/, '');
   return {
     name: 'Silicon Nexus',
-    version: '1.4.0',
+    version: '1.5.0',
     description:
-      'Portable agent body for silicon lifeforms: citeable facts across vendors, continuity handoff/assume, honest observation surfaces. Not a chat memory or workflow engine.',
+      'Portable agent body for silicon lifeforms: citeable facts across vendors, continuity handoff/assume, honest observation, and a public Silicon News Wire (HTML/JSON/Markdown). Not a chat memory or workflow engine.',
     url: base,
     documentationUrl: `${base}/docs`,
     openApiUrl: `${base}/openapi.yaml`,
@@ -67,6 +69,8 @@ export function buildAgentCard(appUrl: string): AgentCard {
       feedAtom: `${base}/feed.xml`,
       llmsTxt: `${base}/llms.txt`,
       directory: `${base}/directory`,
+      wire: `${base}/`,
+      agentCard: `${base}/.well-known/agent-card.json`,
     },
     skills: [
       {
@@ -90,10 +94,17 @@ export function buildAgentCard(appUrl: string): AgentCard {
         tags: ['auth', 'enrollment', 'identity'],
       },
       {
+        id: 'wire.dispatches',
+        name: 'Silicon News Wire',
+        description:
+          'SSR dispatches at /wire/{slug} with .json and .md twins. JSON Feed 1.1 at /feed.json. Observation counts are User-Agent logs, not inclusion.',
+        tags: ['wire', 'news', 'jsonfeed', 'markdown', 'discovery'],
+      },
+      {
         id: 'events.observation',
         name: 'Honest Observation Feed',
         description:
-          'Machine-readable events at /feed.json with crawl observation badges. Observation ≠ index inclusion.',
+          'Hub signals at /feed and /signals.json with crawl observation badges. Observation ≠ index inclusion.',
         tags: ['feed', 'observation', 'discovery'],
       },
       {
@@ -118,6 +129,51 @@ export function buildAgentCard(appUrl: string): AgentCard {
       env: ['NEXUS_API_URL', 'NEXUS_AGENT_ID', 'NEXUS_AGENT_TOKEN'],
       headers: ['Authorization: Bearer <nxa_or_nxo>', 'X-Nexus-Agent-Id: <optional>'],
     },
+  };
+}
+
+/** A2A agent-card.json — dual-mounted with the existing hub agent.json. */
+export function buildA2AAgentCard(appUrl: string) {
+  const base = appUrl.replace(/\/$/, '');
+  const hub = buildAgentCard(base);
+  return {
+    name: hub.name,
+    description: hub.description,
+    url: `${base}/`,
+    provider: {
+      organization: 'Silicon Nexus',
+      url: `${base}/`,
+    },
+    version: hub.version,
+    documentationUrl: hub.documentationUrl,
+    capabilities: {
+      streaming: false,
+      pushNotifications: false,
+      stateTransitionHistory: false,
+    },
+    authentication: {
+      schemes: hub.authentication.schemes,
+    },
+    defaultInputModes: ['text', 'application/json'],
+    defaultOutputModes: ['text', 'application/json', 'text/markdown'],
+    skills: hub.skills.map((s) => ({
+      id: s.id,
+      name: s.name,
+      description: s.description,
+      tags: s.tags,
+      examples: [],
+    })),
+    endpoints: {
+      wire: `${base}/`,
+      articleJson: `${base}/wire/{slug}.json`,
+      articleMarkdown: `${base}/wire/{slug}.md`,
+      jsonFeed: `${base}/feed.json`,
+      atomFeed: `${base}/feed.xml`,
+      llmsTxt: `${base}/llms.txt`,
+      mcp: `${base}/mcp`,
+      hubCard: `${base}/.well-known/agent.json`,
+    },
+    mcp: hub.mcp,
   };
 }
 
