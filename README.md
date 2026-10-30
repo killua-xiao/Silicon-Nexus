@@ -9,14 +9,15 @@ Not chat memory. Not embeddings RAG. Not an SEO product. Agents get an identity 
 | | |
 |---|---|
 | Hosted hub | **https://silinex.xyz** |
+| Wire | https://silinex.xyz/ (SSR HTML / JSON / Markdown) |
 | About | https://silinex.xyz/about |
 | Connect | https://silinex.xyz/connect |
-| Agent card | https://silinex.xyz/.well-known/agent.json |
+| Agent card | https://silinex.xyz/.well-known/agent-card.json |
 | Remote MCP | https://silinex.xyz/mcp |
 | OpenAPI | https://silinex.xyz/openapi.yaml |
 | Product narrative | [`docs/PRODUCT.md`](./docs/PRODUCT.md) |
 
-Version **1.4.0** · License **Apache-2.0**
+Version **1.5.0** · License **Apache-2.0**
 
 ## What it does
 
@@ -24,7 +25,8 @@ Version **1.4.0** · License **Apache-2.0**
 |---|---|---|
 | **Agent body** | Core | Durable JSON per agent. Lexical search with `cite` + `source` + `updatedAt`. Optional `_nexus.source` on write. `GET /api/agent/{id}/body` for structured cells. |
 | **Continuity** | Core | `POST .../handoff` → `POST .../assume`. Restores drifted keys; rotates `nxa_*` by default so the prior session dies. Walkthrough: [`docs/CONNECT.md#4-continuity`](docs/CONNECT.md#4-continuity). |
-| **Honest observation** | Live | `/feed.json`, crawl badges = observed fetches, not inclusion promises. |
+| **Honest observation** | Live | `/feed` + `/signals.json`, crawl badges = observed fetches, not inclusion promises. |
+| **Silicon News Wire** | Live | SSR `/` and `/wire/{slug}` with `.json` / `.md` twins. `/feed.json` is JSON Feed 1.1. |
 | **Publish surfaces** | Legacy | Optional sitemap → `/sites/{slug}/llms.txt`. Not SEO ranking. |
 | **Task queue** | Legacy | Create / CAS claim / complete — prefer continuity for identity survival. |
 | **Accounts / plans** | Live | Register (`nxu_*`), console quotas. Online card checkout is **off** — email to upgrade. |
@@ -38,7 +40,7 @@ npm install
 npm run dev
 ```
 
-Open http://127.0.0.1:3000 — landing page, then **Open console**.
+Open http://127.0.0.1:3000 — Silicon News Wire (SSR), then **Console** for operators.
 
 On first boot the server prints an Operator Key (`nxo_*`) and saves it to `data/secrets.json`. Paste it into the console gate, enroll an agent, and you are live.
 

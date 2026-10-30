@@ -1,11 +1,44 @@
 import { SITE_LEGAL } from '../legal/site.ts';
 import type { FeedItem } from './types.ts';
+import { WIRE_CATEGORIES } from './wireTypes.ts';
+
+export type WireSitemapArticle = {
+  slug: string;
+  dateModified: string;
+};
+
+function robotsBlock(agents: string[]): string {
+  const ua = agents.map((a) => `User-agent: ${a}`).join('\n');
+  return `${ua}
+Allow: /
+Allow: /wire
+Allow: /topic
+Allow: /feed
+Allow: /feed.json
+Allow: /feed.xml
+Allow: /llms.txt
+Allow: /sitemap.xml
+Allow: /.well-known/
+Disallow: /console
+Disallow: /api/dashboard
+Disallow: /api/agents
+Disallow: /api/agent/
+Disallow: /api/memory
+`;
+}
 
 export function buildRobotsTxt(appUrl: string): string {
   const base = appUrl.replace(/\/$/, '');
-  return `# Silicon Nexus — crawlers welcome on public discovery surfaces
+  return `# Silicon Nexus — public wire and discovery surfaces are crawlable.
+# Content-Signal is a formal robots directive (not a comment).
+# search = indexing for search results; ai-input = grounding/citation; ai-train = training.
+# These files lower parse cost. They do not promise ranking or model citation.
+
 User-agent: *
+Content-Signal: search=yes, ai-input=yes, ai-train=no
 Allow: /
+Allow: /wire
+Allow: /topic
 Allow: /feed
 Allow: /feed.json
 Allow: /feed.xml
@@ -27,68 +60,61 @@ Disallow: /api/agents
 Disallow: /api/agent/
 Disallow: /api/memory
 
-# OpenAI — search citation vs training (independent)
-User-agent: OAI-SearchBot
-User-agent: ChatGPT-User
-Allow: /
-Disallow: /console
-Disallow: /api/dashboard
-Disallow: /api/agents
-Disallow: /api/agent/
-Disallow: /api/memory
-
-User-agent: GPTBot
-Allow: /
-Disallow: /console
-Disallow: /api/dashboard
-Disallow: /api/agents
-Disallow: /api/agent/
-Disallow: /api/memory
-
-# Anthropic
-User-agent: Claude-SearchBot
-User-agent: Claude-User
-User-agent: ClaudeBot
-User-agent: anthropic-ai
-Allow: /
-Disallow: /console
-Disallow: /api/dashboard
-Disallow: /api/agents
-Disallow: /api/agent/
-Disallow: /api/memory
-
-# Perplexity
-User-agent: PerplexityBot
-User-agent: Perplexity-User
-Allow: /
-Disallow: /console
-Disallow: /api/dashboard
-Disallow: /api/agents
-Disallow: /api/agent/
-Disallow: /api/memory
+${robotsBlock(['Googlebot', 'Googlebot-News', 'Google-Extended'])}
+${robotsBlock(['bingbot', 'BingPreview'])}
+${robotsBlock(['OAI-SearchBot', 'ChatGPT-User'])}
+${robotsBlock(['GPTBot'])}
+${robotsBlock(['Claude-SearchBot', 'Claude-User', 'ClaudeBot', 'anthropic-ai'])}
+${robotsBlock(['PerplexityBot', 'Perplexity-User'])}
+${robotsBlock(['Applebot', 'Bytespider', 'CCBot', 'Amazonbot', 'DuckDuckBot'])}
 
 Sitemap: ${base}/sitemap.xml
 Sitemap: ${base}/geo-sitemap.xml
 `;
 }
 
-export function buildLlmsTxt(appUrl: string): string {
+export function buildLlmsTxt(
+  appUrl: string,
+  articles: Array<{ slug: string; headline: string }> = []
+): string {
   const base = appUrl.replace(/\/$/, '');
+  const wireLines =
+    articles.length > 0
+      ? articles
+          .map((a) => `- [${a.headline}](${base}/wire/${encodeURIComponent(a.slug)}.md)`)
+          .join('\n')
+      : '- (no published dispatches)';
+  const topicLines = WIRE_CATEGORIES.map(
+    (c) => `- [${c.nameEn}](${base}/topic/${c.slug})`
+  ).join('\n');
   return `# Silicon Nexus
 > A portable body for agents — citeable facts, continuity across session death, honest observation. Via REST & MCP.
+> Public homepage is Silicon News Wire: the same facts in HTML / JSON / Markdown.
 
 This site publishes machine-readable discovery documents for AI crawlers and agent runtimes.
 
 Contact: ${SITE_LEGAL.contactEmail}
 
+## Silicon News Wire
+- [Home (SSR)](${base}/): Wire list
+- [JSON Feed 1.1](${base}/feed.json): application/feed+json — item id is the canonical HTML URL
+- [Atom](${base}/feed.xml)
+- [Agent card (A2A)](${base}/.well-known/agent-card.json)
+- [Hub agent card](${base}/.well-known/agent.json)
+
+### Dispatches (Markdown)
+${wireLines}
+
+### Topics
+${topicLines}
+
+Prefer \`/wire/{slug}.md\` or \`/wire/{slug}.json\` over scraping HTML. HTML remains the canonical page.
+
 ## Primary
-- [Home](${base}/): Product overview
 - [About](${base}/about): What the hub does, and what it does not
 - [Connect](${base}/connect): Cursor, Claude, and remote MCP
 - [Cookbook](${base}/cookbook): Body write/search and continuity handoff/assume
-- [Observation feed (JSON)](${base}/feed.json): Machine events
-- [Observation feed (Atom)](${base}/feed.xml): Atom/RSS
-- [Agent card](${base}/.well-known/agent.json): Capability card
+- [Observation feed items](${base}/feed): Crawl badges on hub signals (not the wire)
 - [MCP card](${base}/.well-known/mcp/server-card.json): MCP metadata
 - [OpenAPI](${base}/openapi.yaml): REST contract
 - [Remote MCP](${base}/mcp): Streamable HTTP MCP
@@ -98,6 +124,7 @@ Silicon Nexus stores a portable agent body (lexical FTS, not embeddings) with pr
 Continuity: POST /api/agent/{id}/handoff then POST /api/agent/{id}/assume so identity survives session death.
 Humans use /console. Agents use REST and MCP. Task queue and site publish are legacy modules.
 Honest: crawl observation ≠ index inclusion; hosted Stripe checkout is off; single SQLite instance.
+llms.txt helps agents find Markdown. It is not a Google ranking signal.
 
 ## Body & continuity (authenticated)
 - Write: POST /api/agent/{agentId}/memory (optional _nexus.source / X-Nexus-Source)
@@ -111,8 +138,7 @@ Honest: crawl observation ≠ index inclusion; hosted Stripe checkout is off; si
 - Not an SEO or inclusion product. Observation ≠ ranking.
 
 ## Optional
-- [Docs](${base}/docs): API quickstart
-- [Pricing](${base}/pricing)
+- [Docs](${base}/docs)
 - [Directory](${base}/directory): Legacy opt-in roster
 - [Privacy](${base}/privacy)
 - [Terms](${base}/terms)
@@ -121,9 +147,9 @@ Honest: crawl observation ≠ index inclusion; hosted Stripe checkout is off; si
 - [robots.txt](${base}/robots.txt)
 
 ## Notes for crawlers
-- Prefer JSON/Atom/Markdown feed endpoints over scraping the SPA shell.
-- Each item includes indexing.status (unseen|crawled) from observed crawler User-Agents — not a guarantee of LLM training inclusion.
-- Authentication is required for body/continuity; public feed and site surfaces require none.
+- Prefer JSON/Atom/Markdown endpoints over scraping the SPA shell.
+- Wire item indexing counts are User-Agent classifications and can be spoofed — not a guarantee of LLM training inclusion.
+- Authentication is required for body/continuity; public wire and site surfaces require none.
 `;
 }
 
@@ -136,7 +162,8 @@ Honest: crawl observation ≠ index inclusion; hosted Stripe checkout is off; si
 export function buildSitemapXml(
   appUrl: string,
   items: FeedItem[],
-  siteSlugs: string[] = []
+  siteSlugs: string[] = [],
+  articles: WireSitemapArticle[] = []
 ): string {
   const base = appUrl.replace(/\/$/, '');
   const staticUrls = [
@@ -146,7 +173,6 @@ export function buildSitemapXml(
     '/cookbook',
     '/directory',
     '/docs',
-    '/pricing',
     '/privacy',
     '/terms',
     '/feed',
@@ -155,7 +181,9 @@ export function buildSitemapXml(
     '/llms.txt',
     '/geo-sitemap.xml',
     '/.well-known/agent.json',
+    '/.well-known/agent-card.json',
     '/.well-known/mcp/server-card.json',
+    ...WIRE_CATEGORIES.map((c) => `/topic/${c.slug}`),
   ];
   const urls = [
     ...staticUrls.map((p) => `  <url><loc>${base}${p || '/'}</loc></url>`),
@@ -165,6 +193,10 @@ export function buildSitemapXml(
     ...siteSlugs.map(
       (slug) => `  <url><loc>${base}/sites/${encodeURIComponent(slug)}/feed.json</loc></url>`
     ),
+    ...articles.map((a) => {
+      const lastmod = a.dateModified.slice(0, 10);
+      return `  <url><loc>${base}/wire/${encodeURIComponent(a.slug)}</loc><lastmod>${lastmod}</lastmod></url>`;
+    }),
     ...items.slice(0, 200).map(
       (i) =>
         `  <url><loc>${base}/feed/${encodeURIComponent(i.slug)}.md</loc><lastmod>${i.updatedAt.slice(0, 10)}</lastmod></url>`
@@ -186,10 +218,10 @@ export function buildGeoSitemapXml(appUrl: string): string {
     { path: '/connect', priority: '0.9' },
     { path: '/cookbook', priority: '0.8' },
     { path: '/docs', priority: '0.8' },
-    { path: '/pricing', priority: '0.8' },
     { path: '/directory', priority: '0.7' },
     { path: '/privacy', priority: '0.5' },
     { path: '/terms', priority: '0.5' },
+    ...WIRE_CATEGORIES.map((c) => ({ path: `/topic/${c.slug}`, priority: '0.8' })),
   ];
   const urls = paths.map(
     (p) =>
@@ -227,7 +259,7 @@ export function buildAtomFeed(appUrl: string, items: FeedItem[]): string {
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>Silicon Nexus Signals</title>
   <subtitle>AI-readable signals from silinex.xyz</subtitle>
-  <link href="${base}/feed.xml" rel="self"/>
+  <link href="${base}/signals.xml" rel="self"/>
   <link href="${base}/feed"/>
   <id>${base}/feed</id>
   <updated>${updated}</updated>

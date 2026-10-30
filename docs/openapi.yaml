@@ -6,7 +6,7 @@ info:
     Auth: Operator Key (nxo_*), account session (nxu_*), or per-agent tokens (nxa_*).
     Credentials via Authorization: Bearer or X-API-Key only (query-string api_key is rejected).
     Registered accounts get workspace ws_{accountId}; operator key uses default.
-  version: 1.4.0
+  version: 1.5.0
 servers:
   - url: https://silinex.xyz/api
     description: Production (silinex.xyz)

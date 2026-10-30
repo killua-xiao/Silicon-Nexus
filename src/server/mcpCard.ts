@@ -32,7 +32,8 @@ export function buildMcpServerCard(appUrl: string) {
     resources: [],
     prompts: [],
     related: {
-      agentCard: `${appUrl}/.well-known/agent.json`,
+      agentCard: `${appUrl}/.well-known/agent-card.json`,
+      hubCard: `${appUrl}/.well-known/agent.json`,
       openApi: `${appUrl}/openapi.yaml`,
     },
   };

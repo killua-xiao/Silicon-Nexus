@@ -47,6 +47,13 @@ Every surface still serves **two audiences**:
 - Event: `FEED_CRAWLED` in activity logs
 - MCP: `nexus_list_feed`, `nexus_get_feed_item`
 
+## Silicon News Wire
+
+- Human: SSR `/`, `/wire/:slug`, `/topic/:category` (not a SPA shell)
+- Agent: `/wire/:slug.json`, `/wire/:slug.md`, `/feed.json` (JSON Feed 1.1), `/llms.txt` (Markdown links), `/.well-known/agent-card.json`
+- Event: `WIRE_OBSERVED` when a known crawler is first seen on a dispatch
+- Honest: User-Agent counts can be spoofed; observation ≠ search or LLM inclusion
+
 ## Publish surfaces (legacy GEO)
 
 - Human: Pull button + honest report on `/console/sites`

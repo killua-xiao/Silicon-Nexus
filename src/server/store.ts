@@ -1,4 +1,5 @@
 import { closeDatabase, ensureDataDir, getDb, getDbPath, initDatabase, probeDatabase } from './db.ts';
+import { seedWireIfEmpty } from './wireStore.ts';
 import { generateSecret, hashToken } from './crypto.ts';
 import { logJson } from './log.ts';
 import { migrateFromJsonIfNeeded } from './store/migrate.ts';
@@ -30,6 +31,7 @@ export function loadPreservedState() {
   migrateFromJsonIfNeeded(db);
   store = new SqliteStore(db);
   store.ensureReady();
+  seedWireIfEmpty();
   logJson('info', 'Persistent store ready (SQLite)', { path: getDbPath() });
 }
 

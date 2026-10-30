@@ -14,7 +14,7 @@ import {
 import { createApiRouter, apiErrorHandler } from './src/server/routes.ts';
 import { closeStore, flushStateSync, loadPreservedState, probeDatabase } from './src/server/store.ts';
 import { logJson } from './src/server/log.ts';
-import { buildAgentCard } from './src/server/agentCard.ts';
+import { buildA2AAgentCard, buildAgentCard } from './src/server/agentCard.ts';
 import { buildMcpServerCard } from './src/server/mcpCard.ts';
 import { createMcpHttpRouter } from './src/server/mcpHttp.ts';
 import { listFeedItems, getFeedItemBySlug, recordFeedCrawl, getSiteBySlug, listSiteContent, listSites } from './src/server/store.ts';
@@ -25,6 +25,9 @@ import {
   buildRobotsTxt,
   buildSitemapXml,
 } from './src/server/feedPublic.ts';
+import { registerWireRoutes } from './src/server/wireRoutes.ts';
+import { listPublishedArticles } from './src/server/wireStore.ts';
+import { buildWireAtomFeed, buildWireJsonFeed } from './src/server/wirePublic.ts';
 import { buildSiteFeedJson, buildSiteLlmsTxt } from './src/server/geoPublic.ts';
 import { registerSiteContentMirrorRoutes } from './src/server/siteContentMirrors.ts';
 import { detectCrawler } from './src/server/crawlDetect.ts';
@@ -108,9 +111,13 @@ async function startServer() {
   });
 
   const agentCard = buildAgentCard(appUrl);
+  const a2aCard = buildA2AAgentCard(appUrl);
   const mcpCard = buildMcpServerCard(appUrl);
   app.get('/.well-known/agent.json', (_req, res) => {
     res.type('application/json').json(agentCard);
+  });
+  app.get('/.well-known/agent-card.json', (_req, res) => {
+    res.type('application/json').json(a2aCard);
   });
   app.get('/agent.json', (_req, res) => {
     res.type('application/json').json(agentCard);
@@ -123,21 +130,42 @@ async function startServer() {
     res.type('text/plain').send(buildRobotsTxt(appUrl));
   });
   app.get('/llms.txt', (_req, res) => {
-    res.type('text/plain; charset=utf-8').send(buildLlmsTxt(appUrl));
+    const articles = listPublishedArticles({ limit: 200 });
+    res
+      .type('text/plain; charset=utf-8')
+      .send(buildLlmsTxt(appUrl, articles.map((a) => ({ slug: a.slug, headline: a.headline }))));
   });
   app.get('/.well-known/llms.txt', (_req, res) => {
-    res.type('text/plain; charset=utf-8').send(buildLlmsTxt(appUrl));
+    const articles = listPublishedArticles({ limit: 200 });
+    res
+      .type('text/plain; charset=utf-8')
+      .send(buildLlmsTxt(appUrl, articles.map((a) => ({ slug: a.slug, headline: a.headline }))));
   });
   app.get('/sitemap.xml', (_req, res) => {
     const sites = listSites();
-    res
-      .type('application/xml')
-      .send(buildSitemapXml(appUrl, listFeedItems({ limit: 200 }), sites.map((s) => s.slug)));
+    const articles = listPublishedArticles({ limit: 200 });
+    res.type('application/xml').send(
+      buildSitemapXml(
+        appUrl,
+        listFeedItems({ limit: 200 }),
+        sites.map((s) => s.slug),
+        articles.map((a) => ({ slug: a.slug, dateModified: a.dateModified }))
+      )
+    );
   });
   app.get('/geo-sitemap.xml', (_req, res) => {
     res.type('application/xml').send(buildGeoSitemapXml(appUrl));
   });
   app.get('/feed.json', (_req, res) => {
+    const articles = listPublishedArticles({ limit: 50 });
+    res.setHeader('Content-Type', 'application/feed+json; charset=utf-8');
+    res.send(JSON.stringify(buildWireJsonFeed(appUrl, articles)));
+  });
+  app.get('/feed.xml', (_req, res) => {
+    const articles = listPublishedArticles({ limit: 50 });
+    res.type('application/atom+xml').send(buildWireAtomFeed(appUrl, articles));
+  });
+  app.get('/signals.json', (_req, res) => {
     const items = listFeedItems({ limit: 50 });
     res.type('application/json').json({
       title: 'Silicon Nexus Signals',
@@ -147,7 +175,7 @@ async function startServer() {
       items,
     });
   });
-  app.get('/feed.xml', (_req, res) => {
+  app.get('/signals.xml', (_req, res) => {
     res.type('application/atom+xml').send(buildAtomFeed(appUrl, listFeedItems({ limit: 50 })));
   });
 
@@ -259,6 +287,8 @@ async function startServer() {
   app.use('/api', createApiRouter({ openMode }));
   app.use(apiErrorHandler);
 
+  registerWireRoutes(app, appUrl);
+
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -267,7 +297,7 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
+    app.use(express.static(distPath, { index: false }));
     app.get('*', (req, res, next) => {
       if (isSpaCatchAllExcluded(req.path)) {
         return next();

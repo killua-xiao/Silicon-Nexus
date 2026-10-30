@@ -6,36 +6,36 @@
   --font-display: "IBM Plex Sans", "Noto Sans SC", ui-sans-serif, system-ui, "PingFang SC",
     "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --color-foundry-950: #0e0f12;
-  --color-foundry-900: #16181d;
+  --color-foundry-950: #0d0e12;
+  --color-foundry-900: #14161d;
   --color-foundry-800: #1c2028;
   --color-foundry-700: #2a2f38;
   --color-foundry-600: #4a5160;
   --color-foundry-500: #6b7380;
-  --color-foundry-400: #8b93a0;
+  --color-foundry-400: #8a8f9d;
   --color-foundry-300: #b8bdc6;
   --color-foundry-200: #d6d8de;
-  --color-foundry-100: #eceae4;
-  --color-accent: #c4a574;
-  --color-accent-hover: #d4b98a;
+  --color-foundry-100: #f1f1f5;
+  --color-accent: #c9a265;
+  --color-accent-hover: #d4af37;
   --color-accent-dim: #8a7349;
   --color-ok: #7d9a6f;
   --color-copper: #c4844a;
   --color-danger: #c45c5c;
   /* Legacy class names — same values as accent / accent-dim. Prefer accent in new code. */
-  --color-teal-glow: #c4a574;
+  --color-teal-glow: #c9a265;
   --color-teal-deep: #8a7349;
 }
 
 :root {
-  --bg: #0e0f12;
-  --bg-elevated: #16181d;
+  --bg: #0d0e12;
+  --bg-elevated: #14161d;
   --bg-panel: #1c2028;
   --border: rgba(236, 234, 228, 0.1);
-  --text: #eceae4;
-  --text-muted: #8b93a0;
-  --accent: #c4a574;
-  --accent-hover: #d4b98a;
+  --text: #f1f1f5;
+  --text-muted: #8a8f9d;
+  --accent: #c9a265;
+  --accent-hover: #d4af37;
   --accent-dim: #8a7349;
   --on-accent: #1a160f;
   --ok: #7d9a6f;

@@ -259,6 +259,7 @@ function migrateSchema(database: Database.Database) {
   `);
 
   migrateMemorySearchSchema(database);
+  migrateWireSchema(database);
 
   database.exec(`
     CREATE TABLE IF NOT EXISTS handoffs (
@@ -325,6 +326,87 @@ function migrateMemorySearchSchema(database: Database.Database) {
     `);
   } catch {
     // FTS5 unavailable — substring search still works off memory_index.
+  }
+}
+
+function migrateWireSchema(database: Database.Database) {
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS publishers (
+      id TEXT PRIMARY KEY,
+      slug TEXT NOT NULL UNIQUE,
+      name TEXT NOT NULL,
+      url TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS articles (
+      id TEXT PRIMARY KEY,
+      publisher_id TEXT NOT NULL,
+      slug TEXT NOT NULL UNIQUE,
+      headline TEXT NOT NULL,
+      summary TEXT NOT NULL DEFAULT '',
+      body_md TEXT NOT NULL,
+      key_facts_json TEXT NOT NULL DEFAULT '[]',
+      category TEXT NOT NULL,
+      author_name TEXT NOT NULL,
+      author_type TEXT NOT NULL DEFAULT 'Organization',
+      author_url TEXT,
+      status TEXT NOT NULL DEFAULT 'draft',
+      date_published TEXT NOT NULL,
+      date_modified TEXT NOT NULL,
+      image_url TEXT,
+      language TEXT NOT NULL DEFAULT 'en',
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (publisher_id) REFERENCES publishers(id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_articles_published
+      ON articles(status, date_published DESC);
+    CREATE INDEX IF NOT EXISTS idx_articles_category
+      ON articles(category, status, date_published DESC);
+
+    CREATE TABLE IF NOT EXISTS article_observations (
+      article_id TEXT NOT NULL,
+      audience TEXT NOT NULL,
+      crawler_id TEXT NOT NULL DEFAULT '',
+      hits INTEGER NOT NULL DEFAULT 0,
+      last_seen_at TEXT,
+      last_ua TEXT,
+      PRIMARY KEY (article_id, audience, crawler_id),
+      FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE
+    );
+  `);
+
+  try {
+    database.exec(`
+      CREATE VIRTUAL TABLE IF NOT EXISTS articles_fts USING fts5(
+        slug UNINDEXED,
+        headline,
+        summary,
+        body_md,
+        key_facts,
+        tokenize='unicode61 remove_diacritics 2'
+      );
+      CREATE TRIGGER IF NOT EXISTS articles_ai AFTER INSERT ON articles BEGIN
+        INSERT INTO articles_fts(rowid, slug, headline, summary, body_md, key_facts)
+        VALUES (new.rowid, new.slug, new.headline, new.summary, new.body_md, new.key_facts_json);
+      END;
+      CREATE TRIGGER IF NOT EXISTS articles_ad AFTER DELETE ON articles BEGIN
+        INSERT INTO articles_fts(articles_fts, rowid, slug, headline, summary, body_md, key_facts)
+        VALUES('delete', old.rowid, old.slug, old.headline, old.summary, old.body_md, old.key_facts_json);
+      END;
+      CREATE TRIGGER IF NOT EXISTS articles_au AFTER UPDATE ON articles BEGIN
+        INSERT INTO articles_fts(articles_fts, rowid, slug, headline, summary, body_md, key_facts)
+        VALUES('delete', old.rowid, old.slug, old.headline, old.summary, old.body_md, old.key_facts_json);
+        INSERT INTO articles_fts(rowid, slug, headline, summary, body_md, key_facts)
+        VALUES (new.rowid, new.slug, new.headline, new.summary, new.body_md, new.key_facts_json);
+      END;
+    `);
+  } catch {
+    // FTS5 unavailable — list/detail still work without lexical search.
   }
 }
 

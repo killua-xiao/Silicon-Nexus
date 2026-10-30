@@ -16,9 +16,8 @@ export function SiteFooter({
   const t = useT();
   const links = [
     { to: '/about', label: t.nav.about },
-    { to: '/connect', label: t.connect.nav },
-    { to: '/pricing', label: t.nav.pricing },
-    { to: '/feed', label: t.nav.feed },
+    { to: '/connect', label: t.nav.mcpApi },
+    { to: '/feed', label: t.nav.observation },
     { to: '/docs', label: t.nav.docs },
     { to: '/cookbook', label: t.cookbook.nav },
     { to: '/console', label: t.nav.console },
@@ -57,6 +56,9 @@ export function SiteFooter({
               className="transition hover:text-accent"
             >
               GitHub
+            </a>
+            <a href="/.well-known/agent-card.json" className="font-mono transition hover:text-accent">
+              agent-card.json
             </a>
             <a href="/.well-known/agent.json" className="font-mono transition hover:text-accent">
               agent.json
