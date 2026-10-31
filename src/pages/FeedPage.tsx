@@ -149,7 +149,7 @@ export function FeedPage() {
             ) : (
               <ul className="divide-y divide-white/5">
                 {items.map((a) => (
-                  <li key={a.slug} className="px-4 py-4">
+                  <li key={a.slug} className="px-5 py-4">
                     <Link
                       to={`/feed/${encodeURIComponent(a.slug)}`}
                       className="font-mono text-sm text-teal-glow hover:underline"

@@ -38,10 +38,12 @@ describe('shared public chrome', () => {
     assert.match(SITE_CHROME_CSS, /--border:\s*rgba\(241, 241, 245, 0\.10\)/);
     assert.match(SITE_CHROME_CSS, /\.wrap\s*\{[^}]*max-width:\s*var\(--wrap\)/s);
     assert.match(SITE_CHROME_CSS, /nav\.primary/);
-    assert.equal(WRAP_MAX_PX, 720);
+    assert.equal(WRAP_MAX_PX, 960);
     assert.equal(WRAP_CONSOLE, '72rem');
-    assert.match(SITE_CHROME_CSS, /--wrap:\s*720px/);
+    assert.match(SITE_CHROME_CSS, /--wrap:\s*960px/);
     assert.match(SITE_CHROME_CSS, /--wrap-console:\s*72rem/);
+    assert.match(SITE_CHROME_CSS, /\.wrap-console\s*\{[^}]*max-width:\s*var\(--wrap-console\)/s);
+    assert.doesNotMatch(SITE_CHROME_CSS, /--wrap:\s*720px/);
     assert.match(SITE_CHROME_CSS, /@media \(max-width: 640px\)/);
     assert.doesNotMatch(SITE_CHROME_CSS, /linear-gradient|#7c3aed|#8b5cf6/i);
   });

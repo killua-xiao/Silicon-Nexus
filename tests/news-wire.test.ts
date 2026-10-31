@@ -116,6 +116,9 @@ describe('Silicon News Wire phase 1', { concurrency: 1 }, () => {
       assert.match(homeHtml, /<nav class="primary"/);
       assert.match(homeHtml, /MCP &amp; API/);
       assert.match(homeHtml, /\.wrap \{ max-width: var\(--wrap\)/);
+      assert.match(homeHtml, /--wrap:\s*960px/);
+      assert.match(homeHtml, /--wrap-console:\s*72rem/);
+      assert.doesNotMatch(homeHtml, /--wrap:\s*720px/);
       assert.match(homeHtml, /rel="alternate"[^>]+application\/feed\+json/);
       assert.match(homeHtml, /<title>/);
       assert.match(homeHtml, /rel="canonical"/);
