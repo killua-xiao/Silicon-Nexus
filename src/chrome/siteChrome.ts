@@ -1,8 +1,8 @@
 import type { Locale } from '../i18n/messages.ts';
 import { SITE_LEGAL } from '../legal/site.ts';
 
-/** Locked public content column — matches Wire `.wrap`. */
-export const WRAP_MAX_PX = 720;
+/** Locked public content column — matches Wire `.wrap` (news-site main bar). */
+export const WRAP_MAX_PX = 960;
 /** Locked Console workspace cap — Tailwind `max-w-6xl` (72rem). */
 export const WRAP_CONSOLE = '72rem';
 

@@ -266,7 +266,7 @@ h1 { font-size: 1.75rem; font-weight: 600; letter-spacing: -0.02em; line-height:
 .meta time { font-family: var(--font-mono); font-size: 13px; color: var(--text); }
 .byline { color: var(--muted); font-size: 14px; margin: 6px 0 0; }
 .list { list-style: none; padding: 0; margin: 0; }
-.list li { border-bottom: 1px solid var(--border); padding: 20px 0; }
+.list li { border-bottom: 1px solid var(--border); padding: 22px 8px; }
 .list h2 { font-size: 1.15rem; margin: 0 0 6px; font-weight: 600; letter-spacing: -0.02em; }
 .list h2 a { color: var(--text); }
 .list h2 a:hover { color: var(--accent); }
