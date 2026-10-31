@@ -23,12 +23,39 @@ function readStoredLocale(): Locale | null {
   return null;
 }
 
+function readQueryLocale(): Locale | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const lang = new URLSearchParams(window.location.search).get('lang');
+    if (lang === 'zh' || lang === 'en') return lang;
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
+function writeLocaleQuery(next: Locale): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const url = new URL(window.location.href);
+    if (next === 'zh') url.searchParams.set('lang', 'zh');
+    else url.searchParams.delete('lang');
+    const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+    if (`${window.location.pathname}${window.location.search}${window.location.hash}` !== nextUrl) {
+      window.history.replaceState(window.history.state, '', nextUrl);
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const stored = typeof window !== 'undefined' ? readStoredLocale() : null;
-  const [locale, setLocaleState] = useState<Locale>(stored || 'en');
-  const [ready, setReady] = useState(!!stored);
+  const query = typeof window !== 'undefined' ? readQueryLocale() : null;
+  const stored = typeof window !== 'undefined' && !query ? readStoredLocale() : null;
+  const [locale, setLocaleState] = useState<Locale>(query || stored || 'en');
+  const [ready, setReady] = useState(!!query || !!stored);
   const [country, setCountry] = useState<string | null>(null);
-  const [manual, setManual] = useState(!!stored);
+  const [manual, setManual] = useState(!!query || !!stored);
 
   useEffect(() => {
     if (manual) {
@@ -68,6 +95,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     } catch {
       /* ignore */
     }
+    writeLocaleQuery(next);
   }, []);
 
   const value = useMemo(

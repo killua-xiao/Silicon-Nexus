@@ -1,90 +1,76 @@
 import { useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
-import { Hexagon, Menu, X } from 'lucide-react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { Menu, X } from 'lucide-react';
 import { cn } from '../lib/cn';
-import { useT } from '../i18n/I18nProvider';
-import { LanguageSwitcher } from './LanguageSwitcher';
+import { useI18n, useT } from '../i18n/I18nProvider';
+import {
+  chromeCopy,
+  chromeNavKeyFromPath,
+  PRIMARY_NAV,
+  primaryNavLabel,
+} from '../chrome/siteChrome';
 
-export function BrandMark({ className }: { className?: string }) {
+function localePath(path: string, locale: 'zh' | 'en'): string {
+  if (locale !== 'zh') return path;
+  const join = path.includes('?') ? '&' : '?';
+  return `${path}${join}lang=zh`;
+}
+
+export function BrandMark() {
+  const { locale } = useI18n();
+  const c = chromeCopy(locale);
   return (
-    <a href="/" className={cn('group inline-flex items-center gap-2', className)}>
-      <span className="relative flex h-7 w-7 items-center justify-center rounded border border-accent/30 bg-foundry-900">
-        <Hexagon className="h-3.5 w-3.5 text-accent" strokeWidth={1.75} />
-      </span>
-      <span className="text-[0.95rem] font-semibold tracking-tight text-foundry-100">
-        Silicon Nexus
-      </span>
+    <a className="brand" href={localePath('/', locale)}>
+      <strong>{c.product}</strong>
+      <span>{c.builtFor}</span>
     </a>
   );
 }
 
-const publicLinkClass = ({ isActive }: { isActive: boolean }) =>
-  cn(
-    'rounded px-2.5 py-1 text-[13px] text-foundry-400 transition hover:bg-white/5 hover:text-foundry-100',
-    isActive && 'bg-accent/10 text-accent'
-  );
-
-export function SiteHeader({ compact }: { compact?: boolean }) {
-  const t = useT();
-  const [open, setOpen] = useState(false);
-
-  const links = [
-    { to: '/connect', label: t.nav.mcpApi },
-    { to: '/feed', label: t.nav.observation },
-    { to: '/about', label: t.nav.about },
-    { to: '/cookbook', label: t.cookbook.nav },
-    { to: '/docs', label: t.nav.docs },
-  ];
+export function SiteHeader() {
+  const { locale, setLocale } = useI18n();
+  const location = useLocation();
+  const c = chromeCopy(locale);
+  const active = chromeNavKeyFromPath(location.pathname);
 
   return (
-    <header
-      className={cn(
-        'sticky top-0 z-30 border-b border-white/[0.06] px-5 py-2 md:px-8',
-        compact ? 'bg-foundry-950' : 'bg-foundry-950/95 backdrop-blur-sm'
-      )}
-    >
-      <div className="mx-auto flex h-10 max-w-6xl items-center justify-between gap-4">
+    <header className="site-header">
+      <div className="wrap">
         <BrandMark />
-        <nav className="hidden items-center gap-0.5 lg:flex">
-          {links.map((l) => (
-            <NavLink key={l.to} to={l.to} className={publicLinkClass}>
-              {l.label}
-            </NavLink>
-          ))}
-        </nav>
-        <div className="flex items-center gap-2">
-          <LanguageSwitcher className="hidden sm:inline-flex" />
-          <Link to="/console" className="nx-btn nx-btn-primary px-2.5 py-1 text-[13px]">
-            {t.nav.openConsole}
-          </Link>
+        <nav className="primary" aria-label="Primary">
+          {PRIMARY_NAV.map((item) => {
+            const label = primaryNavLabel(item.key, c);
+            const current = item.key === active;
+            if (item.href === '/') {
+              return (
+                <a
+                  key={item.key}
+                  href={localePath('/', locale)}
+                  aria-current={current ? 'page' : undefined}
+                >
+                  {label}
+                </a>
+              );
+            }
+            return (
+              <NavLink
+                key={item.key}
+                to={localePath(item.href, locale)}
+                aria-current={current ? 'page' : undefined}
+              >
+                {label}
+              </NavLink>
+            );
+          })}
           <button
             type="button"
-            className="inline-flex h-8 w-8 items-center justify-center rounded border border-white/10 text-foundry-200 lg:hidden"
-            aria-expanded={open}
-            aria-label={open ? t.nav.close : t.nav.menu}
-            onClick={() => setOpen((v) => !v)}
+            onClick={() => setLocale(c.langOtherCode)}
+            aria-label={c.langOther}
           >
-            {open ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            {c.langOther}
           </button>
-        </div>
-      </div>
-      {open ? (
-        <nav className="mt-2 grid gap-0.5 border-t border-white/5 pt-2 lg:hidden">
-          <div className="mb-1 sm:hidden">
-            <LanguageSwitcher />
-          </div>
-          {links.map((l) => (
-            <NavLink
-              key={l.to}
-              to={l.to}
-              className={publicLinkClass}
-              onClick={() => setOpen(false)}
-            >
-              {l.label}
-            </NavLink>
-          ))}
         </nav>
-      ) : null}
+      </div>
     </header>
   );
 }
@@ -119,20 +105,19 @@ export function ConsoleNav({
   ];
 
   return (
-    <header className="sticky top-0 z-30 border-b border-white/[0.06] bg-foundry-950 px-4 py-2 md:px-6">
-      <div className="mx-auto flex h-10 max-w-[1400px] items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-3">
-          <BrandMark />
-          <nav className="hidden items-center gap-0.5 text-[13px] md:flex">
-            {links.map((l) => (
-              <NavLink key={l.to} to={l.to} end={l.end} className={consoleLinkClass}>
-                {l.label}
-              </NavLink>
-            ))}
-          </nav>
-        </div>
+    <div className="border-b border-white/[0.06] bg-foundry-950">
+      <div className="wrap-console flex min-h-10 items-center justify-between gap-3 py-2">
+        <p className="font-mono text-[11px] uppercase tracking-wider text-foundry-500 md:hidden">
+          {t.nav.console}
+        </p>
+        <nav className="hidden items-center gap-0.5 text-[13px] md:flex" aria-label={t.nav.console}>
+          {links.map((l) => (
+            <NavLink key={l.to} to={l.to} end={l.end} className={consoleLinkClass}>
+              {l.label}
+            </NavLink>
+          ))}
+        </nav>
         <div className="flex items-center gap-2 sm:gap-3">
-          <LanguageSwitcher className="hidden sm:inline-flex" />
           <span
             className={cn(
               'hidden items-center gap-1.5 font-mono text-[11px] uppercase tracking-wider sm:inline-flex',
@@ -177,10 +162,7 @@ export function ConsoleNav({
         </div>
       </div>
       {open ? (
-        <nav className="mt-2 grid gap-0.5 border-t border-white/5 pt-2 md:hidden">
-          <div className="mb-1 sm:hidden">
-            <LanguageSwitcher />
-          </div>
+        <nav className="wrap-console grid gap-0.5 border-t border-white/5 py-2 md:hidden">
           {links.map((l) => (
             <NavLink
               key={l.to}
@@ -194,6 +176,6 @@ export function ConsoleNav({
           ))}
         </nav>
       ) : null}
-    </header>
+    </div>
   );
 }

@@ -9,7 +9,7 @@ import {
   setOperatorKey,
 } from '../lib/api';
 import { AuthGate, OnboardingChecklist } from '../components/AuthGate';
-import { ConsoleNav } from '../components/SiteHeader';
+import { ConsoleNav, SiteHeader } from '../components/SiteHeader';
 import { useToast } from '../components/Toast';
 import type { AgentRow } from '../components/AgentPanel';
 import type { LogRow } from '../components/ActivityFeed';
@@ -256,6 +256,7 @@ function ConsoleShellInner() {
   return (
     <ConsoleContext.Provider value={value}>
       <div className="min-h-screen bg-foundry-950">
+        <SiteHeader />
         <ConsoleNav
           connected={connected && (!protectedMode || !!getOperatorKey())}
           workerOnline={worker?.online}
@@ -277,7 +278,7 @@ function ConsoleShellInner() {
             refresh();
           }}
         />
-        <main className="mx-auto max-w-[1400px] px-4 py-4 md:px-6 md:py-5">
+        <main className="wrap-console py-4 md:py-5">
           {!hideOnboarding && (
             <OnboardingChecklist
               hasKey={!protectedMode || !!getOperatorKey()}
@@ -291,7 +292,7 @@ function ConsoleShellInner() {
           )}
           <Outlet />
         </main>
-        <SiteFooter tagline={t.landing.footer} copyright={t.landing.copyright} />
+        <SiteFooter />
       </div>
     </ConsoleContext.Provider>
   );

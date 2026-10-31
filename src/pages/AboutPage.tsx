@@ -31,8 +31,8 @@ export function AboutPage() {
 
   return (
     <div className="min-h-screen bg-foundry-950 foundry-grid text-foundry-100">
-      <SiteHeader compact />
-      <main className="mx-auto max-w-3xl px-5 py-8 md:px-6">
+      <SiteHeader />
+      <main className="wrap py-8">
         <p className="nx-kicker mb-2">{a.eyebrow}</p>
         <h1 className="text-[1.75rem] font-semibold tracking-tight text-foundry-100 md:text-[2rem]">
           {a.title}
@@ -127,7 +127,7 @@ export function AboutPage() {
           <p className="mt-4 font-mono text-[11px] text-foundry-600">{a.sourceHint}</p>
         </section>
       </main>
-      <SiteFooter tagline={t.landing.footer} copyright={t.landing.copyright} />
+      <SiteFooter />
     </div>
   );
 }

@@ -24,8 +24,8 @@ export function DocsPage() {
 
   return (
     <div className="min-h-screen bg-foundry-950 foundry-grid">
-      <SiteHeader compact />
-      <main className="mx-auto max-w-3xl px-5 py-8 md:px-6">
+      <SiteHeader />
+      <main className="wrap py-8">
         <h1 className="text-3xl font-semibold tracking-tight text-foundry-100">{t.docs.title}</h1>
         <p className="mt-3 text-foundry-400">
           {t.docs.introBefore}{' '}
@@ -81,7 +81,7 @@ curl "https://silinex.xyz/api/memory/search?q=sector" \\
           .
         </p>
       </main>
-      <SiteFooter tagline={t.landing.footer} copyright={t.landing.copyright} />
+      <SiteFooter />
     </div>
   );
 }

@@ -6,8 +6,8 @@ export function NotFoundPage() {
   const t = useT();
   return (
     <div className="min-h-screen bg-foundry-950 text-foundry-100">
-      <SiteHeader compact />
-      <main className="mx-auto max-w-3xl px-5 py-16">
+      <SiteHeader />
+      <main className="wrap py-16">
         <p className="nx-kicker mb-2">404</p>
         <h1 className="text-2xl font-semibold tracking-tight">Page not found</h1>
         <p className="mt-3 text-sm text-foundry-400">
@@ -22,7 +22,7 @@ export function NotFoundPage() {
           </a>
         </div>
       </main>
-      <SiteFooter tagline={t.landing.footer} copyright={t.landing.copyright} />
+      <SiteFooter />
     </div>
   );
 }

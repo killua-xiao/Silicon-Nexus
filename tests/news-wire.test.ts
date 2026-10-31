@@ -112,6 +112,10 @@ describe('Silicon News Wire phase 1', { concurrency: 1 }, () => {
       const homeHtml = await home.text();
       assert.match(homeHtml, /BUILT FOR SILICON LIFEFORMS/);
       assert.match(homeHtml, /Readable by carbon/);
+      assert.match(homeHtml, /class="site-header"/);
+      assert.match(homeHtml, /<nav class="primary"/);
+      assert.match(homeHtml, /MCP &amp; API/);
+      assert.match(homeHtml, /\.wrap \{ max-width: var\(--wrap\)/);
       assert.match(homeHtml, /rel="alternate"[^>]+application\/feed\+json/);
       assert.match(homeHtml, /<title>/);
       assert.match(homeHtml, /rel="canonical"/);

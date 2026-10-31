@@ -31,17 +31,19 @@
   --bg: #0d0e12;
   --bg-elevated: #14161d;
   --bg-panel: #1c2028;
-  --border: rgba(236, 234, 228, 0.1);
+  --border: rgba(241, 241, 245, 0.10);
   --text: #f1f1f5;
-  --text-muted: #8a8f9d;
+  --muted: #8a8f9d;
+  --text-muted: var(--muted);
   --accent: #c9a265;
-  --accent-hover: #d4af37;
+  --accent-bright: #d4af37;
+  --accent-hover: var(--accent-bright);
   --accent-dim: #8a7349;
   --on-accent: #1a160f;
   --ok: #7d9a6f;
   --danger: #c45c5c;
   --copper: #c4844a;
-  --radius: 0.375rem;
+  --radius: 6px;
 }
 
 html,

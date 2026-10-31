@@ -14,8 +14,8 @@ export function CookbookPage() {
 
   return (
     <div className="min-h-screen bg-foundry-950 foundry-grid text-foundry-100">
-      <SiteHeader compact />
-      <main className="mx-auto max-w-3xl px-5 py-8 md:px-6">
+      <SiteHeader />
+      <main className="wrap py-8">
         <p className="nx-kicker mb-2">{c.eyebrow}</p>
         <h1 className="text-3xl font-semibold tracking-tight md:text-4xl">{c.title}</h1>
         <p className="mt-4 leading-relaxed text-foundry-400">{c.lead}</p>
@@ -42,7 +42,7 @@ export function CookbookPage() {
           </Link>
         </div>
       </main>
-      <SiteFooter tagline={t.landing.footer} copyright={t.landing.copyright} />
+      <SiteFooter />
     </div>
   );
 }
