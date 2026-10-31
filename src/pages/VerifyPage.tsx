@@ -31,7 +31,7 @@ export function VerifyPage() {
 
   return (
     <div className="min-h-screen bg-foundry-950 foundry-grid">
-      <SiteHeader compact />
+      <SiteHeader />
       <main className="mx-auto max-w-lg px-5 py-8">
         <h1 className="text-2xl font-semibold text-foundry-100">{t.verify.title}</h1>
         <p className={`mt-4 text-sm ${status === 'error' ? 'text-rose-300' : 'text-foundry-300'}`}>
@@ -41,7 +41,7 @@ export function VerifyPage() {
           {t.verify.back}
         </Link>
       </main>
-      <SiteFooter tagline={t.landing.footer} copyright={t.landing.copyright} />
+      <SiteFooter />
     </div>
   );
 }

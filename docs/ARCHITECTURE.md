@@ -51,6 +51,7 @@ src/server/
   feedPublic.ts           # robots/llms/sitemap/atom builders
   wireRoutes.ts           # SSR Silicon News Wire (HTML/JSON/MD)
   crawlDetect.ts          # Crawler UA → indexing observation
+src/chrome/siteChrome.ts  # Shared public header/footer/CSS tokens (Wire SSR + SPA)
 mcp-server.ts             # MCP stdio bridge → REST
 src/pages/                # Console, Agents, Feed, Docs, Connect (public / is SSR wire)
 src/components/           # Console UI primitives

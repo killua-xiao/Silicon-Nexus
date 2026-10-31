@@ -9,8 +9,8 @@ export function ConnectPage() {
 
   return (
     <div className="min-h-screen bg-foundry-950 foundry-grid text-foundry-100">
-      <SiteHeader compact />
-      <main className="mx-auto max-w-3xl px-5 py-8 md:px-6">
+      <SiteHeader />
+      <main className="wrap py-8">
         <p className="nx-kicker mb-2">{t.connect.eyebrow}</p>
         <h1 className="text-[1.75rem] font-semibold tracking-tight text-foundry-100">
           {t.connect.pageTitle}
@@ -106,7 +106,7 @@ export function ConnectPage() {
           <span className="font-mono text-foundry-500">docs/CONNECT.md</span>
         </p>
       </main>
-      <SiteFooter tagline={t.landing.footer} copyright={t.landing.copyright} />
+      <SiteFooter />
     </div>
   );
 }

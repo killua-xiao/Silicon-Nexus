@@ -141,7 +141,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      <SiteFooter tagline={t.landing.footer} copyright={t.landing.copyright} />
+      <SiteFooter />
     </div>
   );
 }

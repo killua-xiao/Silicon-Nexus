@@ -75,7 +75,7 @@ export function PricingPage() {
 
   return (
     <div className="min-h-screen bg-foundry-950 foundry-grid">
-      <SiteHeader compact />
+      <SiteHeader />
       <main className="mx-auto max-w-6xl px-5 py-8 md:px-6">
         <p className="nx-kicker mb-2">{t.pricing.eyebrow}</p>
         <h1 className="text-[1.75rem] font-semibold tracking-tight text-foundry-100 md:text-[2rem]">
@@ -167,7 +167,7 @@ export function PricingPage() {
           </div>
         </section>
       </main>
-      <SiteFooter tagline={t.landing.footer} copyright={t.landing.copyright} />
+      <SiteFooter />
     </div>
   );
 }

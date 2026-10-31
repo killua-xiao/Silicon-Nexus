@@ -49,7 +49,7 @@ Every surface still serves **two audiences**:
 
 ## Silicon News Wire
 
-- Human: SSR `/`, `/wire/:slug`, `/topic/:category` (not a SPA shell)
+- Human: SSR `/`, `/wire/:slug`, `/topic/:category` with the same public chrome as SPA `/connect`, `/feed`, `/about`, `/console` (`src/chrome/siteChrome.ts`)
 - Agent: `/wire/:slug.json`, `/wire/:slug.md`, `/feed.json` (JSON Feed 1.1), `/llms.txt` (Markdown links), `/.well-known/agent-card.json`
 - Event: `WIRE_OBSERVED` when a known crawler is first seen on a dispatch
 - Honest: User-Agent counts can be spoofed; observation ≠ search or LLM inclusion

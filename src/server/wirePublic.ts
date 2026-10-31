@@ -1,5 +1,11 @@
+import {
+  chromeCopy,
+  renderSiteFooterHtml,
+  renderSiteHeaderHtml,
+  SITE_CHROME_CSS,
+  type ChromeNavKey,
+} from '../chrome/siteChrome.ts';
 import type { Locale } from '../i18n/messages.ts';
-import { SITE_LEGAL } from '../legal/site.ts';
 import {
   WIRE_CATEGORIES,
   WIRE_OBSERVATION_NOTE,
@@ -10,7 +16,6 @@ import {
 } from './wireTypes.ts';
 
 const GOLD = '#c9a265';
-const GOLD_BRIGHT = '#d4af37';
 
 export function withOffsetIso(iso: string): string {
   const trimmed = (iso || '').trim();
@@ -184,12 +189,13 @@ type Copy = {
 };
 
 function copyFor(locale: Locale): Copy {
+  const chrome = chromeCopy(locale);
   if (locale === 'zh') {
     return {
-      product: 'Silicon Nexus',
-      wire: 'Silicon News Wire',
+      product: chrome.product,
+      wire: chrome.wire,
       tagline: '碳基可读，硅基原生。',
-      builtFor: '— 为硅基生命体而建',
+      builtFor: chrome.builtFor,
       sub: '同一事实，HTML / JSON / Markdown 三态可引用。收录与排名不保证。',
       tldr: '硅基要点',
       by: '作者',
@@ -198,27 +204,27 @@ function copyFor(locale: Locale): Copy {
       json: 'JSON',
       md: 'Markdown',
       topics: '频道',
-      console: '控制台',
-      mcp: 'MCP 与 API',
-      observation: '观测',
-      about: '关于',
-      docs: '文档',
+      console: chrome.console,
+      mcp: chrome.connect,
+      observation: chrome.observation,
+      about: chrome.about,
+      docs: chrome.docs,
       telemetry: '请求分类',
       disclaimer: WIRE_OBSERVATION_NOTE_ZH,
       empty: '此频道暂无已发布电讯。',
-      home: '首页',
+      home: chrome.home,
       observed: '观测请求',
       human: '人类',
       bot: '机器人',
-      langOther: 'EN',
+      langOther: chrome.langOther,
       langOtherHref: '?lang=en',
     };
   }
   return {
-    product: 'Silicon Nexus',
-    wire: 'Silicon News Wire',
+    product: chrome.product,
+    wire: chrome.wire,
     tagline: 'Readable by carbon. Native to silicon.',
-    builtFor: '— BUILT FOR SILICON LIFEFORMS',
+    builtFor: chrome.builtFor,
     sub: 'The same facts, three states: HTML, JSON, Markdown. Discovery files are not a ranking.',
     tldr: 'Silicon TL;DR',
     by: 'By',
@@ -227,53 +233,31 @@ function copyFor(locale: Locale): Copy {
     json: 'JSON',
     md: 'Markdown',
     topics: 'Topics',
-    console: 'Console',
-    mcp: 'MCP & API',
-    observation: 'Observation',
-    about: 'About',
-    docs: 'Docs',
+    console: chrome.console,
+    mcp: chrome.connect,
+    observation: chrome.observation,
+    about: chrome.about,
+    docs: chrome.docs,
     telemetry: 'Request log',
     disclaimer: WIRE_OBSERVATION_NOTE,
     empty: 'No published dispatches in this channel yet.',
-    home: 'Home',
+    home: chrome.home,
     observed: 'Observed requests',
     human: 'human',
     bot: 'bot',
-    langOther: '中文',
+    langOther: chrome.langOther,
     langOtherHref: '?lang=zh',
   };
 }
 
 function wireCss(): string {
-  return `
-:root {
-  --bg: #0d0e12;
-  --bg-elevated: #14161d;
-  --text: #f1f1f5;
-  --muted: #8a8f9d;
-  --accent: ${GOLD};
-  --accent-bright: ${GOLD_BRIGHT};
-  --border: rgba(241, 241, 245, 0.10);
-  --on-accent: #1a160f;
-  --radius: 6px;
-  --font-sans: "IBM Plex Sans", "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-}
+  return `${SITE_CHROME_CSS}
 * { box-sizing: border-box; }
 html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); }
 body { font-family: var(--font-sans); font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
 a { color: var(--accent); text-decoration: none; }
 a:hover { color: var(--accent-bright); }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.wrap { max-width: 720px; margin: 0 auto; padding: 0 20px; }
-.site-header { border-bottom: 1px solid var(--border); background: var(--bg); }
-.site-header .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 44px; padding-top: 8px; padding-bottom: 8px; }
-.brand { display: flex; flex-direction: column; gap: 0; color: var(--text); }
-.brand strong { font-size: 0.95rem; letter-spacing: -0.02em; }
-.brand span { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
-nav.primary { display: flex; flex-wrap: wrap; gap: 4px; }
-nav.primary a { color: var(--muted); font-size: 13px; padding: 4px 8px; border-radius: 4px; }
-nav.primary a:hover, nav.primary a[aria-current="page"] { color: var(--accent); background: rgba(201, 162, 101, 0.08); }
 .hero { padding: 32px 0 24px; border-bottom: 1px solid var(--border); }
 .kicker { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin: 0 0 8px; }
 h1 { font-size: 1.75rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.25; margin: 0; }
@@ -307,16 +291,12 @@ h1 { font-size: 1.75rem; font-weight: 600; letter-spacing: -0.02em; line-height:
 .telemetry { border-top: 1px solid var(--border); padding: 20px 0 8px; color: var(--muted); font-size: 13px; }
 .telemetry strong { color: var(--text); font-family: var(--font-mono); font-weight: 500; }
 .disclaimer { margin-top: 8px; font-size: 12px; color: var(--muted); }
-.site-footer { border-top: 1px solid var(--border); padding: 24px 0 32px; color: var(--muted); font-size: 13px; }
-.site-footer nav { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
-.site-footer .mono { font-family: var(--font-mono); font-size: 11px; }
 .empty { color: var(--muted); padding: 32px 0; }
 article header { padding-top: 28px; }
 .crumb { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin: 0 0 12px; }
 .crumb a { color: var(--muted); }
 main { min-height: 50vh; }
 @media (max-width: 640px) {
-  .site-header .wrap { flex-direction: column; align-items: flex-start; }
   h1 { font-size: 1.45rem; }
 }
 `.trim();
@@ -333,19 +313,18 @@ function layout(input: {
   ogType?: string;
   extraHead?: string;
   body: string;
-  active?: 'home' | 'topic' | 'article';
+  active?: ChromeNavKey | 'topic' | 'article';
 }): string {
-  const c = copyFor(input.locale);
   const base = input.appUrl.replace(/\/$/, '');
   const alternates = input.alternates || [];
   const jsonLd = input.jsonLd || [];
-  const nav = [
-    { href: href('/', input.locale), label: c.wire, key: 'home' },
-    { href: href('/connect', input.locale), label: c.mcp, key: 'mcp' },
-    { href: href('/feed', input.locale), label: c.observation, key: 'obs' },
-    { href: href('/console', input.locale), label: c.console, key: 'console' },
-    { href: href('/about', input.locale), label: c.about, key: 'about' },
-  ];
+  const headerActive: ChromeNavKey | null =
+    input.active === 'topic' || input.active === 'article' || input.active === 'home'
+      ? 'home'
+      : input.active || null;
+  const langHref =
+    input.locale === 'zh' ? `${input.canonical}?lang=en` : `${input.canonical}?lang=zh`;
+  const pathHref = (path: string) => href(path, input.locale);
   const altLinks = alternates
     .map(
       (a) =>
@@ -387,39 +366,15 @@ function layout(input: {
     <style>${wireCss()}</style>
   </head>
   <body>
-    <header class="site-header">
-      <div class="wrap">
-        <a class="brand" href="${escapeHtml(href('/', input.locale))}">
-          <strong>Silicon Nexus</strong>
-          <span>${escapeHtml(c.builtFor)}</span>
-        </a>
-        <nav class="primary" aria-label="Primary">
-          ${nav
-            .map((n) => `<a href="${escapeHtml(n.href)}"${n.key === input.active ? ' aria-current="page"' : ''}>${escapeHtml(n.label)}</a>`)
-            .join('\n          ')}
-          <a href="${escapeHtml(input.locale === 'zh' ? input.canonical : input.canonical + '?lang=zh')}">${escapeHtml(c.langOther)}</a>
-        </nav>
-      </div>
-    </header>
+    ${renderSiteHeaderHtml({
+      locale: input.locale,
+      active: headerActive,
+      pathHref,
+      langHref,
+    })}
     ${input.body}
-    <footer class="site-footer">
-      <div class="wrap">
-        <p>${escapeHtml(c.wire)} · ${escapeHtml(c.builtFor)}</p>
-        <nav>
-          <a href="${escapeHtml(href('/', input.locale))}">${escapeHtml(c.home)}</a>
-          <a href="${escapeHtml(href('/connect', input.locale))}">${escapeHtml(c.mcp)}</a>
-          <a href="${escapeHtml(href('/feed', input.locale))}">${escapeHtml(c.observation)}</a>
-          <a href="${escapeHtml(href('/console', input.locale))}">${escapeHtml(c.console)}</a>
-          <a href="${escapeHtml(href('/docs', input.locale))}">${escapeHtml(c.docs)}</a>
-          <a href="/llms.txt" class="mono">llms.txt</a>
-          <a href="/feed.json" class="mono">feed.json</a>
-          <a href="/.well-known/agent-card.json" class="mono">agent-card.json</a>
-          <a href="${escapeHtml(SITE_LEGAL.githubUrl)}">GitHub</a>
-        </nav>
-        <p class="mono" style="margin-top:12px">© 2026 Silicon Nexus · ${escapeHtml(SITE_LEGAL.icp)}</p>
-        <p style="display:none">${escapeHtml(base)}</p>
-      </div>
-    </footer>
+    ${renderSiteFooterHtml({ locale: input.locale, pathHref })}
+    <p style="display:none">${escapeHtml(base)}</p>
   </body>
 </html>
 `;
