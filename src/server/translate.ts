@@ -1,8 +1,33 @@
 /**
  * Lightweight translation for wire digests.
- * Prefer NEXUS_TRANSLATE_URL (LibreTranslate-compatible) or OPENAI_API_KEY;
+ * Prefer Gemini (GEMINI_API_KEY / GOOGLE_GENERATIVE_AI_API_KEY) when present,
+ * then NEXUS_TRANSLATE_URL (LibreTranslate-compatible) or OPENAI_API_KEY;
  * falls back to MyMemory / optional google-translate-api-x for short digests.
  */
+
+const GEMINI_GENERATE_CONTENT_HOST = 'generativelanguage.googleapis.com';
+const DEFAULT_GEMINI_TRANSLATE_MODEL = 'gemini-3.8-flash';
+const GEMINI_CHUNK_CHARS = 8000;
+const GEMINI_TIMEOUT_MS = 20000;
+
+export function geminiApiKey(): string {
+  return (process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || '').trim();
+}
+
+/** Official Gemini Flash model, overridable. Shared NEXUS_TRANSLATE_MODEL is used only if it is a gemini-* id. */
+export function geminiTranslateModel(): string {
+  const specific = (process.env.GEMINI_TRANSLATE_MODEL || '').trim();
+  if (specific) return specific;
+  const shared = (process.env.NEXUS_TRANSLATE_MODEL || '').trim();
+  if (/^gemini[-/]/i.test(shared)) return shared.replace(/^models\//i, '');
+  return DEFAULT_GEMINI_TRANSLATE_MODEL;
+}
+
+function hasReadyTranslationKey(): boolean {
+  return Boolean(
+    geminiApiKey() || process.env.OPENAI_API_KEY || process.env.NEXUS_TRANSLATE_URL
+  );
+}
 
 export type TranslateLang = 'en' | 'zh';
 
@@ -37,6 +62,53 @@ function chunkText(text: string, max = 450): string[] {
   }
   if (buf) parts.push(buf);
   return parts;
+}
+
+function extractGeminiText(data: unknown): string | null {
+  const candidates = (data as {
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string; thought?: boolean }> } }>;
+  }).candidates;
+  const parts = candidates?.[0]?.content?.parts || [];
+  const text = parts
+    .filter((p) => p.text && !p.thought)
+    .map((p) => p.text as string)
+    .join('')
+    .trim();
+  return text || null;
+}
+
+async function viaGemini(text: string, from: TranslateLang, to: TranslateLang): Promise<string | null> {
+  const key = geminiApiKey();
+  if (!key) return null;
+  const model = geminiTranslateModel();
+  const toLabel = to === 'zh' ? 'Simplified Chinese' : 'English';
+  const fromLabel = from === 'zh' ? 'Simplified Chinese' : 'English';
+  const url = `https://${GEMINI_GENERATE_CONTENT_HOST}/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': key,
+    },
+    body: JSON.stringify({
+      systemInstruction: {
+        parts: [
+          {
+            text:
+              `Translate the following ${fromLabel} tech/long-form news digest into ${toLabel}. ` +
+              'Keep markdown links, code spans, and established proper nouns. Return only the translation.',
+          },
+        ],
+      },
+      contents: [{ role: 'user', parts: [{ text }] }],
+      generationConfig: {
+        thinkingConfig: { thinkingLevel: 'low' },
+      },
+    }),
+  });
+  if (!res.ok) return null;
+  const data: unknown = await res.json();
+  return extractGeminiText(data);
 }
 
 async function viaLibreTranslate(text: string, from: TranslateLang, to: TranslateLang): Promise<string | null> {
@@ -149,10 +221,13 @@ async function translateChunk(text: string, from: TranslateLang, to: TranslateLa
   const hit = cache.get(key);
   if (hit) return hit;
 
-  const providers = [viaLibreTranslate, viaOpenAI, viaMyMemory, viaGoogleTranslateX];
+  const providers = geminiApiKey()
+    ? [viaGemini, viaLibreTranslate, viaOpenAI, viaMyMemory, viaGoogleTranslateX]
+    : [viaLibreTranslate, viaOpenAI, viaMyMemory, viaGoogleTranslateX];
   for (const provider of providers) {
     try {
-      const out = await withTimeout(provider(text, from, to), 6000);
+      const timeoutMs = provider === viaGemini ? GEMINI_TIMEOUT_MS : 6000;
+      const out = await withTimeout(provider(text, from, to), timeoutMs);
       if (out && looksLikeTargetLang(out, to)) {
         cache.set(key, out);
         return out;
@@ -171,7 +246,7 @@ export async function translateText(
   to: TranslateLang
 ): Promise<string> {
   if (!text.trim() || from === to) return text;
-  const chunks = chunkText(text);
+  const chunks = chunkText(text, geminiApiKey() ? GEMINI_CHUNK_CHARS : 450);
   const out: string[] = [];
   for (const chunk of chunks) {
     out.push(await translateChunk(chunk, from, to));
@@ -184,11 +259,11 @@ let channelReady: boolean | null = null;
 
 /** Fast probe so callers can skip expensive bilingual passes when quota/network is down. */
 export async function translationChannelReady(): Promise<boolean> {
-  if (channelReady != null) return channelReady;
-  if (process.env.OPENAI_API_KEY || process.env.NEXUS_TRANSLATE_URL) {
+  if (hasReadyTranslationKey()) {
     channelReady = true;
     return true;
   }
+  if (channelReady != null) return channelReady;
   const sample = 'Silicon News Wire published a short technology brief.';
   const out = await translateText(sample, 'en', 'zh');
   channelReady = !translationLooksFailed(sample, out, 'zh');
