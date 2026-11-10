@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
-import { SiteHeader } from '../components/SiteHeader';
-import { SiteFooter } from '../components/SiteFooter';
+import { WirePublicShell } from '../components/WirePublicShell';
 import { McpConfigPanel } from '../components/McpConfigPanel';
 import { useT } from '../i18n/I18nProvider';
 
@@ -8,21 +7,20 @@ export function ConnectPage() {
   const t = useT();
 
   return (
-    <div className="min-h-screen bg-foundry-950 foundry-grid text-foundry-100">
-      <SiteHeader />
-      <main className="wrap py-8">
+    <WirePublicShell>
+
         <p className="nx-kicker mb-2">{t.connect.eyebrow}</p>
-        <h1 className="text-[1.75rem] font-semibold tracking-tight text-foundry-100">
+        <h1 className="text-[1.75rem] font-semibold tracking-tight text-ink">
           {t.connect.pageTitle}
         </h1>
-        <p className="mt-3 text-foundry-400 leading-relaxed">{t.connect.pageIntro}</p>
+        <p className="mt-3 text-ink-muted leading-relaxed">{t.connect.pageIntro}</p>
 
         <div className="mt-10 grid gap-4 md:grid-cols-2">
           <section className="nx-card p-5">
-            <h2 className="font-mono text-xs uppercase tracking-wider text-teal-glow">
+            <h2 className="font-mono text-xs uppercase tracking-wider text-wire-blue">
               {t.connect.humanTitle}
             </h2>
-            <p className="mt-2 text-sm leading-relaxed text-foundry-400">{t.connect.humanBody}</p>
+            <p className="mt-2 text-sm leading-relaxed text-ink-muted">{t.connect.humanBody}</p>
             <div className="mt-4 flex flex-wrap gap-2">
               <Link to="/console" className="nx-btn nx-btn-primary px-3 py-1.5 text-sm">
                 {t.connect.openConsole}
@@ -36,8 +34,8 @@ export function ConnectPage() {
             <h2 className="font-mono text-xs uppercase tracking-wider text-copper">
               {t.connect.agentTitle}
             </h2>
-            <p className="mt-2 text-sm leading-relaxed text-foundry-400">{t.connect.agentBody}</p>
-            <p className="mt-3 font-mono text-[11px] text-foundry-500">{t.connect.agentNoUi}</p>
+            <p className="mt-2 text-sm leading-relaxed text-ink-muted">{t.connect.agentBody}</p>
+            <p className="mt-3 font-mono text-[11px] text-ink-muted">{t.connect.agentNoUi}</p>
           </section>
         </div>
 
@@ -45,20 +43,20 @@ export function ConnectPage() {
           {[t.connect.guide1, t.connect.guide2, t.connect.guide3, t.connect.guide4].map(
             (text, i) => (
               <li key={i} className="flex gap-4">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-sm border border-teal-glow/30 font-mono text-sm text-teal-glow">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-sm border border-teal-glow/30 font-mono text-sm text-wire-blue">
                   {i + 1}
                 </span>
-                <p className="pt-0.5 text-sm leading-relaxed text-foundry-300">{text}</p>
+                <p className="pt-0.5 text-sm leading-relaxed text-ink-muted">{text}</p>
               </li>
             )
           )}
         </ol>
 
         <section className="nx-card mt-10 p-5">
-          <h2 className="font-mono text-xs uppercase tracking-wider text-teal-glow">
+          <h2 className="font-mono text-xs uppercase tracking-wider text-wire-blue">
             {t.connect.clientsTitle}
           </h2>
-          <ul className="mt-4 space-y-2 text-sm leading-relaxed text-foundry-300">
+          <ul className="mt-4 space-y-2 text-sm leading-relaxed text-ink-muted">
             <li>{t.connect.clientCursor}</li>
             <li>{t.connect.clientClaude}</li>
             <li>{t.connect.clientRemote}</li>
@@ -66,7 +64,7 @@ export function ConnectPage() {
           <h3 className="mt-6 font-mono text-xs uppercase tracking-wider text-copper">
             {t.connect.sampleTitle}
           </h3>
-          <pre className="mt-3 overflow-x-auto rounded border border-white/10 bg-foundry-950 p-3 font-mono text-[11px] leading-relaxed text-foundry-200">
+          <pre className="mt-3 overflow-x-auto rounded border border-grid-line bg-carbon-paper p-3 font-mono text-[11px] leading-relaxed text-ink">
             {t.connect.sampleCurl}
           </pre>
         </section>
@@ -97,16 +95,14 @@ export function ConnectPage() {
           </a>
         </div>
 
-        <p className="mt-8 text-xs text-foundry-600">
+        <p className="mt-8 text-xs text-ink-muted">
           {t.connect.fullDocs}{' '}
-          <a href="/docs" className="text-teal-glow/80 hover:underline">
+          <a href="/docs" className="text-wire-blue/80 hover:underline">
             /docs
           </a>
           {' · '}
-          <span className="font-mono text-foundry-500">docs/CONNECT.md</span>
+          <span className="font-mono text-ink-muted">docs/CONNECT.md</span>
         </p>
-      </main>
-      <SiteFooter />
-    </div>
+      </WirePublicShell>
   );
 }

@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "IBM Plex Sans", "Noto Sans SC", ui-sans-serif, system-ui, "PingFang SC",
+  --font-sans: "Plus Jakarta Sans", "Noto Sans SC", ui-sans-serif, system-ui, "PingFang SC",
     "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-  --font-display: "IBM Plex Sans", "Noto Sans SC", ui-sans-serif, system-ui, "PingFang SC",
-    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-display: "Space Grotesk", "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  /* Console / operator dark palette (scoped via .console-app) */
   --color-foundry-950: #0d0e12;
   --color-foundry-900: #14161d;
   --color-foundry-800: #1c2028;
@@ -16,34 +16,45 @@
   --color-foundry-300: #b8bdc6;
   --color-foundry-200: #d6d8de;
   --color-foundry-100: #f1f1f5;
-  --color-accent: #c9a265;
-  --color-accent-hover: #d4af37;
-  --color-accent-dim: #8a7349;
-  --color-ok: #7d9a6f;
-  --color-copper: #c4844a;
+  --color-accent: #0052ff;
+  --color-accent-hover: #2f6bff;
+  --color-accent-dim: #0039b3;
+  --color-ok: #10b981;
+  --color-copper: #ff4f00;
   --color-danger: #c45c5c;
-  /* Legacy class names — same values as accent / accent-dim. Prefer accent in new code. */
-  --color-teal-glow: #c9a265;
-  --color-teal-deep: #8a7349;
+  --color-teal-glow: #0052ff;
+  --color-teal-deep: #0039b3;
+  --color-ink: #0b0d10;
+  --color-ink-muted: #5b6472;
+  --color-carbon-paper: #f4f6f8;
+  --color-carbon-card: #ffffff;
+  --color-wire-blue: #0052ff;
+  --color-grid-line: #dce0e6;
 }
 
 :root {
-  --bg: #0d0e12;
-  --bg-elevated: #14161d;
-  --bg-panel: #1c2028;
-  --border: rgba(241, 241, 245, 0.10);
-  --text: #f1f1f5;
-  --muted: #8a8f9d;
+  --bg: #f4f6f8;
+  --bg-elevated: #ffffff;
+  --bg-panel: #eef1f4;
+  --border: #dce0e6;
+  --text: #0b0d10;
+  --muted: #5b6472;
   --text-muted: var(--muted);
-  --accent: #c9a265;
-  --accent-bright: #d4af37;
+  --accent: #0052ff;
+  --accent-bright: #2f6bff;
   --accent-hover: var(--accent-bright);
-  --accent-dim: #8a7349;
-  --on-accent: #1a160f;
-  --ok: #7d9a6f;
+  --accent-dim: #0039b3;
+  --on-accent: #ffffff;
+  --ok: #10b981;
   --danger: #c45c5c;
-  --copper: #c4844a;
-  --radius: 6px;
+  --copper: #ff4f00;
+  --radius: 0;
+  --carbon-paper: #f4f6f8;
+  --carbon-card: #ffffff;
+  --grid-line: #dce0e6;
+  --ink: #0b0d10;
+  --ink-muted: #5b6472;
+  --wire-blue: #0052ff;
 }
 
 html,
@@ -57,7 +68,7 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -65,11 +76,12 @@ body {
 
 h1,
 h2 {
-  letter-spacing: -0.02em;
+  font-family: var(--font-display);
+  letter-spacing: -0.03em;
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--accent) 28%, transparent);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
   color: var(--text);
 }
 
@@ -94,10 +106,9 @@ h2 {
   border: 0;
 }
 
-/* Kept as class-name no-ops so existing markup does not paint mesh/aurora. */
 .foundry-grid,
 .foundry-glow {
-  background: var(--bg);
+  background: transparent;
 }
 
 .nx-kicker {
@@ -109,7 +120,7 @@ h2 {
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--accent);
+  color: var(--wire-blue);
 }
 
 .nx-kicker::before {
@@ -121,9 +132,9 @@ h2 {
 }
 
 .nx-card {
-  border: 1px solid var(--border);
-  background: var(--bg-elevated);
-  border-radius: var(--radius);
+  border: 1px solid var(--grid-line);
+  background: var(--carbon-card);
+  border-radius: 0;
 }
 
 .nx-card-hover {
@@ -133,14 +144,14 @@ h2 {
 }
 
 .nx-card-hover:hover {
-  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
-  background: color-mix(in srgb, var(--bg-panel) 80%, var(--bg-elevated));
+  border-color: color-mix(in srgb, var(--wire-blue) 35%, var(--grid-line));
+  background: color-mix(in srgb, var(--wire-blue) 4%, white);
 }
 
 .nx-panel {
-  border: 1px solid var(--border);
-  background: var(--bg-elevated);
-  border-radius: var(--radius);
+  border: 1px solid var(--grid-line);
+  background: var(--carbon-card);
+  border-radius: 0;
 }
 
 .nx-btn {
@@ -148,10 +159,10 @@ h2 {
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
-  border-radius: var(--radius);
-  padding: 0.44rem 0.75rem;
+  border-radius: 0;
+  padding: 0.5rem 0.85rem;
   font-size: 0.8125rem;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: -0.01em;
   line-height: 1.2;
   transition:
@@ -161,34 +172,33 @@ h2 {
 }
 
 .nx-btn-primary {
-  background: var(--accent);
-  color: var(--on-accent);
+  background: var(--wire-blue);
+  color: #fff;
 }
 
 .nx-btn-primary:hover {
-  background: var(--accent-hover);
+  background: var(--accent-bright);
 }
 
 .nx-btn-ghost {
-  border: 1px solid var(--border);
+  border: 1px solid var(--grid-line);
   background: transparent;
-  color: var(--text);
+  color: var(--ink);
 }
 
 .nx-btn-ghost:hover {
-  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
-  color: var(--accent);
+  border-color: var(--wire-blue);
+  color: var(--wire-blue);
 }
 
 .nx-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
-  color: var(--accent);
-  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--wire-blue) 35%, transparent);
+  background: color-mix(in srgb, var(--wire-blue) 8%, transparent);
+  color: var(--wire-blue);
+  border-radius: 0;
   padding: 0.12rem 0.45rem;
   font-family: var(--font-mono);
   font-size: 0.625rem;
@@ -197,15 +207,81 @@ h2 {
 }
 
 .nx-input {
-  border: 1px solid var(--border);
-  background: var(--bg);
-  border-radius: 4px;
-  color: var(--text);
+  border: 1px solid var(--grid-line);
+  background: var(--carbon-card);
+  border-radius: 0;
+  color: var(--ink);
 }
 
 .nx-input:focus {
-  border-color: color-mix(in srgb, var(--accent) 50%, var(--border));
+  border-color: color-mix(in srgb, var(--wire-blue) 50%, var(--grid-line));
   outline: none;
+}
+
+/* Console stays on dark foundry surface */
+.console-app {
+  --bg: #0d0e12;
+  --bg-elevated: #14161d;
+  --bg-panel: #1c2028;
+  --border: rgba(241, 241, 245, 0.1);
+  --text: #f1f1f5;
+  --muted: #8a8f9d;
+  --text-muted: var(--muted);
+  --accent: #c9a265;
+  --accent-bright: #d4af37;
+  --accent-hover: #d4af37;
+  --accent-dim: #8a7349;
+  --on-accent: #1a160f;
+  background: #0d0e12;
+  color: #f1f1f5;
+}
+.console-app .site-header {
+  background: #0d0e12;
+  border-bottom-color: rgba(241, 241, 245, 0.1);
+  backdrop-filter: none;
+}
+.console-app .brand {
+  color: #f1f1f5;
+}
+.console-app .brand:hover {
+  color: #f1f1f5;
+}
+.console-app .brand .badge {
+  color: #c9a265;
+  border-color: rgba(201, 162, 101, 0.35);
+}
+.console-app nav.primary a,
+.console-app nav.primary button {
+  color: #8a8f9d;
+}
+.console-app nav.primary a:hover,
+.console-app nav.primary a[aria-current="page"],
+.console-app nav.primary button:hover {
+  color: #c9a265;
+  background: rgba(201, 162, 101, 0.08);
+}
+.console-app nav.primary a.nav-cta {
+  border-color: rgba(241, 241, 245, 0.12);
+  color: #f1f1f5;
+}
+.console-app .site-footer {
+  background: #0d0e12;
+  border-top-color: rgba(241, 241, 245, 0.1);
+  color: #8a8f9d;
+}
+.console-app .site-footer a {
+  color: #c9a265;
+}
+
+.wire-public-main h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+.wire-public-main .lede,
+.wire-public-main .text-muted {
+  color: var(--ink-muted);
 }
 
 @keyframes foundry-rise {

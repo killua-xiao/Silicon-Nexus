@@ -292,7 +292,7 @@ export function ConsoleAdminPage() {
                             {' · '}
                             {row.workspaceId}
                           </p>
-                          <p className="font-mono text-[11px] text-foundry-600">
+                          <p className="font-mono text-[11px] text-ink-muted">
                             {t.admin.registered}: {formatWhen(row.account.createdAt)}
                           </p>
                         </>
@@ -353,7 +353,7 @@ export function ConsoleAdminPage() {
         )}
       </section>
 
-      <p className="text-xs text-foundry-600">
+      <p className="text-xs text-ink-muted">
         {data?.note}{' '}
         <Link to="/console/account" className="text-teal-glow hover:underline">
           {t.admin.upgradeHint}

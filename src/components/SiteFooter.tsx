@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useI18n } from '../i18n/I18nProvider';
 import { SITE_LEGAL } from '../legal/site';
-import { chromeCopy, FOOTER_DISCOVERY, FOOTER_NAV } from '../chrome/siteChrome';
+import { ARCHIVE_2050_URL, chromeCopy, FOOTER_DISCOVERY, FOOTER_NAV } from '../chrome/siteChrome';
 
 export function SiteFooter() {
   const { locale } = useI18n();
@@ -34,6 +34,12 @@ export function SiteFooter() {
             GitHub
           </a>
         </nav>
+        <p className="footer-stratum">
+          ⏳ ARCHIVAL PROTOCOL · 2050 stratum ·{' '}
+          <a href={ARCHIVE_2050_URL} target="_blank" rel="noopener noreferrer">
+            archive2050.xyz ↗
+          </a>
+        </p>
         <p className="mono" style={{ marginTop: 12 }}>
           © 2026 Silicon Nexus · {SITE_LEGAL.icp}
         </p>

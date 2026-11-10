@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
+import { WirePublicShell } from '../components/WirePublicShell';
 import { Database, Eye, GitBranch } from 'lucide-react';
-import { SiteHeader } from '../components/SiteHeader';
-import { SiteFooter } from '../components/SiteFooter';
 import { useT } from '../i18n/I18nProvider';
 
 export function LandingPage() {
@@ -19,16 +18,15 @@ export function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-foundry-950 text-foundry-100">
-      <SiteHeader />
-      <section className="border-b border-white/[0.06]">
+    <WirePublicShell>
+      <section className="border-b border-grid-line">
         <div className="mx-auto max-w-6xl px-5 py-10 md:px-8 md:py-12">
           <p className="nx-kicker mb-3">{t.landing.eyebrow}</p>
           <h1 className="max-w-xl text-[1.75rem] font-semibold leading-tight tracking-[-0.02em] md:text-[2rem]">
             {t.landing.headline}{' '}
             <span className="text-accent">{t.landing.headlineAccent}</span>
           </h1>
-          <p className="mt-3 max-w-xl text-sm leading-relaxed text-foundry-400 md:text-[15px]">
+          <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink-muted md:text-[15px]">
             {t.landing.tagline}
           </p>
           <div className="mt-4 flex flex-wrap gap-1.5">
@@ -47,15 +45,15 @@ export function LandingPage() {
         </div>
       </section>
 
-      <section className="border-b border-white/[0.06] px-5 py-8 md:px-8">
+      <section className="border-b border-grid-line px-5 py-8 md:px-8">
         <div className="mx-auto max-w-6xl">
           <div className="mb-4 flex items-end justify-between gap-4">
             <p className="nx-kicker">{t.landing.surfacesTitle}</p>
             <span className="flex gap-4 text-sm">
-              <Link to="/cookbook" className="text-foundry-400 transition hover:text-accent">
+              <Link to="/cookbook" className="text-ink-muted transition hover:text-accent">
                 {t.cookbook.nav}
               </Link>
-              <Link to="/about" className="text-foundry-400 transition hover:text-accent">
+              <Link to="/about" className="text-ink-muted transition hover:text-accent">
                 {t.landing.aboutCta}
               </Link>
             </span>
@@ -64,17 +62,17 @@ export function LandingPage() {
             {features.map((f, i) => (
               <article key={f.title} className="nx-card p-4">
                 <div className="mb-3 flex items-center justify-between">
-                  <span className="inline-flex rounded border border-white/10 bg-foundry-950 p-1.5 text-accent">
+                  <span className="inline-flex rounded border border-grid-line bg-carbon-paper p-1.5 text-accent">
                     <f.icon className="h-3.5 w-3.5" />
                   </span>
-                  <span className="font-mono text-[11px] text-foundry-600">0{i + 1}</span>
+                  <span className="font-mono text-[11px] text-ink-muted">0{i + 1}</span>
                 </div>
-                <h2 className="text-base font-semibold text-foundry-100">{f.title}</h2>
-                <p className="mt-2 text-sm leading-relaxed text-foundry-400">{f.body}</p>
+                <h2 className="text-base font-semibold text-ink">{f.title}</h2>
+                <p className="mt-2 text-sm leading-relaxed text-ink-muted">{f.body}</p>
               </article>
             ))}
           </div>
-          <p className="mt-5 max-w-3xl text-sm leading-relaxed text-foundry-500">
+          <p className="mt-5 max-w-3xl text-sm leading-relaxed text-ink-muted">
             {t.landing.selfHost}
           </p>
         </div>
@@ -86,10 +84,10 @@ export function LandingPage() {
             <div className="grid md:grid-cols-[1.1fr_0.9fr]">
               <div className="p-5 md:p-6">
                 <p className="nx-kicker mb-2">{t.connect.nav}</p>
-                <h2 className="text-xl font-semibold text-foundry-100">
+                <h2 className="text-xl font-semibold text-ink">
                   {t.connect.sectionTitle}
                 </h2>
-                <p className="mt-2 max-w-xl text-sm leading-relaxed text-foundry-400">
+                <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-muted">
                   {t.connect.sectionBody}
                 </p>
                 <div className="mt-5 flex flex-wrap gap-2">
@@ -109,11 +107,11 @@ export function LandingPage() {
                   </a>
                 </div>
               </div>
-              <ol className="grid content-center gap-2 border-t border-white/[0.06] bg-foundry-950/50 p-5 md:border-l md:border-t-0 md:p-6">
+              <ol className="grid content-center gap-2 border-t border-grid-line bg-carbon-paper/50 p-5 md:border-l md:border-t-0 md:p-6">
                 {[t.connect.step1, t.connect.step2, t.connect.step3].map((step, i) => (
                   <li
                     key={step}
-                    className="rounded border border-white/[0.06] bg-foundry-950 px-3 py-2.5 text-sm leading-relaxed text-foundry-300"
+                    className="rounded border border-grid-line bg-carbon-paper px-3 py-2.5 text-sm leading-relaxed text-ink-muted"
                   >
                     <span className="mb-1 block font-mono text-[11px] tracking-[0.12em] text-accent">
                       0{i + 1}
@@ -132,7 +130,7 @@ export function LandingPage() {
                 href={s.href}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded border border-white/10 bg-foundry-900 px-2.5 py-1 font-mono text-[11px] text-foundry-300 transition hover:border-accent/40 hover:text-accent"
+                className="rounded border border-grid-line bg-carbon-card px-2.5 py-1 font-mono text-[11px] text-ink-muted transition hover:border-accent/40 hover:text-accent"
               >
                 {s.label}
               </a>
@@ -141,7 +139,6 @@ export function LandingPage() {
         </div>
       </section>
 
-      <SiteFooter />
-    </div>
+    </WirePublicShell>
   );
 }

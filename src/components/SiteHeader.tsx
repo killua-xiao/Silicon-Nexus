@@ -3,12 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import { cn } from '../lib/cn';
 import { useI18n, useT } from '../i18n/I18nProvider';
-import {
-  chromeCopy,
-  chromeNavKeyFromPath,
-  PRIMARY_NAV,
-  primaryNavLabel,
-} from '../chrome/siteChrome';
+import { chromeCopy, chromeNavKeyFromPath } from '../chrome/siteChrome';
 
 function localePath(path: string, locale: 'zh' | 'en'): string {
   if (locale !== 'zh') return path;
@@ -16,62 +11,121 @@ function localePath(path: string, locale: 'zh' | 'en'): string {
   return `${path}${join}lang=zh`;
 }
 
-export function BrandMark() {
+function ProtocolTicker() {
+  const { locale } = useI18n();
+  const c = chromeCopy(locale);
+  return (
+    <div className="protocol-ticker" role="status" aria-label="Protocol ticker">
+      <div className="wrap">
+        <div className="ticker-live">
+          <span className="dot" aria-hidden="true" />
+          {c.live}
+        </div>
+        <div className="ticker-disco">
+          {c.discovery}: <a href="/llms.txt">/llms.txt</a> · <a href="/feed.json">/feed.json</a> ·{' '}
+          <a href="/.well-known/agent-card.json">/agent-card.json</a> · <span>MCP READY</span>
+        </div>
+        <div className="ticker-ratio">
+          {c.ratio}: <strong>{c.carbon} 50%</strong> [■■■■□□□□] <strong>{c.silicon} 50%</strong>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function BrandMark({ compact = false }: { compact?: boolean }) {
   const { locale } = useI18n();
   const c = chromeCopy(locale);
   return (
     <a className="brand" href={localePath('/', locale)}>
       <strong>{c.product}</strong>
-      <span>{c.builtFor}</span>
+      {!compact ? <span className="badge">{c.builtFor}</span> : null}
     </a>
   );
 }
 
-export function SiteHeader() {
+export function SiteHeader({
+  variant = 'public',
+  activeChannel,
+}: {
+  variant?: 'public' | 'console';
+  activeChannel?: string;
+}) {
   const { locale, setLocale } = useI18n();
   const location = useLocation();
   const c = chromeCopy(locale);
   const active = chromeNavKeyFromPath(location.pathname);
+  const channel = activeChannel || 'all';
+
+  if (variant === 'console') {
+    return (
+      <header className="site-header console-site-header">
+        <div className="wrap wrap-console" style={{ maxWidth: 'var(--wrap-console)' }}>
+          <BrandMark compact />
+          <nav className="primary" aria-label="Primary">
+            <a href={localePath('/', locale)}>{c.wire}</a>
+            <a className="nav-cta" href={localePath('/connect', locale)}>
+              {c.connect}
+            </a>
+            <button type="button" onClick={() => setLocale(c.langOtherCode)} aria-label={c.langOther}>
+              {c.langOther}
+            </button>
+          </nav>
+        </div>
+      </header>
+    );
+  }
+
+  const tab = (key: string, href: string, label: string) => (
+    <a
+      key={key}
+      href={localePath(href, locale)}
+      aria-current={channel === key ? 'page' : undefined}
+    >
+      {label}
+    </a>
+  );
 
   return (
-    <header className="site-header">
-      <div className="wrap">
-        <BrandMark />
-        <nav className="primary" aria-label="Primary">
-          {PRIMARY_NAV.map((item) => {
-            const label = primaryNavLabel(item.key, c);
-            const current = item.key === active;
-            if (item.href === '/') {
-              return (
-                <a
-                  key={item.key}
-                  href={localePath('/', locale)}
-                  aria-current={current ? 'page' : undefined}
-                >
-                  {label}
-                </a>
-              );
-            }
-            return (
-              <NavLink
-                key={item.key}
-                to={localePath(item.href, locale)}
-                aria-current={current ? 'page' : undefined}
-              >
-                {label}
-              </NavLink>
-            );
-          })}
-          <button
-            type="button"
-            onClick={() => setLocale(c.langOtherCode)}
-            aria-label={c.langOther}
-          >
-            {c.langOther}
-          </button>
-        </nav>
-      </div>
-    </header>
+    <>
+      <ProtocolTicker />
+      <header className="site-header">
+        <div className="wrap">
+          <BrandMark />
+          <nav className="channel-tabs" aria-label="Channels">
+            {tab('all', '/', c.all)}
+            {tab('wire', '/topic/ai', c.wireTab)}
+            {tab('platform', '/topic/platform', c.platformTab)}
+            {tab('observation', '/topic/observation', c.observationTab)}
+          </nav>
+          <nav className="primary" aria-label="Primary">
+            <a
+              className="nav-cta"
+              href={localePath('/connect', locale)}
+              aria-current={active === 'connect' ? 'page' : undefined}
+            >
+              {c.connect}
+            </a>
+            <a
+              className="nav-cta"
+              href={localePath('/console', locale)}
+              aria-current={active === 'console' ? 'page' : undefined}
+            >
+              {c.console}
+            </a>
+            <NavLink to={localePath('/feed', locale)} aria-current={active === 'feed' ? 'page' : undefined}>
+              {c.observation}
+            </NavLink>
+            <NavLink to={localePath('/about', locale)} aria-current={active === 'about' ? 'page' : undefined}>
+              {c.about}
+            </NavLink>
+            <button type="button" onClick={() => setLocale(c.langOtherCode)} aria-label={c.langOther}>
+              {c.langOther}
+            </button>
+          </nav>
+        </div>
+      </header>
+    </>
   );
 }
 
@@ -95,13 +149,13 @@ export function ConsoleNav({
   const t = useT();
   const [open, setOpen] = useState(false);
   const links = [
-    { to: '/console', label: t.nav.overview, end: true },
-    { to: '/console/agents', label: t.nav.agents },
-    { to: '/console/feed', label: t.nav.feed },
-    { to: '/console/sites', label: t.nav.sites },
-    { to: '/console/account', label: t.nav.account },
-    ...(isAdmin ? [{ to: '/console/admin', label: t.nav.admin }] : []),
-    { to: '/docs', label: t.nav.api },
+    { to: '/console', label: t.nav.overview, end: true as boolean | undefined },
+    { to: '/console/agents', label: t.nav.agents, end: undefined as boolean | undefined },
+    { to: '/console/feed', label: t.nav.feed, end: undefined as boolean | undefined },
+    { to: '/console/sites', label: t.nav.sites, end: undefined as boolean | undefined },
+    { to: '/console/account', label: t.nav.account, end: undefined as boolean | undefined },
+    ...(isAdmin ? [{ to: '/console/admin', label: t.nav.admin, end: undefined as boolean | undefined }] : []),
+    { to: '/docs', label: t.nav.api, end: undefined as boolean | undefined },
   ];
 
   return (
@@ -135,9 +189,7 @@ export function ConsoleNav({
               )}
               title={workerOnline ? t.tasks.workerOnline : t.tasks.workerOffline}
             >
-              <span
-                className={cn('h-1.5 w-1.5 rounded-full', workerOnline ? 'bg-ok' : 'bg-copper')}
-              />
+              <span className={cn('h-1.5 w-1.5 rounded-full', workerOnline ? 'bg-ok' : 'bg-copper')} />
               <span className="hidden sm:inline">
                 {workerOnline ? t.nav.workerOn : t.nav.workerOff}
               </span>

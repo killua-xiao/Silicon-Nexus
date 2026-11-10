@@ -1,11 +1,17 @@
-import {
-  chromeCopy,
-  renderSiteFooterHtml,
-  renderSiteHeaderHtml,
-  SITE_CHROME_CSS,
-  type ChromeNavKey,
-} from '../chrome/siteChrome.ts';
+import { chromeCopy, type ChromeNavKey } from '../chrome/siteChrome.ts';
 import type { Locale } from '../i18n/messages.ts';
+import { localizeWireArticle, type LocalizedWireArticle } from './wireLocalize.ts';
+import {
+  aggregateObservations,
+  categoryLabel,
+  formatWireDate,
+  renderHomePortal,
+  renderWireFooter,
+  renderWireShellHeader,
+  wireHref,
+  wirePortalCss,
+  WIRE_WRAP_PX,
+} from './wirePortalUi.ts';
 import {
   WIRE_CATEGORIES,
   WIRE_OBSERVATION_NOTE,
@@ -15,7 +21,7 @@ import {
   type WireCategorySlug,
 } from './wireTypes.ts';
 
-const GOLD = '#c9a265';
+void WIRE_WRAP_PX;
 
 export function withOffsetIso(iso: string): string {
   const trimmed = (iso || '').trim();
@@ -74,18 +80,11 @@ export function langQuery(locale: Locale, extra = ''): string {
 }
 
 export function href(path: string, locale: Locale): string {
-  return `${path}${langQuery(locale)}`;
+  return wireHref(path, locale);
 }
 
 function formatVisibleDate(iso: string, locale: Locale): string {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  const fmt = new Intl.DateTimeFormat(locale === 'zh' ? 'zh-CN' : 'en-GB', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-    timeZone: 'Asia/Shanghai',
-  });
-  return `${fmt.format(d)} +08:00`;
+  return formatWireDate(iso, locale);
 }
 
 function inlineMarkdown(escaped: string): string {
@@ -251,55 +250,7 @@ function copyFor(locale: Locale): Copy {
 }
 
 function wireCss(): string {
-  return `${SITE_CHROME_CSS}
-* { box-sizing: border-box; }
-html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); }
-body { font-family: var(--font-sans); font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
-a { color: var(--accent); text-decoration: none; }
-a:hover { color: var(--accent-bright); }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.hero { padding: 32px 0 24px; border-bottom: 1px solid var(--border); }
-.kicker { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin: 0 0 8px; }
-h1 { font-size: 1.75rem; font-weight: 600; letter-spacing: -0.02em; line-height: 1.25; margin: 0; }
-.lede { color: var(--muted); margin: 12px 0 0; font-size: 15px; }
-.meta { color: var(--muted); font-size: 14px; margin: 12px 0 0; }
-.meta time { font-family: var(--font-mono); font-size: 13px; color: var(--text); }
-.byline { color: var(--muted); font-size: 14px; margin: 6px 0 0; }
-.list { list-style: none; padding: 0; margin: 0; }
-.list li { border-bottom: 1px solid var(--border); padding: 22px 8px; }
-.list h2 { font-size: 1.15rem; margin: 0 0 6px; font-weight: 600; letter-spacing: -0.02em; }
-.list h2 a { color: var(--text); }
-.list h2 a:hover { color: var(--accent); }
-.states { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; font-family: var(--font-mono); font-size: 11px; }
-.states a { border: 1px solid var(--border); padding: 2px 8px; border-radius: 4px; color: var(--muted); }
-.states a:hover { border-color: ${GOLD}; color: var(--accent); }
-.tldr { border: 1px solid ${GOLD}; border-radius: var(--radius); padding: 16px 18px; margin: 24px 0; background: var(--bg-elevated); }
-.tldr h2 { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin: 0 0 10px; font-weight: 500; }
-.tldr ol { margin: 0; padding-left: 1.2rem; }
-.tldr li { margin: 6px 0; }
-.body { padding: 8px 0 32px; }
-.body p { margin: 0 0 1em; }
-.body ul { padding-left: 1.2rem; }
-.body code, .tldr code { font-family: var(--font-mono); font-size: 0.9em; }
-.topics { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
-.topics a { border: 1px solid color-mix(in srgb, ${GOLD} 35%, transparent); color: var(--accent); border-radius: 4px; padding: 2px 8px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
-.btn { display: inline-flex; align-items: center; border-radius: var(--radius); padding: 7px 12px; font-size: 13px; font-weight: 500; }
-.btn-primary { background: var(--accent); color: var(--on-accent); }
-.btn-primary:hover { background: var(--accent-bright); color: var(--on-accent); }
-.btn-ghost { border: 1px solid var(--border); color: var(--text); }
-.cta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
-.telemetry { border-top: 1px solid var(--border); padding: 20px 0 8px; color: var(--muted); font-size: 13px; }
-.telemetry strong { color: var(--text); font-family: var(--font-mono); font-weight: 500; }
-.disclaimer { margin-top: 8px; font-size: 12px; color: var(--muted); }
-.empty { color: var(--muted); padding: 32px 0; }
-article header { padding-top: 28px; }
-.crumb { font-family: var(--font-mono); font-size: 11px; color: var(--muted); margin: 0 0 12px; }
-.crumb a { color: var(--muted); }
-main { min-height: 50vh; }
-@media (max-width: 640px) {
-  h1 { font-size: 1.45rem; }
-}
-`.trim();
+  return wirePortalCss();
 }
 
 function layout(input: {
@@ -313,18 +264,17 @@ function layout(input: {
   ogType?: string;
   extraHead?: string;
   body: string;
-  active?: ChromeNavKey | 'topic' | 'article';
+  active?: ChromeNavKey | 'topic' | 'article' | 'home';
+  activeChannel?: string;
+  articles?: WireArticle[];
 }): string {
   const base = input.appUrl.replace(/\/$/, '');
   const alternates = input.alternates || [];
   const jsonLd = input.jsonLd || [];
-  const headerActive: ChromeNavKey | null =
-    input.active === 'topic' || input.active === 'article' || input.active === 'home'
-      ? 'home'
-      : input.active || null;
   const langHref =
     input.locale === 'zh' ? `${input.canonical}?lang=en` : `${input.canonical}?lang=zh`;
   const pathHref = (path: string) => href(path, input.locale);
+  const obs = aggregateObservations(input.articles || []);
   const altLinks = alternates
     .map(
       (a) =>
@@ -347,7 +297,7 @@ function layout(input: {
     <link rel="canonical" href="${escapeHtml(input.canonical)}" />
     <link rel="alternate" hreflang="${input.locale === 'zh' ? 'zh-CN' : 'en'}" href="${escapeHtml(input.canonical)}" />
     ${altLinks}
-    <meta name="theme-color" content="#0d0e12" />
+    <meta name="theme-color" content="#F4F6F8" />
     <meta property="og:type" content="${escapeHtml(input.ogType || 'website')}" />
     <meta property="og:site_name" content="Silicon Nexus" />
     <meta property="og:url" content="${escapeHtml(input.canonical)}" />
@@ -360,33 +310,32 @@ function layout(input: {
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
     ${ld}
     ${input.extraHead || ''}
     <style>${wireCss()}</style>
   </head>
   <body>
-    ${renderSiteHeaderHtml({
+    ${renderWireShellHeader({
       locale: input.locale,
-      active: headerActive,
       pathHref,
       langHref,
+      human: obs.human,
+      bot: obs.bot,
+      activeChannel: input.activeChannel || (input.active === 'home' ? 'all' : undefined),
     })}
     ${input.body}
-    ${renderSiteFooterHtml({ locale: input.locale, pathHref })}
+    ${renderWireFooter(input.locale, pathHref)}
     <p style="display:none">${escapeHtml(base)}</p>
   </body>
 </html>
 `;
 }
 
-function categoryLabel(slug: string, locale: Locale): string {
-  const cat = wireCategory(slug);
-  if (!cat) return slug;
-  return locale === 'zh' ? cat.nameZh : cat.nameEn;
-}
-
-export function newsArticleJsonLd(appUrl: string, article: WireArticle): Record<string, unknown> {
+export function newsArticleJsonLd(
+  appUrl: string,
+  article: WireArticle | LocalizedWireArticle
+): Record<string, unknown> {
   const url = articleCanonical(appUrl, article.slug);
   const author: Record<string, unknown> = {
     '@type': article.authorType,
@@ -461,8 +410,15 @@ function articleList(articles: WireArticle[], appUrl: string, locale: Locale): s
   const c = copyFor(locale);
   if (!articles.length) return `<p class="empty">${escapeHtml(c.empty)}</p>`;
   return `<ol class="list">${articles
-    .map((article) => {
+    .map((raw) => {
+      const article = localizeWireArticle(raw, locale);
       const url = href(`/wire/${encodeURIComponent(article.slug)}`, locale);
+      const sourceBit =
+        article.sourceName && article.sourceUrl
+          ? `<p class="byline">${escapeHtml(locale === 'zh' ? '来源' : 'Source')}: <a href="${escapeHtml(
+              article.sourceUrl
+            )}">${escapeHtml(article.sourceName)}</a></p>`
+          : '';
       return `<li>
         <p class="kicker">${escapeHtml(categoryLabel(article.category, locale))}</p>
         <h2><a href="${escapeHtml(url)}">${escapeHtml(article.headline)}</a></h2>
@@ -470,6 +426,7 @@ function articleList(articles: WireArticle[], appUrl: string, locale: Locale): s
           formatVisibleDate(article.datePublished, locale)
         )}</time></p>
         <p class="lede">${escapeHtml(article.summary)}</p>
+        ${sourceBit}
         <p class="states">
           <a href="${escapeHtml(url)}">${escapeHtml(c.html)}</a>
           <a href="${escapeHtml(articleJsonUrl(appUrl, article.slug))}">${escapeHtml(c.json)}</a>
@@ -483,24 +440,7 @@ function articleList(articles: WireArticle[], appUrl: string, locale: Locale): s
 export function renderHomeHtml(appUrl: string, articles: WireArticle[], locale: Locale): string {
   const c = copyFor(locale);
   const base = appUrl.replace(/\/$/, '');
-  const body = `
-    <section class="hero">
-      <div class="wrap">
-        <p class="kicker">${escapeHtml(c.wire)}</p>
-        <h1>${escapeHtml(c.tagline)}</h1>
-        <p class="lede">${escapeHtml(c.sub)}</p>
-        ${topicChips(locale)}
-        <p class="cta">
-          <a class="btn btn-primary" href="${escapeHtml(href(articles[0] ? `/wire/${articles[0].slug}` : '/', locale))}">${escapeHtml(
-            locale === 'zh' ? '读电讯' : 'Read the wire'
-          )}</a>
-          <a class="btn btn-ghost" href="${escapeHtml(href('/connect', locale))}">${escapeHtml(c.mcp)}</a>
-        </p>
-      </div>
-    </section>
-    <main class="wrap">
-      ${articleList(articles, appUrl, locale)}
-    </main>`;
+  const body = renderHomePortal({ appUrl, articles, locale });
   return layout({
     appUrl,
     locale,
@@ -509,6 +449,8 @@ export function renderHomeHtml(appUrl: string, articles: WireArticle[], locale: 
     canonical: `${base}/`,
     ogType: 'website',
     active: 'home',
+    activeChannel: 'all',
+    articles,
     jsonLd: [collectionJsonLd(appUrl, c.wire, c.sub)],
     alternates: [
       { href: `${base}/feed.json`, type: 'application/feed+json', title: c.wire },
@@ -531,7 +473,7 @@ export function renderTopicHtml(
   const blurb = locale === 'zh' ? cat.blurbZh : cat.blurbEn;
   const canonical = topicUrl(appUrl, category);
   const body = `
-    <section class="hero">
+    <section class="page-hero">
       <div class="wrap">
         <p class="crumb"><a href="${escapeHtml(href('/', locale))}">${escapeHtml(c.home)}</a> / ${escapeHtml(name)}</p>
         <p class="kicker">${escapeHtml(c.topics)}</p>
@@ -540,7 +482,8 @@ export function renderTopicHtml(
         ${topicChips(locale, category)}
       </div>
     </section>
-    <main class="wrap">
+    <main class="wrap page-rail">
+      <div class="matrix-head"><span>${escapeHtml(c.wire)}</span><span class="pulse">LIVE</span></div>
       ${articleList(articles, appUrl, locale)}
     </main>`;
   return layout({
@@ -550,6 +493,9 @@ export function renderTopicHtml(
     description: blurb,
     canonical,
     active: 'topic',
+    activeChannel:
+      category === 'platform' || category === 'observation' ? category : category === 'wire' ? 'wire' : 'wire',
+    articles,
     jsonLd: [
       collectionJsonLd(appUrl, `${c.wire} · ${name}`, blurb),
       breadcrumbJsonLd(appUrl, [
@@ -564,37 +510,55 @@ export function renderTopicHtml(
 
 export function renderArticleHtml(appUrl: string, article: WireArticle, locale: Locale): string {
   const c = copyFor(locale);
+  const view = localizeWireArticle(article, locale);
   const canonical = articleCanonical(appUrl, article.slug);
-  const catName = categoryLabel(article.category, locale);
-  const facts = article.keyFacts
+  const catName = categoryLabel(view.category, locale);
+  const facts = view.keyFacts
     .map(
       (f, i) =>
         `<li id="${escapeHtml(f.id || `fact-${i + 1}`)}">${escapeHtml(f.text)}</li>`
     )
     .join('\n');
-  const crawlerBits = article.observations.crawlers
+  const crawlerBits = view.observations.crawlers
     .map((cr) => `${escapeHtml(cr.crawlerId)} ${cr.hits}`)
     .join(' · ');
-  const telemetry = `${c.observed}: ${c.human} <strong>${article.observations.human}</strong> · ${c.bot} <strong>${article.observations.bot}</strong>${
+  const telemetry = `${c.observed}: ${c.human} <strong>${view.observations.human}</strong> · ${c.bot} <strong>${view.observations.bot}</strong>${
     crawlerBits ? ` (${crawlerBits})` : ''
   }`;
+  const sourceBit =
+    view.sourceName && view.sourceUrl
+      ? `<p class="byline">${escapeHtml(locale === 'zh' ? '来源' : 'Source')}: <a href="${escapeHtml(
+          view.sourceUrl
+        )}">${escapeHtml(view.sourceName)}</a></p>
+        <p class="source-notice">${escapeHtml(
+          locale === 'zh'
+            ? '本文为 Silicon News Wire 要点改写电讯，便于阅读与引用；非原文全文转载。完整表述以原文为准。'
+            : 'This is a Silicon News Wire editorial brief (paraphrased for reading and citation), not a verbatim full-text reprint. Details remain on the origin page.'
+        )} <a href="${escapeHtml(view.sourceUrl)}">${escapeHtml(
+          locale === 'zh' ? '打开原文 →' : 'Open original →'
+        )}</a></p>`
+      : '';
   const body = `
-    <main class="wrap">
-      <article>
-        <header>
+    <main class="wrap page-rail">
+      <article class="dispatch-article">
+        <header class="dispatch-header">
           <p class="crumb"><a href="${escapeHtml(href('/', locale))}">${escapeHtml(c.home)}</a> / <a href="${escapeHtml(
-            href(`/topic/${article.category}`, locale)
+            href(`/topic/${view.category}`, locale)
           )}">${escapeHtml(catName)}</a></p>
           <p class="kicker">${escapeHtml(catName)}</p>
-          <h1>${escapeHtml(article.headline)}</h1>
-          <p class="meta"><time datetime="${escapeHtml(withOffsetIso(article.datePublished))}">${escapeHtml(
-            formatVisibleDate(article.datePublished, locale)
-          )}</time></p>
-          <p class="byline">${escapeHtml(c.by)} ${escapeHtml(article.authorName)}</p>
+          <h1>${escapeHtml(view.headline)}</h1>
+          <p class="hero-eyebrow">
+            <time datetime="${escapeHtml(withOffsetIso(view.datePublished))}">${escapeHtml(
+              formatVisibleDate(view.datePublished, locale)
+            )}</time>
+            <span class="fetch-badge">👁 ${view.observations.human} · ⚡ ${view.observations.bot}</span>
+          </p>
+          <p class="byline">${escapeHtml(c.by)} ${escapeHtml(view.authorName)}</p>
+          ${sourceBit}
           <p class="states" aria-label="${escapeHtml(c.threeState)}">
-            <a href="${escapeHtml(href(`/wire/${article.slug}`, locale))}">${escapeHtml(c.html)}</a>
-            <a href="${escapeHtml(articleJsonUrl(appUrl, article.slug))}">${escapeHtml(c.json)}</a>
-            <a href="${escapeHtml(articleMdUrl(appUrl, article.slug))}">${escapeHtml(c.md)}</a>
+            <a href="${escapeHtml(href(`/wire/${view.slug}`, locale))}">${escapeHtml(c.html)}</a>
+            <a href="${escapeHtml(articleJsonUrl(appUrl, view.slug))}">.${escapeHtml(c.json)}</a>
+            <a href="${escapeHtml(articleMdUrl(appUrl, view.slug))}">.${escapeHtml(c.md)}</a>
           </p>
         </header>
         <section class="tldr" aria-label="${escapeHtml(c.tldr)}">
@@ -604,10 +568,11 @@ export function renderArticleHtml(appUrl: string, article: WireArticle, locale: 
           </ol>
         </section>
         <div class="body">
-          ${renderMarkdown(article.bodyMd)}
+          ${renderMarkdown(view.bodyMd)}
         </div>
       </article>
       <aside class="telemetry">
+        <div class="matrix-head"><span>${escapeHtml(c.telemetry)}</span></div>
         <p>${telemetry}</p>
         <p class="disclaimer">${escapeHtml(c.disclaimer)}</p>
       </aside>
@@ -615,22 +580,23 @@ export function renderArticleHtml(appUrl: string, article: WireArticle, locale: 
   return layout({
     appUrl,
     locale,
-    title: article.headline,
-    description: article.summary,
+    title: view.headline,
+    description: view.summary,
     canonical,
     ogType: 'article',
     active: 'article',
+    articles: [article],
     jsonLd: [
-      newsArticleJsonLd(appUrl, article),
+      newsArticleJsonLd(appUrl, view),
       breadcrumbJsonLd(appUrl, [
         { name: c.home, url: `${appUrl.replace(/\/$/, '')}/` },
-        { name: catName, url: topicUrl(appUrl, article.category) },
-        { name: article.headline, url: canonical },
+        { name: catName, url: topicUrl(appUrl, view.category) },
+        { name: view.headline, url: canonical },
       ]),
     ],
     alternates: [
-      { href: articleJsonUrl(appUrl, article.slug), type: 'application/json', title: 'JSON' },
-      { href: articleMdUrl(appUrl, article.slug), type: 'text/markdown', title: 'Markdown' },
+      { href: articleJsonUrl(appUrl, view.slug), type: 'application/json', title: 'JSON' },
+      { href: articleMdUrl(appUrl, view.slug), type: 'text/markdown', title: 'Markdown' },
     ],
     body,
   });
@@ -639,11 +605,11 @@ export function renderArticleHtml(appUrl: string, article: WireArticle, locale: 
 export function renderNotFoundHtml(appUrl: string, locale: Locale, message: string): string {
   const c = copyFor(locale);
   const body = `
-    <main class="wrap">
-      <section class="hero">
+    <main class="wrap page-rail">
+      <section class="page-hero" style="border-bottom:0">
         <p class="kicker">404</p>
         <h1>${escapeHtml(message)}</h1>
-        <p class="cta"><a class="btn btn-primary" href="${escapeHtml(href('/', locale))}">${escapeHtml(c.home)}</a></p>
+        <p class="cta" style="margin-top:18px"><a class="btn btn-primary" href="${escapeHtml(href('/', locale))}">${escapeHtml(c.home)}</a></p>
       </section>
     </main>`;
   return layout({
@@ -663,8 +629,10 @@ export function articleFactPackage(appUrl: string, article: WireArticle): Record
     json_url: articleJsonUrl(appUrl, article.slug),
     md_url: articleMdUrl(appUrl, article.slug),
     headline: article.headline,
+    headline_zh: article.headlineZh || undefined,
     title: article.headline,
     summary: article.summary,
+    summary_zh: article.summaryZh || undefined,
     date_published: withOffsetIso(article.datePublished),
     date_modified: withOffsetIso(article.dateModified),
     author: {
@@ -678,8 +646,12 @@ export function articleFactPackage(appUrl: string, article: WireArticle): Record
     },
     category: article.category,
     language: article.language,
+    source_url: article.sourceUrl || undefined,
+    source_name: article.sourceName || undefined,
     key_facts: article.keyFacts.map((f) => f.text),
+    key_facts_zh: article.keyFactsZh.length ? article.keyFactsZh.map((f) => f.text) : undefined,
     body_md: article.bodyMd,
+    body_md_zh: article.bodyMdZh || undefined,
     ...(article.imageUrl ? { image: article.imageUrl } : {}),
     observations: {
       human: article.observations.human,

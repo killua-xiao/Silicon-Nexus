@@ -233,7 +233,7 @@ export function ConsoleSitesPage() {
           {t.consoleSites.hint}{' '}
           <span className="font-mono text-foundry-400">/sites/{'{slug}'}/llms.txt</span>
           {' · '}
-          <span className="text-foundry-600">{t.consoleSites.indexingHint}</span>
+          <span className="text-ink-muted">{t.consoleSites.indexingHint}</span>
         </p>
       </div>
 
@@ -462,7 +462,7 @@ export function ConsoleSitesPage() {
                 </div>
               ) : null}
               <p className="mt-2 text-xs text-foundry-500">{t.consoleSites.honesty}</p>
-              <p className="mt-1 text-xs text-foundry-600">{t.consoleSites.sitemapTip}</p>
+              <p className="mt-1 text-xs text-ink-muted">{t.consoleSites.sitemapTip}</p>
             </section>
           ) : null}
           <section className="nx-card p-4 md:p-5">
