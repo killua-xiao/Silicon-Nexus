@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { I18nProvider } from './i18n/I18nProvider';
+import { DocumentTitle } from './components/DocumentTitle';
 import { ToastProvider } from './components/Toast';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { AboutPage } from './pages/AboutPage';
@@ -19,15 +20,18 @@ import { ResetPage } from './pages/ResetPage';
 import { DirectoryPage } from './pages/DirectoryPage';
 import { FeedPage } from './pages/FeedPage';
 import { LegalPage } from './pages/LegalPage';
+import { SiteHubPage } from './pages/SiteHubPage';
 
 export default function App() {
   return (
     <I18nProvider>
       <ToastProvider>
         <BrowserRouter>
+          <DocumentTitle />
           <Routes>
             <Route path="/" element={<NotFoundPage />} />
             <Route path="/about" element={<AboutPage />} />
+            <Route path="/sites/:siteSlug" element={<SiteHubPage />} />
             <Route path="/docs" element={<DocsPage />} />
             <Route path="/connect" element={<ConnectPage />} />
             <Route path="/cookbook" element={<CookbookPage />} />

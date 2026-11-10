@@ -1,3 +1,5 @@
+import { isMachineReadableProbe } from './machinePaths.ts';
+
 /** Paths that must never fall through to the production SPA index.html. */
 export function isSpaCatchAllExcluded(path: string): boolean {
   return (
@@ -24,11 +26,8 @@ export function isSpaCatchAllExcluded(path: string): boolean {
     path === '/feed.xml' ||
     path === '/signals.json' ||
     path === '/signals.xml' ||
-    /\.md$/i.test(path) ||
-    (path.startsWith('/feed/') && /\.json$/i.test(path)) ||
-    (path.startsWith('/sites/') &&
-      (/llms\.txt$/i.test(path) || /feed\.json$/i.test(path) || /\.json$/i.test(path))) ||
     path === '/mcp' ||
-    path.startsWith('/mcp/')
+    path.startsWith('/mcp/') ||
+    isMachineReadableProbe(path)
   );
 }
