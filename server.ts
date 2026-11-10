@@ -29,6 +29,8 @@ import { logJson } from './src/server/log.ts';
 import { buildA2AAgentCard, buildAgentCard } from './src/server/agentCard.ts';
 import { buildMcpServerCard } from './src/server/mcpCard.ts';
 import { createMcpHttpRouter } from './src/server/mcpHttp.ts';
+import { buildWireMcpServerCard } from './src/server/wireMcp.ts';
+import { createWireMcpHttpRouter } from './src/server/wireMcpHttp.ts';
 import {
   buildAtomFeed,
   buildGeoSitemapXml,
@@ -138,6 +140,10 @@ async function startServer() {
   });
   app.get('/.well-known/mcp/server-card.json', (_req, res) => {
     res.type('application/json').json(mcpCard);
+  });
+  const wireMcpCard = buildWireMcpServerCard(appUrl);
+  app.get('/.well-known/mcp/wire/server-card.json', (_req, res) => {
+    res.type('application/json').json(wireMcpCard);
   });
 
   app.get('/robots.txt', (_req, res) => {
@@ -251,8 +257,22 @@ async function startServer() {
   registerSiteContentMirrorRoutes(app);
   registerHubPageRoutes(app, appUrl);
 
-  // Remote Streamable HTTP MCP (Smithery / HTTP clients)
+  // Public read-only Wire MCP — unauthenticated. Must mount before token-gated /mcp.
+  app.use(
+    '/mcp/wire',
+    rateLimit({
+      windowMs: 60 * 1000,
+      max: 120,
+      message: 'Too many Wire MCP requests from this IP, please try again later.',
+      standardHeaders: true,
+      legacyHeaders: false,
+    }),
+    createWireMcpHttpRouter({ appUrl })
+  );
+
+  // Token-gated hub MCP (body/memory/tasks). Not the public directory endpoint.
   // Call the local API loopback so tools never round-trip through the public edge.
+  // Stays Bearer-gated. Do not flip openMode to expose hub tools.
   app.use(
     '/mcp',
     createMcpHttpRouter({

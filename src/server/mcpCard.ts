@@ -35,6 +35,8 @@ export function buildMcpServerCard(appUrl: string) {
       agentCard: `${appUrl}/.well-known/agent-card.json`,
       hubCard: `${appUrl}/.well-known/agent.json`,
       openApi: `${appUrl}/openapi.yaml`,
+      wireMcp: `${appUrl}/mcp/wire`,
+      wireServerCard: `${appUrl}/.well-known/mcp/wire/server-card.json`,
     },
   };
 }
