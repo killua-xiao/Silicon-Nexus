@@ -6,7 +6,7 @@ import {
   isPoliticalDigest,
   isSensitiveDigest,
 } from '../src/server/wireSafety.ts';
-import { WIRE_FEED_SOURCES } from '../src/server/wireIngest.ts';
+import { ALWAYS_ON_TOPIC_SOURCE_IDS, WIRE_FEED_SOURCES } from '../src/server/wireIngest.ts';
 
 describe('wire safety', () => {
   test('only curated reputable desks are configured', () => {
@@ -19,6 +19,29 @@ describe('wire safety', () => {
       WIRE_FEED_SOURCES.some((s) => /hacker news|solidot|google news/i.test(s.name)),
       false
     );
+    const ids = WIRE_FEED_SOURCES.map((s) => s.id);
+    assert.deepEqual(ids.slice(0, 5), ['mit-tr', 'openai-news', 'deepmind-blog', 'qbitai', 'ithome']);
+    for (const id of [
+      'ieee-spectrum-ai',
+      'ieee-spectrum-semiconductors',
+      'quanta',
+      'ars-ai',
+      'google-research',
+      'ms-research',
+      'bair',
+      'semiengineering',
+      'nvidia-devblog',
+      'huggingface-blog',
+      'lil-log',
+      'interconnects',
+    ]) {
+      assert.ok(ids.includes(id), `missing source ${id}`);
+    }
+    const names = WIRE_FEED_SOURCES.map((s) => s.name);
+    assert.equal(new Set(names).size, names.length);
+    assert.equal(ALWAYS_ON_TOPIC_SOURCE_IDS.has('quanta'), false);
+    assert.equal(ALWAYS_ON_TOPIC_SOURCE_IDS.has('ieee-spectrum-ai'), true);
+    assert.equal(ALWAYS_ON_TOPIC_SOURCE_IDS.has('interconnects'), true);
   });
 
   test('host allowlist accepts desk domains only', () => {

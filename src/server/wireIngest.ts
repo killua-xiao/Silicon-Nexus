@@ -76,10 +76,139 @@ export const WIRE_FEED_SOURCES: WireFeedSource[] = [
     allowedHosts: ['ithome.com'],
     reputable: true,
   },
+  {
+    id: 'ieee-spectrum-ai',
+    name: 'IEEE Spectrum',
+    url: 'https://spectrum.ieee.org/feeds/topic/artificial-intelligence.rss',
+    lang: 'en',
+    defaultCategory: 'ai',
+    allowedHosts: ['spectrum.ieee.org'],
+    reputable: true,
+  },
+  {
+    id: 'ieee-spectrum-semiconductors',
+    name: 'IEEE Spectrum (Semiconductors)',
+    url: 'https://spectrum.ieee.org/feeds/topic/semiconductors.rss',
+    lang: 'en',
+    defaultCategory: 'chips',
+    allowedHosts: ['spectrum.ieee.org'],
+    reputable: true,
+  },
+  {
+    id: 'quanta',
+    name: 'Quanta Magazine',
+    url: 'https://www.quantamagazine.org/feed/',
+    lang: 'en',
+    defaultCategory: 'frontier',
+    allowedHosts: ['quantamagazine.org'],
+    reputable: true,
+  },
+  {
+    id: 'ars-ai',
+    name: 'Ars Technica',
+    url: 'https://arstechnica.com/ai/feed/',
+    lang: 'en',
+    defaultCategory: 'ai',
+    allowedHosts: ['arstechnica.com'],
+    reputable: true,
+  },
+  {
+    id: 'google-research',
+    name: 'Google Research Blog',
+    url: 'https://research.google/blog/rss/',
+    lang: 'en',
+    defaultCategory: 'ai',
+    allowedHosts: ['research.google', 'blog.google'],
+    reputable: true,
+  },
+  {
+    id: 'ms-research',
+    name: 'Microsoft Research',
+    url: 'https://www.microsoft.com/en-us/research/blog/feed/',
+    lang: 'en',
+    defaultCategory: 'ai',
+    allowedHosts: ['microsoft.com'],
+    reputable: true,
+  },
+  {
+    id: 'bair',
+    name: 'BAIR Blog',
+    url: 'https://bair.berkeley.edu/blog/feed.xml',
+    lang: 'en',
+    defaultCategory: 'ai',
+    allowedHosts: ['bair.berkeley.edu'],
+    reputable: true,
+  },
+  {
+    id: 'semiengineering',
+    name: 'Semiconductor Engineering',
+    url: 'https://semiengineering.com/feed/',
+    lang: 'en',
+    defaultCategory: 'chips',
+    allowedHosts: ['semiengineering.com'],
+    reputable: true,
+  },
+  {
+    id: 'nvidia-devblog',
+    name: 'NVIDIA Developer Blog',
+    url: 'https://developer.nvidia.com/blog/feed/',
+    lang: 'en',
+    defaultCategory: 'chips',
+    allowedHosts: ['developer.nvidia.com', 'nvidia.com'],
+    reputable: true,
+  },
+  {
+    id: 'huggingface-blog',
+    name: 'Hugging Face Blog',
+    url: 'https://huggingface.co/blog/feed.xml',
+    lang: 'en',
+    defaultCategory: 'ai',
+    allowedHosts: ['huggingface.co'],
+    reputable: true,
+  },
+  {
+    id: 'lil-log',
+    name: "Lil'Log",
+    url: 'https://lilianweng.github.io/index.xml',
+    lang: 'en',
+    defaultCategory: 'ai',
+    allowedHosts: ['lilianweng.github.io'],
+    reputable: true,
+  },
+  {
+    id: 'interconnects',
+    name: 'Interconnects',
+    url: 'https://www.interconnects.ai/feed',
+    lang: 'en',
+    defaultCategory: 'ai',
+    allowedHosts: ['interconnects.ai'],
+    reputable: true,
+  },
 ];
 
 /** Retired desks — any leftover digests are purged on ingest. */
 export const RETIRED_WIRE_SOURCE_NAMES = ['Hacker News (AI)', 'Solidot', 'OpenAI Blog', 'Google News (AI EN)', 'Google News (AI ZH)'];
+
+/**
+ * Lab / topic feeds treated as always on-topic. Quanta stays subject to RELEVANCE
+ * so biology/math pieces can be skipped.
+ */
+export const ALWAYS_ON_TOPIC_SOURCE_IDS = new Set([
+  'openai-news',
+  'deepmind-blog',
+  'mit-tr',
+  'ieee-spectrum-ai',
+  'ieee-spectrum-semiconductors',
+  'ars-ai',
+  'google-research',
+  'ms-research',
+  'bair',
+  'semiengineering',
+  'nvidia-devblog',
+  'huggingface-blog',
+  'lil-log',
+  'interconnects',
+]);
 
 const TOPIC_RULES: Array<{ category: WireCategorySlug; patterns: RegExp[] }> = [
   {
@@ -374,10 +503,7 @@ export async function ingestWireFeeds(options?: {
       row.fetched = items.length;
       for (const item of items) {
         const topical =
-          isRelevant(item.title, item.summary) ||
-          source.id === 'openai-news' ||
-          source.id === 'deepmind-blog' ||
-          source.id === 'mit-tr';
+          isRelevant(item.title, item.summary) || ALWAYS_ON_TOPIC_SOURCE_IDS.has(source.id);
         const verdict = evaluateWireSafety({
           title: item.title,
           summary: item.summary,
