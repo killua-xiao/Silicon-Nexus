@@ -80,6 +80,8 @@ test('unimplemented machine-readable paths 404 instead of SPA', () => {
   assert.equal(should404MachinePath('/llms.txt'), false);
   assert.equal(should404MachinePath('/.well-known/agent-card.json'), false);
   assert.equal(should404MachinePath('/.well-known/mcp/server-card.json'), false);
+  assert.equal(should404MachinePath('/.well-known/mcp/wire/server-card.json'), false);
+  assert.equal(isKnownMachinePath('/.well-known/mcp/wire/server-card.json'), true);
   assert.equal(should404MachinePath('/about.md'), false);
   assert.equal(should404MachinePath('/sites/archive2050.md'), false);
   assert.equal(should404MachinePath('/sites/archive2050/content/hello.md'), false);

@@ -1,0 +1,24 @@
+{
+  "name": "silinex-wire-mcp",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Stdio proxy for the public Silicon News Wire MCP (Streamable HTTP at SILINEX_WIRE_URL).",
+  "type": "module",
+  "bin": {
+    "silinex-wire-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --packages=external --banner:js=\"#!/usr/bin/env node\"",
+    "start": "node --import tsx src/index.ts"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0"
+  }
+}

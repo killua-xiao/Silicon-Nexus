@@ -378,6 +378,15 @@ function migrateWireSchema(database: Database.Database) {
       PRIMARY KEY (article_id, audience, crawler_id),
       FOREIGN KEY (article_id) REFERENCES articles(id) ON DELETE CASCADE
     );
+
+    CREATE TABLE IF NOT EXISTS mcp_wire_calls (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      tool TEXT NOT NULL,
+      ua TEXT,
+      slug TEXT,
+      query_len INTEGER,
+      created_at TEXT NOT NULL
+    );
   `);
 
   ensureColumn(database, 'articles', 'headline_zh', "TEXT NOT NULL DEFAULT ''");

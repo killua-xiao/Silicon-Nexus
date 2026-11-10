@@ -15,6 +15,8 @@ test('SPA catch-all excludes well-known llms.txt and openapi.json', () => {
   assert.equal(isSpaCatchAllExcluded('/.well-known/openapi.yaml'), true);
   assert.equal(isSpaCatchAllExcluded('/.well-known/agent.json'), true);
   assert.equal(isSpaCatchAllExcluded('/.well-known/agent-card.json'), true);
+  assert.equal(isSpaCatchAllExcluded('/.well-known/mcp/wire/server-card.json'), true);
+  assert.equal(isSpaCatchAllExcluded('/mcp/wire'), true);
   assert.equal(isSpaCatchAllExcluded('/'), true);
   assert.equal(isSpaCatchAllExcluded('/wire/foo'), true);
   assert.equal(isSpaCatchAllExcluded('/topic/wire'), true);

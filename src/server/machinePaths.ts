@@ -8,6 +8,7 @@ const KNOWN_EXACT = new Set([
   '/.well-known/agent-card.json',
   '/.well-known/llms.txt',
   '/.well-known/mcp/server-card.json',
+  '/.well-known/mcp/wire/server-card.json',
   '/.well-known/openapi.json',
   '/.well-known/openapi.yaml',
   '/robots.txt',

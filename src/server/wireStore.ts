@@ -229,6 +229,51 @@ export function getPublishedArticleBySlug(slug: string): WireArticle | null {
   return hydrate(db, row);
 }
 
+/** Case-insensitive substring search over published title/summary/body (en + zh). */
+export function searchPublishedArticles(query: string, limit = 10): WireArticle[] {
+  const needle = query.trim().toLowerCase();
+  if (!needle) return [];
+  const cap = Math.min(Math.max(limit, 1), 20);
+  const db = getDb();
+  const rows = db
+    .prepare(
+      `SELECT * FROM articles
+       WHERE status = 'published'
+         AND (
+           instr(lower(headline), ?) > 0
+           OR instr(lower(summary), ?) > 0
+           OR instr(lower(body_md), ?) > 0
+           OR instr(lower(headline_zh), ?) > 0
+           OR instr(lower(summary_zh), ?) > 0
+           OR instr(lower(body_md_zh), ?) > 0
+         )
+       ORDER BY date_published DESC
+       LIMIT ?`
+    )
+    .all(needle, needle, needle, needle, needle, needle, cap) as ArticleRow[];
+  return rows.map((row) => hydrate(db, row)).filter((a): a is WireArticle => !!a);
+}
+
+export function recordWireMcpCall(input: {
+  tool: string;
+  ua?: string;
+  slug?: string;
+  queryLen?: number;
+}): void {
+  const db = getDb();
+  const ua = (input.ua || '').trim().slice(0, 120);
+  db.prepare(
+    `INSERT INTO mcp_wire_calls (tool, ua, slug, query_len, created_at)
+     VALUES (?, ?, ?, ?, ?)`
+  ).run(
+    input.tool,
+    ua || null,
+    input.slug || null,
+    typeof input.queryLen === 'number' && Number.isFinite(input.queryLen) ? input.queryLen : null,
+    new Date().toISOString()
+  );
+}
+
 export function getArticleByExternalId(externalId: string): WireArticle | null {
   const db = getDb();
   const row = db
