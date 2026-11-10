@@ -129,8 +129,10 @@ describe('Gemini translation provider', { concurrency: 1 }, () => {
       assert.equal(calls.length, 1);
       assert.match(
         calls[0].url,
-        /generativelanguage\.googleapis\.com\/v1beta\/models\/gemini-3\.8-flash:generateContent/
+        /generativelanguage\.googleapis\.com\/v1beta\/models\/gemini-3\.8-flash:generateContent\?key=test-placeholder-not-a-secret$/
       );
+      const posted = new URL(calls[0].url);
+      assert.equal(posted.searchParams.get('key'), 'test-placeholder-not-a-secret');
       const body = calls[0].body as { systemInstruction: { parts: Array<{ text: string }> } };
       assert.match(body.systemInstruction.parts[0].text, /Simplified Chinese/);
       assert.match(body.systemInstruction.parts[0].text, /proper nouns/);
@@ -176,8 +178,10 @@ describe('Gemini translation provider', { concurrency: 1 }, () => {
       assert.equal(calls.length, 1);
       assert.equal(
         calls[0].url,
-        'https://gateway.ai.cloudflare.com/v1/example-account/example-gateway/google-ai-studio/v1beta/models/gemini-3.8-flash:generateContent'
+        'https://gateway.ai.cloudflare.com/v1/example-account/example-gateway/google-ai-studio/v1beta/models/gemini-3.8-flash:generateContent?key=test-placeholder-not-a-secret'
       );
+      const posted = new URL(calls[0].url);
+      assert.equal(posted.searchParams.get('key'), 'test-placeholder-not-a-secret');
       const headers = calls[0].headers as Record<string, string>;
       assert.equal(headers['x-goog-api-key'], 'test-placeholder-not-a-secret');
       assert.equal(headers['cf-aig-authorization'], 'Bearer test-gateway-token-placeholder');
@@ -214,6 +218,7 @@ describe('Gemini translation provider', { concurrency: 1 }, () => {
       const out = await translateText('A distinct fallback probe about agentic silicon chips.', 'en', 'zh');
       assert.match(out, /回退译文/);
       assert.ok(urls[0]?.includes('generativelanguage.googleapis.com'));
+      assert.ok(urls[0]?.includes('key=test-placeholder-not-a-secret'));
       assert.ok(urls.some((u) => u.includes('mymemory.translated.net')));
     } finally {
       globalThis.fetch = origFetch;
