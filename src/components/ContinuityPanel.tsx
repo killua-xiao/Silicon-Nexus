@@ -5,12 +5,25 @@ import { useToast } from './Toast';
 import { useT } from '../i18n/I18nProvider';
 import type { AgentRow } from './AgentPanel';
 
+type HandoffPacket = {
+  decisions?: string[];
+  constraints?: string[];
+  evidence?: string[];
+  nextAction?: string;
+  provenance?: {
+    actor?: string;
+    task?: string;
+    conditions?: string;
+  };
+};
+
 type HandoffResponse = {
   handoffId: string;
   agentId: string;
   digest: string;
   keys: string[];
   note: string | null;
+  packet: HandoffPacket | null;
   createdAt: string;
   expiresAt: string;
 };
@@ -24,6 +37,7 @@ type AssumeResponse = {
   rotated: boolean;
   token?: string;
   assumedAt: string | null;
+  packet: HandoffPacket | null;
   note: string;
 };
 
@@ -183,6 +197,19 @@ export function ContinuityPanel({
             digest {lastHandoff.digest.slice(0, 16)}… · {lastHandoff.keys.length} keys · expires{' '}
             {lastHandoff.expiresAt.slice(0, 10)}
           </p>
+          {lastHandoff.note ? (
+            <p className="mt-2 text-foundry-400">
+              {c.noteLabel}: {lastHandoff.note}
+            </p>
+          ) : null}
+          {lastHandoff.packet ? (
+            <div className="mt-2">
+              <p className="text-teal-glow">{c.packetLabel}</p>
+              <pre className="mt-1 overflow-x-auto whitespace-pre-wrap break-all text-foundry-400">
+                {JSON.stringify(lastHandoff.packet, null, 2)}
+              </pre>
+            </div>
+          ) : null}
         </div>
       ) : null}
 
@@ -224,6 +251,14 @@ export function ContinuityPanel({
             {c.assumedKeys}: {lastAssume.assumedKeys.length} · {c.restored}:{' '}
             {lastAssume.diff.missing.length} · {c.carried}: {lastAssume.diff.carried.length}
           </p>
+          {lastAssume.packet ? (
+            <div className="mt-3 font-mono text-[11px] leading-relaxed">
+              <p className="text-teal-glow">{c.packetLabel}</p>
+              <pre className="mt-1 overflow-x-auto whitespace-pre-wrap break-all text-foundry-400">
+                {JSON.stringify(lastAssume.packet, null, 2)}
+              </pre>
+            </div>
+          ) : null}
           {lastAssume.token ? (
             <div className="mt-3">
               <p className="font-mono text-[11px] uppercase tracking-wider text-copper">

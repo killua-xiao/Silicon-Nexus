@@ -33,12 +33,25 @@ export type BodyCell = {
   confidence: BodyConfidence;
 };
 
+export type HandoffPacket = {
+  decisions?: string[];
+  constraints?: string[];
+  evidence?: string[];
+  nextAction?: string;
+  provenance?: {
+    actor?: string;
+    task?: string;
+    conditions?: string;
+  };
+};
+
 export type HandoffResult = {
   handoffId: string;
   agentId: string;
   digest: string;
   keys: string[];
   note: string | null;
+  packet: HandoffPacket | null;
   createdAt: string;
   expiresAt: string;
   snapshot: Record<string, unknown>;
@@ -53,6 +66,7 @@ export type AssumeResult = {
   rotated: boolean;
   token?: string;
   assumedAt: string | null;
+  packet: HandoffPacket | null;
   note: string;
 };
 
@@ -181,7 +195,16 @@ export class SiliconNexus {
   /** Continuity: survive session death via handoff → assume. */
   continuity = {
     handoff: (
-      input: { note?: string; includeKeys?: string[]; ttlHours?: number } = {},
+      input: {
+        note?: string;
+        includeKeys?: string[];
+        ttlHours?: number;
+        decisions?: string[];
+        constraints?: string[];
+        evidence?: string[];
+        nextAction?: string;
+        provenance?: HandoffPacket['provenance'];
+      } = {},
       agentId = this.agentId
     ) => {
       const id = this.resolveAgentId(agentId);

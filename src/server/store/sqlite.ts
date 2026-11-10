@@ -48,6 +48,7 @@ import {
   sanitizeFtsQuery,
 } from '../memorySearch.ts';
 import type { AgentHandoff } from '../types.ts';
+import { compactHandoffPacket, parseStoredHandoffPacket } from '../schemas.ts';
 
 type TaskRow = {
   id: string;
@@ -745,7 +746,16 @@ export class SqliteStore implements NexusStore {
 
   createHandoff(
     agentId: string,
-    input: { note?: string; includeKeys?: string[]; ttlHours?: number },
+    input: {
+      note?: string;
+      includeKeys?: string[];
+      ttlHours?: number;
+      decisions?: string[];
+      constraints?: string[];
+      evidence?: string[];
+      nextAction?: string;
+      provenance?: { actor?: string; task?: string; conditions?: string };
+    },
     workspaceId?: string
   ):
     | { ok: true; handoff: AgentHandoff; snapshot: AgentMemory }
@@ -775,12 +785,13 @@ export class SqliteStore implements NexusStore {
     const createdAt = now.toISOString();
     const expiresAt = expires.toISOString();
     const note = input.note?.trim().slice(0, 500) || null;
+    const packet = compactHandoffPacket(input);
 
     this.db
       .prepare(
         `INSERT INTO handoffs
-         (id, workspace_id, agent_id, snapshot_json, digest, note, keys_json, created_at, expires_at, assumed_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)`
+         (id, workspace_id, agent_id, snapshot_json, digest, note, keys_json, packet_json, created_at, expires_at, assumed_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)`
       )
       .run(
         id,
@@ -790,6 +801,7 @@ export class SqliteStore implements NexusStore {
         digest,
         note,
         JSON.stringify(include),
+        packet ? JSON.stringify(packet) : null,
         createdAt,
         expiresAt
       );
@@ -801,6 +813,7 @@ export class SqliteStore implements NexusStore {
       digest,
       note,
       keys: include,
+      packet,
       createdAt,
       expiresAt,
       assumedAt: null,
@@ -822,7 +835,7 @@ export class SqliteStore implements NexusStore {
     const row = this.db
       .prepare(
         `SELECT id, workspace_id, agent_id, snapshot_json, digest, note, keys_json,
-                created_at, expires_at, assumed_at
+                packet_json, created_at, expires_at, assumed_at
          FROM handoffs WHERE id = ? AND workspace_id = ?`
       )
       .get(handoffId, ws) as
@@ -834,6 +847,7 @@ export class SqliteStore implements NexusStore {
           digest: string;
           note: string | null;
           keys_json: string;
+          packet_json: string | null;
           created_at: string;
           expires_at: string;
           assumed_at: string | null;
@@ -854,6 +868,7 @@ export class SqliteStore implements NexusStore {
         digest: row.digest,
         note: row.note,
         keys,
+        packet: parseStoredHandoffPacket(row.packet_json),
         createdAt: row.created_at,
         expiresAt: row.expires_at,
         assumedAt: row.assumed_at,

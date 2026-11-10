@@ -25,6 +25,19 @@ export interface MemorySearchHit {
   cite: string;
 }
 
+/** Structured continuity packet — more than a raw memory dump. */
+export interface HandoffPacket {
+  decisions?: string[];
+  constraints?: string[];
+  evidence?: string[];
+  nextAction?: string;
+  provenance?: {
+    actor?: string;
+    task?: string;
+    conditions?: string;
+  };
+}
+
 export interface AgentHandoff {
   id: string;
   workspaceId: string;
@@ -32,6 +45,8 @@ export interface AgentHandoff {
   digest: string;
   note: string | null;
   keys: string[];
+  /** Optional session packet (decisions, constraints, evidence, next action, provenance). */
+  packet: HandoffPacket | null;
   createdAt: string;
   expiresAt: string;
   assumedAt: string | null;
