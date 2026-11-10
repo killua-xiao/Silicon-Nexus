@@ -3,6 +3,7 @@ import { createServer } from 'node:http';
 import { test } from 'node:test';
 import express from 'express';
 import { buildLlmsTxt } from '../src/server/feedPublic.ts';
+import { should404MachinePath } from '../src/server/machinePaths.ts';
 import { isSpaCatchAllExcluded } from '../src/server/spaSurfaces.ts';
 
 test('SPA catch-all excludes well-known llms.txt and openapi.json', () => {
@@ -19,6 +20,11 @@ test('SPA catch-all excludes well-known llms.txt and openapi.json', () => {
   assert.equal(isSpaCatchAllExcluded('/topic/wire'), true);
   assert.equal(isSpaCatchAllExcluded('/about'), false);
   assert.equal(isSpaCatchAllExcluded('/console'), false);
+  assert.equal(isSpaCatchAllExcluded('/llms-full.txt'), true);
+  assert.equal(isSpaCatchAllExcluded('/.well-known/mcp'), true);
+  assert.equal(isSpaCatchAllExcluded('/about.md'), true);
+  assert.equal(should404MachinePath('/llms-full.txt'), true);
+  assert.equal(should404MachinePath('/.well-known/agent-card.json'), false);
 });
 
 test('discovery routes return machine types, not the SPA shell', async () => {
@@ -71,6 +77,9 @@ test('discovery routes return machine types, not the SPA shell', async () => {
     const about = await fetch(`${base}/about`);
     assert.equal(about.status, 200);
     assert.match(await about.text(), /<!doctype html>/i);
+
+    const fake = await fetch(`${base}/llms-full.txt`);
+    assert.equal(fake.status, 404);
   } finally {
     await new Promise<void>((resolve, reject) =>
       server.close((err) => (err ? reject(err) : resolve()))

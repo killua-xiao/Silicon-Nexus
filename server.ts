@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import { createServer as createViteServer } from 'vite';
+import fs from 'fs';
 import path from 'path';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
@@ -12,12 +13,22 @@ import {
   rateLimitKey,
 } from './src/server/auth.ts';
 import { createApiRouter, apiErrorHandler } from './src/server/routes.ts';
-import { closeStore, flushStateSync, loadPreservedState, probeDatabase } from './src/server/store.ts';
+import {
+  closeStore,
+  flushStateSync,
+  getFeedItemBySlug,
+  getSiteBySlug,
+  listFeedItems,
+  listSiteContent,
+  listSites,
+  loadPreservedState,
+  probeDatabase,
+  recordFeedCrawl,
+} from './src/server/store.ts';
 import { logJson } from './src/server/log.ts';
 import { buildA2AAgentCard, buildAgentCard } from './src/server/agentCard.ts';
 import { buildMcpServerCard } from './src/server/mcpCard.ts';
 import { createMcpHttpRouter } from './src/server/mcpHttp.ts';
-import { listFeedItems, getFeedItemBySlug, recordFeedCrawl, getSiteBySlug, listSiteContent, listSites } from './src/server/store.ts';
 import {
   buildAtomFeed,
   buildGeoSitemapXml,
@@ -32,6 +43,9 @@ import { buildSiteFeedJson, buildSiteLlmsTxt } from './src/server/geoPublic.ts';
 import { registerSiteContentMirrorRoutes } from './src/server/siteContentMirrors.ts';
 import { detectCrawler } from './src/server/crawlDetect.ts';
 import { handleStripeWebhook } from './src/server/stripeBilling.ts';
+import { registerHubPageRoutes } from './src/server/hubPageRoutes.ts';
+import { matchSiteHubSlug, siteHubMeta } from './src/lib/hubPageMeta.ts';
+import { rewriteSpaHtml } from './src/server/spaHtml.ts';
 import { isSpaCatchAllExcluded } from './src/server/spaSurfaces.ts';
 
 const DEFAULT_PUBLIC_URL = 'https://silinex.xyz';
@@ -235,6 +249,7 @@ async function startServer() {
     res.type('application/json').json(buildSiteFeedJson(appUrl, site, items));
   });
   registerSiteContentMirrorRoutes(app);
+  registerHubPageRoutes(app, appUrl);
 
   // Remote Streamable HTTP MCP (Smithery / HTTP clients)
   // Call the local API loopback so tools never round-trip through the public edge.
@@ -297,12 +312,23 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
+    const spaShell = fs.readFileSync(path.join(distPath, 'index.html'), 'utf8');
     app.use(express.static(distPath, { index: false }));
     app.get('*', (req, res, next) => {
       if (isSpaCatchAllExcluded(req.path)) {
         return next();
       }
-      res.sendFile(path.join(distPath, 'index.html'));
+      const hubSlug = matchSiteHubSlug(req.path);
+      let site = null;
+      if (hubSlug) {
+        try {
+          site = getSiteBySlug(hubSlug);
+        } catch {
+          site = null;
+        }
+      }
+      const extra = site ? { meta: siteHubMeta(site, appUrl) } : undefined;
+      res.type('html').send(rewriteSpaHtml(spaShell, req.path, appUrl, extra));
     });
   }
 

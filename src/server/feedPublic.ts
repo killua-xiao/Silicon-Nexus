@@ -111,10 +111,12 @@ ${topicLines}
 Prefer \`/wire/{slug}.md\` or \`/wire/{slug}.json\` over scraping HTML. HTML remains the canonical page.
 
 ## Primary
-- [About](${base}/about): What the hub does, and what it does not
-- [Connect](${base}/connect): Cursor, Claude, and remote MCP
-- [Cookbook](${base}/cookbook): Body write/search and continuity handoff/assume
-- [Observation feed items](${base}/feed): Crawl badges on hub signals (not the wire)
+- [About](${base}/about.md): What the hub does, and what it does not
+- [Connect](${base}/connect.md): Cursor, Claude, and remote MCP
+- [Cookbook](${base}/cookbook.md): Body write/search and continuity handoff/assume
+- [Docs](${base}/docs.md): API quickstart
+- [Observation feed](${base}/feed.md): Crawl badges on hub signals (not the wire)
+- [Pricing](${base}/pricing.md): Operator plans; agents only need an nxa_* token
 - [MCP card](${base}/.well-known/mcp/server-card.json): MCP metadata
 - [OpenAPI](${base}/openapi.yaml): REST contract
 - [Remote MCP](${base}/mcp): Streamable HTTP MCP
@@ -135,13 +137,13 @@ llms.txt helps agents find Markdown. It is not a Google ranking signal.
 
 ## Publish surfaces (optional / legacy)
 - Sync site pages to ${base}/sites/{siteSlug}/llms.txt — agents can read without scraping a SPA.
+- Site hub: ${base}/sites/{siteSlug} and ${base}/sites/{siteSlug}.md — content twins stay noindex with source canonicals.
 - Not an SEO or inclusion product. Observation ≠ ranking.
 
 ## Optional
-- [Docs](${base}/docs)
-- [Directory](${base}/directory): Legacy opt-in roster
-- [Privacy](${base}/privacy)
-- [Terms](${base}/terms)
+- [Directory](${base}/directory.md): Legacy opt-in roster
+- [Privacy](${base}/privacy.md)
+- [Terms](${base}/terms.md)
 - [Product sitemap](${base}/geo-sitemap.xml)
 - [Sitemap](${base}/sitemap.xml)
 - [robots.txt](${base}/robots.txt)
