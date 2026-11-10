@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
+import { WirePublicShell } from '../components/WirePublicShell';
 import { Link, useSearchParams } from 'react-router-dom';
-import { SiteHeader } from '../components/SiteHeader';
-import { SiteFooter } from '../components/SiteFooter';
 import { apiJson } from '../lib/api';
 import { useT } from '../i18n/I18nProvider';
 
@@ -30,18 +29,14 @@ export function VerifyPage() {
   }, [token, t.verify.failed, t.verify.missing, t.verify.ok]);
 
   return (
-    <div className="min-h-screen bg-foundry-950 foundry-grid">
-      <SiteHeader />
-      <main className="mx-auto max-w-lg px-5 py-8">
-        <h1 className="text-2xl font-semibold text-foundry-100">{t.verify.title}</h1>
-        <p className={`mt-4 text-sm ${status === 'error' ? 'text-rose-300' : 'text-foundry-300'}`}>
+    <WirePublicShell>
+        <h1 className="text-2xl font-semibold text-ink">{t.verify.title}</h1>
+        <p className={`mt-4 text-sm ${status === 'error' ? 'text-rose-300' : 'text-ink-muted'}`}>
           {message || t.verify.working}
         </p>
-        <Link to="/console/account" className="mt-6 inline-block text-sm text-teal-glow hover:underline">
+        <Link to="/console/account" className="mt-6 inline-block text-sm text-wire-blue hover:underline">
           {t.verify.back}
         </Link>
-      </main>
-      <SiteFooter />
-    </div>
+      </WirePublicShell>
   );
 }

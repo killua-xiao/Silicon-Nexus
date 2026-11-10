@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
+import { WirePublicShell } from '../components/WirePublicShell';
 import { Link, useParams } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { zhCN, enUS } from 'date-fns/locale';
 import { Radio } from 'lucide-react';
-import { SiteHeader } from '../components/SiteHeader';
-import { SiteFooter } from '../components/SiteFooter';
 import { EmptyState, Skeleton } from '../components/EmptyState';
 import { useI18n, useT } from '../i18n/I18nProvider';
 
@@ -54,29 +53,28 @@ export function FeedPage() {
   }, [slug, t.common.cannotReach]);
 
   return (
-    <div className="min-h-screen bg-foundry-950 foundry-grid">
-      <SiteHeader />
-      <main className="wrap py-8">
+    <WirePublicShell>
+
         <p className="nx-kicker mb-2">{t.feed.eyebrow}</p>
-        <h1 className="text-3xl font-semibold tracking-tight text-foundry-100">
+        <h1 className="text-3xl font-semibold tracking-tight text-ink">
           {slug ? item?.title || t.feed.title : t.feed.title}
         </h1>
-        <p className="mt-3 text-foundry-400 leading-relaxed">{t.feed.intro}</p>
-        <p className="mt-2 text-xs text-foundry-600">{t.feed.indexingHint}</p>
-        <p className="mt-3 font-mono text-[11px] text-foundry-600">
-          <a className="text-teal-glow/80 hover:underline" href="/feed.json">
+        <p className="mt-3 text-ink-muted leading-relaxed">{t.feed.intro}</p>
+        <p className="mt-2 text-xs text-ink-muted">{t.feed.indexingHint}</p>
+        <p className="mt-3 font-mono text-[11px] text-ink-muted">
+          <a className="text-wire-blue/80 hover:underline" href="/feed.json">
             feed.json
           </a>
           {' · '}
-          <a className="text-teal-glow/80 hover:underline" href="/feed.xml">
+          <a className="text-wire-blue/80 hover:underline" href="/feed.xml">
             feed.xml
           </a>
           {' · '}
-          <a className="text-teal-glow/80 hover:underline" href="/llms.txt">
+          <a className="text-wire-blue/80 hover:underline" href="/llms.txt">
             llms.txt
           </a>
           {' · '}
-          <a className="text-teal-glow/80 hover:underline" href="/sitemap.xml">
+          <a className="text-wire-blue/80 hover:underline" href="/sitemap.xml">
             sitemap.xml
           </a>
         </p>
@@ -89,10 +87,10 @@ export function FeedPage() {
               <p className="text-sm text-rose-300">{error || t.feed.missing}</p>
             ) : (
               <>
-                <p className="font-mono text-[11px] text-foundry-500">
+                <p className="font-mono text-[11px] text-ink-muted">
                   <span
                     className={
-                      item.indexing?.status === 'crawled' ? 'text-teal-glow' : 'text-foundry-500'
+                      item.indexing?.status === 'crawled' ? 'text-wire-blue' : 'text-ink-muted'
                     }
                   >
                     {item.indexing?.status === 'crawled' ? t.feed.crawled : t.feed.unseen}
@@ -107,7 +105,7 @@ export function FeedPage() {
                       {' · '}
                       <a
                         href={item.sourceUrl}
-                        className="text-teal-glow/80 hover:underline"
+                        className="text-wire-blue/80 hover:underline"
                         target="_blank"
                         rel="noreferrer"
                       >
@@ -121,10 +119,10 @@ export function FeedPage() {
                     locale: dateLocale,
                   })}
                 </p>
-                <pre className="mt-4 whitespace-pre-wrap font-mono text-sm leading-relaxed text-foundry-200">
+                <pre className="mt-4 whitespace-pre-wrap font-mono text-sm leading-relaxed text-ink">
                   {item.bodyMd}
                 </pre>
-                <Link to="/feed" className="mt-6 inline-block text-sm text-teal-glow hover:underline">
+                <Link to="/feed" className="mt-6 inline-block text-sm text-wire-blue hover:underline">
                   {t.feed.back}
                 </Link>
               </>
@@ -152,19 +150,19 @@ export function FeedPage() {
                   <li key={a.slug} className="px-5 py-4">
                     <Link
                       to={`/feed/${encodeURIComponent(a.slug)}`}
-                      className="font-mono text-sm text-teal-glow hover:underline"
+                      className="font-mono text-sm text-wire-blue hover:underline"
                     >
                       {a.title}
                     </Link>
                     <span
                       className={`ml-2 font-mono text-[10px] uppercase ${
-                        a.indexing?.status === 'crawled' ? 'text-teal-glow' : 'text-foundry-600'
+                        a.indexing?.status === 'crawled' ? 'text-wire-blue' : 'text-ink-muted'
                       }`}
                     >
                       {a.indexing?.status === 'crawled' ? t.feed.crawled : t.feed.unseen}
                     </span>
-                    <p className="mt-1 text-sm text-foundry-400">{a.summary}</p>
-                    <p className="mt-1 font-mono text-[11px] text-foundry-600">
+                    <p className="mt-1 text-sm text-ink-muted">{a.summary}</p>
+                    <p className="mt-1 font-mono text-[11px] text-ink-muted">
                       {a.source} ·{' '}
                       {formatDistanceToNow(new Date(a.publishedAt), {
                         addSuffix: true,
@@ -177,8 +175,6 @@ export function FeedPage() {
             )}
           </div>
         )}
-      </main>
-      <SiteFooter />
-    </div>
+      </WirePublicShell>
   );
 }

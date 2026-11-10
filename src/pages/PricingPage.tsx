@@ -1,13 +1,12 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { SiteHeader } from '../components/SiteHeader';
-import { SiteFooter } from '../components/SiteFooter';
 import { useI18n, useT } from '../i18n/I18nProvider';
 import { apiJson } from '../lib/api';
 import { cn } from '../lib/cn';
 import { SITE_LEGAL } from '../legal/site';
 import type { Messages } from '../i18n/messages';
 import { PUBLIC_LIST_PRICES, formatListPrice } from '../lib/planPrice';
+import { WirePublicShell } from '../components/WirePublicShell';
 
 type PlanId = 'free' | 'starter' | 'pro' | 'business';
 
@@ -74,16 +73,14 @@ export function PricingPage() {
   });
 
   return (
-    <div className="min-h-screen bg-foundry-950 foundry-grid">
-      <SiteHeader />
-      <main className="mx-auto max-w-6xl px-5 py-8 md:px-6">
+    <WirePublicShell>
         <p className="nx-kicker mb-2">{t.pricing.eyebrow}</p>
-        <h1 className="text-[1.75rem] font-semibold tracking-tight text-foundry-100 md:text-[2rem]">
+        <h1 className="text-[1.75rem] font-semibold tracking-tight text-ink md:text-[2rem]">
           {t.pricing.title}
         </h1>
-        <p className="mt-3 max-w-2xl text-foundry-400 leading-relaxed">{t.pricing.intro}</p>
-        <p className="mt-2 max-w-2xl text-xs text-foundry-500">{t.pricing.currencyNote}</p>
-        <p className="mt-1 max-w-2xl text-xs text-foundry-600">{t.pricing.checkoutNote}</p>
+        <p className="mt-3 max-w-2xl text-ink-muted leading-relaxed">{t.pricing.intro}</p>
+        <p className="mt-2 max-w-2xl text-xs text-ink-muted">{t.pricing.currencyNote}</p>
+        <p className="mt-1 max-w-2xl text-xs text-ink-muted">{t.pricing.checkoutNote}</p>
 
         <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {display.map((plan) => (
@@ -98,20 +95,20 @@ export function PricingPage() {
               {plan.highlighted ? (
                 <span className="nx-chip absolute right-4 top-4">{t.pricing.recommended}</span>
               ) : null}
-              <div className="pr-24 font-mono text-[11px] uppercase tracking-wider text-foundry-500">
+              <div className="pr-24 font-mono text-[11px] uppercase tracking-wider text-ink-muted">
                 {plan.name}
               </div>
-              <div className="mt-2 font-mono text-3xl text-foundry-100">
+              <div className="mt-2 font-mono text-3xl text-ink">
                 {plan.priceLabel ?? t.pricing.free}
                 {plan.priceLabel ? (
-                  <span className="text-sm text-foundry-500">{t.pricing.perMonth}</span>
+                  <span className="text-sm text-ink-muted">{t.pricing.perMonth}</span>
                 ) : null}
               </div>
-              <p className="mt-2 text-sm text-foundry-400">{plan.tagline}</p>
-              <ul className="mt-4 flex-1 space-y-2 text-sm text-foundry-300">
+              <p className="mt-2 text-sm text-ink-muted">{plan.tagline}</p>
+              <ul className="mt-4 flex-1 space-y-2 text-sm text-ink-muted">
                 {plan.bullets.map((b) => (
                   <li key={b} className="flex gap-2">
-                    <span className="text-teal-glow">·</span>
+                    <span className="text-wire-blue">·</span>
                     <span>{b}</span>
                   </li>
                 ))}
@@ -152,22 +149,20 @@ export function PricingPage() {
         </div>
 
         <section className="nx-card mt-12 p-5">
-          <h2 className="font-mono text-xs uppercase tracking-wider text-teal-glow">
+          <h2 className="font-mono text-xs uppercase tracking-wider text-wire-blue">
             {t.pricing.audiencesTitle}
           </h2>
-          <div className="mt-4 grid gap-4 md:grid-cols-2 text-sm text-foundry-300">
+          <div className="mt-4 grid gap-4 md:grid-cols-2 text-sm text-ink-muted">
             <div>
-              <div className="font-semibold text-foundry-100">{t.pricing.userTitle}</div>
-              <p className="mt-1 text-foundry-500">{t.pricing.userBody}</p>
+              <div className="font-semibold text-ink">{t.pricing.userTitle}</div>
+              <p className="mt-1 text-ink-muted">{t.pricing.userBody}</p>
             </div>
             <div>
-              <div className="font-semibold text-foundry-100">{t.pricing.agentTitle}</div>
-              <p className="mt-1 text-foundry-500">{t.pricing.agentBody}</p>
+              <div className="font-semibold text-ink">{t.pricing.agentTitle}</div>
+              <p className="mt-1 text-ink-muted">{t.pricing.agentBody}</p>
             </div>
           </div>
         </section>
-      </main>
-      <SiteFooter />
-    </div>
+      </WirePublicShell>
   );
 }

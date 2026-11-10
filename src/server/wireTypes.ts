@@ -1,8 +1,43 @@
-/** Silicon News Wire — additive public dispatch module (phase 1). */
+/** Silicon News Wire — additive public dispatch module. */
 
 export const WIRE_PUBLISHER_SLUG = 'silicon-nexus';
 
 export const WIRE_CATEGORIES = [
+  {
+    slug: 'ai',
+    nameEn: 'AI',
+    nameZh: '人工智能',
+    blurbEn: 'Models, agents, and applied intelligence.',
+    blurbZh: '大模型、智能体与应用落地。',
+  },
+  {
+    slug: 'frontier',
+    nameEn: 'Frontier',
+    nameZh: '前沿科技',
+    blurbEn: 'Frontier science and deep tech.',
+    blurbZh: '前沿科学与深科技。',
+  },
+  {
+    slug: 'silicon',
+    nameEn: 'Silicon Life',
+    nameZh: '硅基生命',
+    blurbEn: 'Agents, continuity, and silicon lifeforms.',
+    blurbZh: '智能体、连续性与硅基生命体。',
+  },
+  {
+    slug: 'chips',
+    nameEn: 'Chips',
+    nameZh: '芯片算力',
+    blurbEn: 'Semiconductors, compute, and infrastructure.',
+    blurbZh: '半导体、算力与基础设施。',
+  },
+  {
+    slug: 'robotics',
+    nameEn: 'Robotics',
+    nameZh: '具身智能',
+    blurbEn: 'Embodied AI, robots, and physical agents.',
+    blurbZh: '具身智能、机器人与物理智能体。',
+  },
   { slug: 'wire', nameEn: 'Wire', nameZh: '电讯', blurbEn: 'Hub dispatches.', blurbZh: '站方电讯。' },
   {
     slug: 'platform',
@@ -25,6 +60,7 @@ export type WireCategorySlug = (typeof WIRE_CATEGORIES)[number]['slug'];
 export type WireArticleStatus = 'draft' | 'published';
 export type WireAuthorType = 'Organization' | 'Person';
 export type WireAudience = 'human' | 'bot';
+export type WireSourceLang = 'en' | 'zh';
 
 export interface WirePublisher {
   id: string;
@@ -60,10 +96,16 @@ export interface WireArticle {
   publisherId: string;
   publisher: WirePublisher;
   slug: string;
+  /** English (canonical for machine defaults). */
   headline: string;
   summary: string;
   bodyMd: string;
   keyFacts: WireKeyFact[];
+  /** Chinese display fields. Empty string / [] means fall back to English. */
+  headlineZh: string;
+  summaryZh: string;
+  bodyMdZh: string;
+  keyFactsZh: WireKeyFact[];
   category: WireCategorySlug;
   authorName: string;
   authorType: WireAuthorType;
@@ -72,7 +114,11 @@ export interface WireArticle {
   datePublished: string;
   dateModified: string;
   imageUrl: string | null;
+  /** Original source language. */
   language: string;
+  sourceUrl: string | null;
+  sourceName: string | null;
+  externalId: string | null;
   createdAt: string;
   updatedAt: string;
   observations: WireObservations;
@@ -84,6 +130,10 @@ export interface WireArticleInput {
   summary: string;
   bodyMd: string;
   keyFacts: string[];
+  headlineZh?: string;
+  summaryZh?: string;
+  bodyMdZh?: string;
+  keyFactsZh?: string[];
   category: WireCategorySlug;
   authorName: string;
   authorType?: WireAuthorType;
@@ -93,6 +143,9 @@ export interface WireArticleInput {
   dateModified?: string;
   imageUrl?: string | null;
   language?: string;
+  sourceUrl?: string | null;
+  sourceName?: string | null;
+  externalId?: string | null;
 }
 
 export const WIRE_OBSERVATION_NOTE =

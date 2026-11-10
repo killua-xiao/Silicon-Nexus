@@ -17,7 +17,7 @@ export function AgentsPage() {
           {t.console.agentsTitle}
         </h1>
         <p className="text-sm text-foundry-500">{t.console.agentsHint}</p>
-        <p className="mt-1 text-xs text-foundry-600">{t.console.mintHint}</p>
+        <p className="mt-1 text-xs text-ink-muted">{t.console.mintHint}</p>
       </div>
       <AgentPanel
         agents={agents}

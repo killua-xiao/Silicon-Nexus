@@ -205,7 +205,7 @@ export function ConsoleAccountPage() {
                 <li key={b}>· {b}</li>
               ))}
             </ul>
-            <p className="pt-2 text-[11px] text-foundry-600">
+            <p className="pt-2 text-[11px] text-ink-muted">
               token prefix:{' '}
               {getOperatorKey().startsWith('nxu_')
                 ? 'nxu_*'

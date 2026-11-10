@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
-import { SiteHeader } from '../components/SiteHeader';
-import { SiteFooter } from '../components/SiteFooter';
+import { WirePublicShell } from '../components/WirePublicShell';
 import { useT } from '../i18n/I18nProvider';
 import { SITE_LEGAL } from '../legal/site';
 import { PUBLIC_LIST_PRICES } from '../lib/planPrice';
@@ -30,55 +29,54 @@ export function AboutPage() {
   const limits = [a.honestLexical, a.honestCrawl, a.honestBilling, a.honestScale];
 
   return (
-    <div className="min-h-screen bg-foundry-950 foundry-grid text-foundry-100">
-      <SiteHeader />
-      <main className="wrap py-8">
+    <WirePublicShell>
+
         <p className="nx-kicker mb-2">{a.eyebrow}</p>
-        <h1 className="text-[1.75rem] font-semibold tracking-tight text-foundry-100 md:text-[2rem]">
+        <h1 className="text-[1.75rem] font-semibold tracking-tight text-ink md:text-[2rem]">
           {a.title}
         </h1>
-        <p className="mt-4 leading-relaxed text-foundry-400">{a.lead}</p>
+        <p className="mt-4 leading-relaxed text-ink-muted">{a.lead}</p>
 
         <section className="mt-12">
-          <h2 className="text-xl font-semibold tracking-tight text-foundry-100">{a.platformTitle}</h2>
-          <p className="mt-3 leading-relaxed text-foundry-400">{a.platformBody}</p>
+          <h2 className="text-xl font-semibold tracking-tight text-ink">{a.platformTitle}</h2>
+          <p className="mt-3 leading-relaxed text-ink-muted">{a.platformBody}</p>
         </section>
 
         <section className="mt-12">
-          <h2 className="text-xl font-semibold tracking-tight text-foundry-100">
+          <h2 className="text-xl font-semibold tracking-tight text-ink">
             {a.audiencesTitle}
           </h2>
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             <article className="nx-card p-5">
-              <h3 className="font-mono text-xs uppercase tracking-wider text-teal-glow">
+              <h3 className="font-mono text-xs uppercase tracking-wider text-wire-blue">
                 {a.humanTitle}
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-foundry-400">{a.humanBody}</p>
+              <p className="mt-2 text-sm leading-relaxed text-ink-muted">{a.humanBody}</p>
             </article>
             <article className="nx-card p-5">
               <h3 className="font-mono text-xs uppercase tracking-wider text-copper">
                 {a.agentTitle}
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-foundry-400">{a.agentBody}</p>
+              <p className="mt-2 text-sm leading-relaxed text-ink-muted">{a.agentBody}</p>
             </article>
           </div>
         </section>
 
         <section className="mt-12">
-          <h2 className="text-xl font-semibold tracking-tight text-foundry-100">{a.capTitle}</h2>
+          <h2 className="text-xl font-semibold tracking-tight text-ink">{a.capTitle}</h2>
           <ul className="mt-4 space-y-4">
             {capabilities.map((c) => (
               <li key={c.title} className="nx-card p-5">
-                <h3 className="font-semibold text-foundry-100">{c.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-foundry-400">{c.body}</p>
+                <h3 className="font-semibold text-ink">{c.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-ink-muted">{c.body}</p>
               </li>
             ))}
           </ul>
         </section>
 
         <section className="mt-12">
-          <h2 className="text-xl font-semibold tracking-tight text-foundry-100">{a.honestTitle}</h2>
-          <ul className="mt-4 space-y-3 text-sm leading-relaxed text-foundry-400">
+          <h2 className="text-xl font-semibold tracking-tight text-ink">{a.honestTitle}</h2>
+          <ul className="mt-4 space-y-3 text-sm leading-relaxed text-ink-muted">
             {limits.map((line) => (
               <li key={line} className="flex gap-2">
                 <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-teal-glow" />
@@ -89,8 +87,8 @@ export function AboutPage() {
         </section>
 
         <section className="nx-card mt-12 p-6">
-          <h2 className="text-xl font-semibold tracking-tight text-foundry-100">{a.startTitle}</h2>
-          <p className="mt-3 text-sm leading-relaxed text-foundry-400">{a.startBody}</p>
+          <h2 className="text-xl font-semibold tracking-tight text-ink">{a.startTitle}</h2>
+          <p className="mt-3 text-sm leading-relaxed text-ink-muted">{a.startBody}</p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link to="/console" className="nx-btn nx-btn-primary">
               {t.nav.openConsole}
@@ -124,10 +122,8 @@ export function AboutPage() {
               {a.github}
             </a>
           </div>
-          <p className="mt-4 font-mono text-[11px] text-foundry-600">{a.sourceHint}</p>
+          <p className="mt-4 font-mono text-[11px] text-ink-muted">{a.sourceHint}</p>
         </section>
-      </main>
-      <SiteFooter />
-    </div>
+      </WirePublicShell>
   );
 }

@@ -116,7 +116,7 @@ export function ConsoleFeedPage() {
             /feed
           </Link>
           {' · '}
-          <span className="text-foundry-600">{t.consoleFeed.indexingHint}</span>
+          <span className="text-ink-muted">{t.consoleFeed.indexingHint}</span>
         </p>
       </div>
 

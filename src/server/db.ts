@@ -380,6 +380,19 @@ function migrateWireSchema(database: Database.Database) {
     );
   `);
 
+  ensureColumn(database, 'articles', 'headline_zh', "TEXT NOT NULL DEFAULT ''");
+  ensureColumn(database, 'articles', 'summary_zh', "TEXT NOT NULL DEFAULT ''");
+  ensureColumn(database, 'articles', 'body_md_zh', "TEXT NOT NULL DEFAULT ''");
+  ensureColumn(database, 'articles', 'key_facts_zh_json', "TEXT NOT NULL DEFAULT '[]'");
+  ensureColumn(database, 'articles', 'source_url', 'TEXT');
+  ensureColumn(database, 'articles', 'source_name', 'TEXT');
+  ensureColumn(database, 'articles', 'external_id', 'TEXT');
+  database.exec(`
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_articles_external_id
+      ON articles(external_id)
+      WHERE external_id IS NOT NULL AND external_id != '';
+  `);
+
   try {
     database.exec(`
       CREATE VIRTUAL TABLE IF NOT EXISTS articles_fts USING fts5(
@@ -390,21 +403,39 @@ function migrateWireSchema(database: Database.Database) {
         key_facts,
         tokenize='unicode61 remove_diacritics 2'
       );
-      CREATE TRIGGER IF NOT EXISTS articles_ai AFTER INSERT ON articles BEGIN
+    `);
+    // Recreate triggers so UPDATE/INSERT stay in sync after column migrations.
+    database.exec(`DROP TRIGGER IF EXISTS articles_ai`);
+    database.exec(`DROP TRIGGER IF EXISTS articles_ad`);
+    database.exec(`DROP TRIGGER IF EXISTS articles_au`);
+    // SQLite 3.43+ contentful FTS5: use DELETE FROM fts WHERE rowid=… (not VALUES('delete', …)).
+    database.exec(`
+      CREATE TRIGGER articles_ai AFTER INSERT ON articles BEGIN
         INSERT INTO articles_fts(rowid, slug, headline, summary, body_md, key_facts)
         VALUES (new.rowid, new.slug, new.headline, new.summary, new.body_md, new.key_facts_json);
       END;
-      CREATE TRIGGER IF NOT EXISTS articles_ad AFTER DELETE ON articles BEGIN
-        INSERT INTO articles_fts(articles_fts, rowid, slug, headline, summary, body_md, key_facts)
-        VALUES('delete', old.rowid, old.slug, old.headline, old.summary, old.body_md, old.key_facts_json);
+      CREATE TRIGGER articles_ad AFTER DELETE ON articles BEGIN
+        DELETE FROM articles_fts WHERE rowid = old.rowid;
       END;
-      CREATE TRIGGER IF NOT EXISTS articles_au AFTER UPDATE ON articles BEGIN
-        INSERT INTO articles_fts(articles_fts, rowid, slug, headline, summary, body_md, key_facts)
-        VALUES('delete', old.rowid, old.slug, old.headline, old.summary, old.body_md, old.key_facts_json);
+      CREATE TRIGGER articles_au AFTER UPDATE ON articles BEGIN
+        DELETE FROM articles_fts WHERE rowid = old.rowid;
         INSERT INTO articles_fts(rowid, slug, headline, summary, body_md, key_facts)
         VALUES (new.rowid, new.slug, new.headline, new.summary, new.body_md, new.key_facts_json);
       END;
     `);
+    const rebuildKey = database
+      .prepare(`SELECT value FROM meta WHERE key = 'articles_fts_triggers_v2'`)
+      .get() as { value: string } | undefined;
+    if (!rebuildKey) {
+      database.exec(`DELETE FROM articles_fts`);
+      database.exec(`
+        INSERT INTO articles_fts(rowid, slug, headline, summary, body_md, key_facts)
+        SELECT rowid, slug, headline, summary, body_md, key_facts_json FROM articles
+      `);
+      database
+        .prepare(`INSERT OR REPLACE INTO meta (key, value) VALUES ('articles_fts_triggers_v2', '1')`)
+        .run();
+    }
   } catch {
     // FTS5 unavailable — list/detail still work without lexical search.
   }

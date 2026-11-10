@@ -36,6 +36,10 @@ type ArticleRow = {
   summary: string;
   body_md: string;
   key_facts_json: string;
+  headline_zh?: string | null;
+  summary_zh?: string | null;
+  body_md_zh?: string | null;
+  key_facts_zh_json?: string | null;
   category: string;
   author_name: string;
   author_type: string;
@@ -45,6 +49,9 @@ type ArticleRow = {
   date_modified: string;
   image_url: string | null;
   language: string;
+  source_url?: string | null;
+  source_name?: string | null;
+  external_id?: string | null;
   created_at: string;
   updated_at: string;
   rowid?: number;
@@ -71,9 +78,9 @@ function mapPublisher(row: PublisherRow): WirePublisher {
   };
 }
 
-function parseKeyFacts(raw: string): WireKeyFact[] {
+function parseKeyFacts(raw: string | null | undefined): WireKeyFact[] {
   try {
-    const parsed = JSON.parse(raw) as unknown;
+    const parsed = JSON.parse(raw || '[]') as unknown;
     if (!Array.isArray(parsed)) return [];
     return parsed
       .map((item, i) => {
@@ -107,6 +114,10 @@ function mapArticle(row: ArticleRow, publisher: WirePublisher, observations: Wir
     summary: row.summary,
     bodyMd: row.body_md,
     keyFacts: parseKeyFacts(row.key_facts_json),
+    headlineZh: row.headline_zh || '',
+    summaryZh: row.summary_zh || '',
+    bodyMdZh: row.body_md_zh || '',
+    keyFactsZh: parseKeyFacts(row.key_facts_zh_json),
     category,
     authorName: row.author_name,
     authorType,
@@ -116,6 +127,9 @@ function mapArticle(row: ArticleRow, publisher: WirePublisher, observations: Wir
     dateModified: row.date_modified,
     imageUrl: row.image_url,
     language: row.language || 'en',
+    sourceUrl: row.source_url || null,
+    sourceName: row.source_name || null,
+    externalId: row.external_id || null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     observations,
@@ -215,6 +229,14 @@ export function getPublishedArticleBySlug(slug: string): WireArticle | null {
   return hydrate(db, row);
 }
 
+export function getArticleByExternalId(externalId: string): WireArticle | null {
+  const db = getDb();
+  const row = db
+    .prepare(`SELECT * FROM articles WHERE external_id = ?`)
+    .get(externalId) as ArticleRow | undefined;
+  return hydrate(db, row);
+}
+
 export function recordArticleObservation(input: {
   articleId: string;
   audience: WireAudience;
@@ -297,26 +319,19 @@ function upsertPublisher(db: Database.Database, seed: typeof SEED_PUBLISHER): st
   return id;
 }
 
-function insertArticleIfMissing(db: Database.Database, publisherId: string, input: WireArticleInput): void {
-  const existing = db.prepare(`SELECT id FROM articles WHERE slug = ?`).get(input.slug) as { id: string } | undefined;
-  if (existing) return;
-  const now = new Date().toISOString();
-  const id = `art_${crypto.randomBytes(6).toString('hex')}`;
-  const facts = JSON.stringify(input.keyFacts);
-  db.prepare(
-    `INSERT INTO articles (
-       id, publisher_id, slug, headline, summary, body_md, key_facts_json,
-       category, author_name, author_type, author_url, status,
-       date_published, date_modified, image_url, language, created_at, updated_at
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-  ).run(
+function articleValues(publisherId: string, input: WireArticleInput, id: string, now: string) {
+  return [
     id,
     publisherId,
     input.slug,
     input.headline,
     input.summary,
     input.bodyMd,
-    facts,
+    JSON.stringify(input.keyFacts),
+    input.headlineZh || '',
+    input.summaryZh || '',
+    input.bodyMdZh || '',
+    JSON.stringify(input.keyFactsZh || []),
     input.category,
     input.authorName,
     input.authorType || 'Organization',
@@ -326,12 +341,148 @@ function insertArticleIfMissing(db: Database.Database, publisherId: string, inpu
     input.dateModified || input.datePublished,
     input.imageUrl ?? null,
     input.language || 'en',
+    input.sourceUrl ?? null,
+    input.sourceName ?? null,
+    input.externalId ?? null,
     now,
-    now
-  );
+    now,
+  ] as const;
 }
 
-/** Idempotent seed: hub publisher + 3–4 published articles on first boot. */
+function insertArticleIfMissing(db: Database.Database, publisherId: string, input: WireArticleInput): void {
+  const existing = db.prepare(`SELECT id FROM articles WHERE slug = ?`).get(input.slug) as
+    | { id: string }
+    | undefined;
+  if (existing) {
+    // Keep seed bilingual copy authoritative for hub desk articles.
+    if (input.headlineZh || input.summaryZh || input.bodyMdZh) {
+      db.prepare(
+        `UPDATE articles SET
+           headline_zh = ?, summary_zh = ?, body_md_zh = ?, key_facts_zh_json = ?,
+           updated_at = ?
+         WHERE id = ?`
+      ).run(
+        input.headlineZh || '',
+        input.summaryZh || '',
+        input.bodyMdZh || '',
+        JSON.stringify(input.keyFactsZh || []),
+        new Date().toISOString(),
+        existing.id
+      );
+    }
+    return;
+  }
+  const now = new Date().toISOString();
+  const id = `art_${crypto.randomBytes(6).toString('hex')}`;
+  db.prepare(
+    `INSERT INTO articles (
+       id, publisher_id, slug, headline, summary, body_md, key_facts_json,
+       headline_zh, summary_zh, body_md_zh, key_facts_zh_json,
+       category, author_name, author_type, author_url, status,
+       date_published, date_modified, image_url, language,
+       source_url, source_name, external_id, created_at, updated_at
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(...articleValues(publisherId, input, id, now));
+}
+
+/** Insert or refresh an ingested wire digest by external_id / slug. */
+export function upsertWireArticle(input: WireArticleInput): { ok: true; id: string; created: boolean } {
+  const db = getDb();
+  const publisherId = upsertPublisher(db, SEED_PUBLISHER);
+  const now = new Date().toISOString();
+
+  const byExternal =
+    input.externalId
+      ? (db.prepare(`SELECT id, slug FROM articles WHERE external_id = ?`).get(input.externalId) as
+          | { id: string; slug: string }
+          | undefined)
+      : undefined;
+  const bySlug = db.prepare(`SELECT id FROM articles WHERE slug = ?`).get(input.slug) as
+    | { id: string }
+    | undefined;
+  const existing = byExternal || bySlug;
+
+  if (existing) {
+    db.prepare(
+      `UPDATE articles SET
+         headline = ?, summary = ?, body_md = ?, key_facts_json = ?,
+         headline_zh = ?, summary_zh = ?, body_md_zh = ?, key_facts_zh_json = ?,
+         category = ?, author_name = ?, author_type = ?, author_url = ?, status = ?,
+         date_published = ?, date_modified = ?, image_url = ?, language = ?,
+         source_url = ?, source_name = ?, external_id = ?, updated_at = ?
+       WHERE id = ?`
+    ).run(
+      input.headline,
+      input.summary,
+      input.bodyMd,
+      JSON.stringify(input.keyFacts),
+      input.headlineZh || '',
+      input.summaryZh || '',
+      input.bodyMdZh || '',
+      JSON.stringify(input.keyFactsZh || []),
+      input.category,
+      input.authorName,
+      input.authorType || 'Organization',
+      input.authorUrl ?? null,
+      input.status || 'published',
+      input.datePublished,
+      input.dateModified || input.datePublished || now,
+      input.imageUrl ?? null,
+      input.language || 'en',
+      input.sourceUrl ?? null,
+      input.sourceName ?? null,
+      input.externalId ?? null,
+      now,
+      existing.id
+    );
+    return { ok: true, id: existing.id, created: false };
+  }
+
+  const id = `art_${crypto.randomBytes(6).toString('hex')}`;
+  db.prepare(
+    `INSERT INTO articles (
+       id, publisher_id, slug, headline, summary, body_md, key_facts_json,
+       headline_zh, summary_zh, body_md_zh, key_facts_zh_json,
+       category, author_name, author_type, author_url, status,
+       date_published, date_modified, image_url, language,
+       source_url, source_name, external_id, created_at, updated_at
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(...articleValues(publisherId, input, id, now));
+  return { ok: true, id, created: true };
+}
+
+/** Unpublish (soft) — keeps row for audit but drops from public wire. */
+export function unpublishWireArticle(id: string): boolean {
+  const db = getDb();
+  const now = new Date().toISOString();
+  const info = db
+    .prepare(`UPDATE articles SET status = 'draft', updated_at = ? WHERE id = ? AND status = 'published'`)
+    .run(now, id);
+  return info.changes > 0;
+}
+
+/** Hard delete by id (observations cascade). */
+export function deleteWireArticle(id: string): boolean {
+  const db = getDb();
+  db.prepare(`DELETE FROM article_observations WHERE article_id = ?`).run(id);
+  const info = db.prepare(`DELETE FROM articles WHERE id = ?`).run(id);
+  return info.changes > 0;
+}
+
+export function listWireArticlesForModeration(limit = 200): WireArticle[] {
+  const db = getDb();
+  const rows = db
+    .prepare(
+      `SELECT * FROM articles
+       WHERE status = 'published'
+       ORDER BY date_published DESC
+       LIMIT ?`
+    )
+    .all(Math.min(Math.max(limit, 1), 500)) as ArticleRow[];
+  return rows.map((row) => hydrate(db, row)).filter((a): a is WireArticle => !!a);
+}
+
+/** Idempotent seed: hub publisher + published articles; backfills Chinese copy. */
 export function seedWireIfEmpty(): void {
   const db = getDb();
   const tx = db.transaction(() => {
@@ -342,3 +493,6 @@ export function seedWireIfEmpty(): void {
   });
   tx();
 }
+
+// Silence unused helper warning in older TS configs.
+void emptyObservations;

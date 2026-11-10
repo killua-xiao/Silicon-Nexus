@@ -255,8 +255,8 @@ function ConsoleShellInner() {
 
   return (
     <ConsoleContext.Provider value={value}>
-      <div className="min-h-screen bg-foundry-950">
-        <SiteHeader />
+      <div className="console-app min-h-screen bg-foundry-950">
+        <SiteHeader variant="console" />
         <ConsoleNav
           connected={connected && (!protectedMode || !!getOperatorKey())}
           workerOnline={worker?.online}

@@ -33,14 +33,16 @@ function renderSpaChrome(path: string): string {
 
 describe('shared public chrome', () => {
   test('CSS tokens and wrap widths are locked', () => {
-    assert.match(SITE_CHROME_CSS, /--bg:\s*#0d0e12/);
-    assert.match(SITE_CHROME_CSS, /--accent:\s*#c9a265/);
-    assert.match(SITE_CHROME_CSS, /--border:\s*rgba\(241, 241, 245, 0\.10\)/);
+    assert.match(SITE_CHROME_CSS, /--carbon-paper:\s*#F4F6F8/);
+    assert.match(SITE_CHROME_CSS, /--wire-blue:\s*#0052FF/);
+    assert.match(SITE_CHROME_CSS, /--accent:\s*var\(--wire-blue\)/);
+    assert.match(SITE_CHROME_CSS, /--border:\s*var\(--grid-line\)/);
     assert.match(SITE_CHROME_CSS, /\.wrap\s*\{[^}]*max-width:\s*var\(--wrap\)/s);
     assert.match(SITE_CHROME_CSS, /nav\.primary/);
-    assert.equal(WRAP_MAX_PX, 960);
+    assert.match(SITE_CHROME_CSS, /protocol-ticker/);
+    assert.equal(WRAP_MAX_PX, 1440);
     assert.equal(WRAP_CONSOLE, '72rem');
-    assert.match(SITE_CHROME_CSS, /--wrap:\s*960px/);
+    assert.match(SITE_CHROME_CSS, /--wrap:\s*1440px/);
     assert.match(SITE_CHROME_CSS, /--wrap-console:\s*72rem/);
     assert.match(SITE_CHROME_CSS, /\.wrap-console\s*\{[^}]*max-width:\s*var\(--wrap-console\)/s);
     assert.doesNotMatch(SITE_CHROME_CSS, /--wrap:\s*720px/);
@@ -61,7 +63,7 @@ describe('shared public chrome', () => {
       ]
     );
     const zh = chromeCopy('zh');
-    assert.equal(zh.builtFor, '— 为硅基生命体而建');
+    assert.equal(zh.builtFor, 'BUILT FOR SILICON LIFEFORMS');
     assert.equal(zh.connect, 'MCP 与 API');
     assert.equal(zh.observation, '观测');
   });
@@ -87,6 +89,7 @@ describe('shared public chrome', () => {
       pathHref: (path) => path,
       langHref: '/connect?lang=zh',
     });
+    assert.match(header, /protocol-ticker/);
     assert.match(header, /class="site-header"/);
     assert.match(header, /class="brand"/);
     assert.match(header, /BUILT FOR SILICON LIFEFORMS/);
@@ -108,34 +111,42 @@ describe('shared public chrome', () => {
     assert.match(footer, new RegExp(SITE_LEGAL.icp.replace(/[()]/g, '\\$&')));
   });
 
-  test('Wire home HTML inlines the shared chrome CSS and shell', () => {
+  test('Wire home HTML inlines the portal shell (ticker + header + footer)', () => {
     const html = renderHomeHtml('https://silinex.xyz', [], 'en');
-    assert.ok(html.includes(SITE_CHROME_CSS));
+    assert.match(html, /--carbon-paper:\s*#F4F6F8/);
+    assert.match(html, /--wire-blue:\s*#0052FF/);
+    assert.match(html, /protocol-ticker/);
     assert.match(html, /class="site-header"/);
     assert.match(html, /class="brand"/);
     assert.match(html, /<nav class="primary"/);
-    assert.match(html, /aria-current="page">Silicon News Wire</);
+    assert.match(html, /BUILT FOR SILICON LIFEFORMS/);
+    assert.match(html, /aria-current="page">All Dispatches</);
     assert.match(html, /class="site-footer"/);
     assert.match(html, /llms\.txt/);
     assert.match(html, /feed\.json/);
     assert.match(html, /agent-card\.json/);
     assert.doesNotMatch(html, /Pricing/);
+    // Public SPA chrome shares the light Swiss Grid shell with Wire.
+    assert.match(SITE_CHROME_CSS, /--carbon-paper:\s*#F4F6F8/);
   });
 
-  test('SPA /connect /feed /about /console share the Wire header and footer DOM', () => {
+  test('SPA /connect /feed /about share the Wire header and footer DOM', () => {
     const wire = renderHomeHtml('https://silinex.xyz', [], 'en');
-    for (const path of ['/connect', '/feed', '/about', '/console', '/console/agents']) {
+    for (const path of ['/connect', '/feed', '/about']) {
       const spa = renderSpaChrome(path);
+      assert.match(spa, /protocol-ticker/);
       assert.match(spa, /class="site-header"/);
       assert.match(spa, /class="brand"/);
       assert.match(spa, /<nav class="primary" aria-label="Primary">/);
-      assert.match(spa, /Silicon News Wire/);
+      assert.match(spa, /Silicon Nexus/);
       assert.match(spa, /MCP &amp; API/);
       assert.match(spa, /Observation/);
       assert.match(spa, /class="site-footer"/);
+      assert.match(spa, /Silicon News Wire/);
       assert.match(spa, /llms\.txt/);
       assert.match(spa, /feed\.json/);
       assert.match(spa, /agent-card\.json/);
+      assert.match(spa, /archive2050\.xyz/);
       assert.match(spa, /鲁ICP备2026026469号-1/);
       assert.ok(wire.includes('class="site-header"'));
     }
@@ -145,7 +156,5 @@ describe('shared public chrome', () => {
     assert.match(about, /aria-current="page"[^>]*>About</);
     const feed = renderSpaChrome('/feed');
     assert.match(feed, /aria-current="page"[^>]*>Observation</);
-    const consolePage = renderSpaChrome('/console/agents');
-    assert.match(consolePage, /aria-current="page"[^>]*>Console</);
   });
 });

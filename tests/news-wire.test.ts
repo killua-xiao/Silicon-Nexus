@@ -87,13 +87,22 @@ describe('Silicon News Wire phase 1', { concurrency: 1 }, () => {
     }
   }
 
-  test('seeds four published articles and FTS table exists', async () => {
-    const articles = listPublishedArticles();
-    assert.equal(articles.length, 4);
+  test('seeds published articles across categories and FTS table exists', async () => {
+    const articles = listPublishedArticles({ limit: 200 });
+    assert.equal(articles.length, SEED_ARTICLES.length);
     assert.deepEqual(
       articles.map((a) => a.slug).sort(),
       SEED_ARTICLES.map((a) => a.slug).sort()
     );
+    const byCat = Object.fromEntries(
+      [...new Set(SEED_ARTICLES.map((a) => a.category))].map((c) => [
+        c,
+        articles.filter((a) => a.category === c).length,
+      ])
+    );
+    for (const [cat, n] of Object.entries(byCat)) {
+      assert.ok(n >= 1, `category ${cat} should have at least one seed`);
+    }
     const { getDb } = await import('../src/server/db.ts');
     const database = getDb();
     const fts = database
@@ -116,8 +125,14 @@ describe('Silicon News Wire phase 1', { concurrency: 1 }, () => {
       assert.match(homeHtml, /<nav class="primary"/);
       assert.match(homeHtml, /MCP &amp; API/);
       assert.match(homeHtml, /\.wrap \{ max-width: var\(--wrap\)/);
-      assert.match(homeHtml, /--wrap:\s*960px/);
+      assert.match(homeHtml, /--wrap:\s*1440px/);
       assert.match(homeHtml, /--wrap-console:\s*72rem/);
+      assert.match(homeHtml, /protocol-ticker|LIVE SIGNAL/);
+      assert.match(homeHtml, /state-inspector/);
+      assert.match(homeHtml, /data-state-tab="json"[^>]*aria-selected="true"|aria-selected="true"[^>]*data-state-tab="json"/);
+      assert.match(homeHtml, /data-pane="json"/);
+      assert.match(homeHtml, /factory-floors-are-agent-runtimes|sim-to-real-is-a-citation-problem|embodied-agents-need-a-body-and-a-bus/);
+      assert.doesNotMatch(homeHtml, /Reporting indicates that[\s\S]{0,40}[\u4e00-\u9fff]/);
       assert.doesNotMatch(homeHtml, /--wrap:\s*720px/);
       assert.match(homeHtml, /rel="alternate"[^>]+application\/feed\+json/);
       assert.match(homeHtml, /<title>/);
@@ -292,5 +307,33 @@ describe('Silicon News Wire phase 1', { concurrency: 1 }, () => {
     assert.equal(isSpaCatchAllExcluded('/console/agents'), false);
     assert.equal(isSpaCatchAllExcluded('/mcp'), true);
     assert.equal(isSpaCatchAllExcluded('/pricing'), false);
+  });
+
+  test('zh page shows Chinese copy; en page shows English', async () => {
+    await withApp(async (base) => {
+      const zhHome = await fetch(`${base}/?lang=zh`);
+      const zhHtml = await zhHome.text();
+      assert.match(zhHtml, /碳基可读，硅基原生/);
+      assert.match(zhHtml, /BUILT FOR SILICON LIFEFORMS/);
+      assert.match(zhHtml, /全部电讯|人工智能|前沿科技|硅基生命/);
+      assert.match(zhHtml, /阅读全文|经 MCP 引用/);
+
+      const enHome = await fetch(`${base}/?lang=en`);
+      const enHtml = await enHome.text();
+      assert.match(enHtml, /Readable by carbon\. Native to silicon\./);
+      assert.match(enHtml, /BUILT FOR SILICON LIFEFORMS/);
+      assert.match(enHtml, /All Dispatches|READ FULL DISPATCH/);
+      assert.match(enHtml, />AI<|>Frontier<|>Silicon Life<|>Chips<|>Robotics</);
+
+      const zhArticle = await fetch(`${base}/wire/${SAMPLE_SLUG}?lang=zh`);
+      const zhPage = await zhArticle.text();
+      assert.match(zhPage, /<h1>碳基可读，硅基原生。<\/h1>/);
+      assert.match(zhPage, /硅基要点/);
+
+      const enArticle = await fetch(`${base}/wire/${SAMPLE_SLUG}?lang=en`);
+      const enPage = await enArticle.text();
+      assert.match(enPage, /<h1>Readable by carbon\. Native to silicon\.<\/h1>/);
+      assert.match(enPage, /Silicon TL;DR/);
+    });
   });
 });

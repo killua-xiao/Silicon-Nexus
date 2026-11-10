@@ -372,7 +372,7 @@ export function ConsoleOverviewPage() {
                     ))
                   )}
                 </div>
-                <div className="mt-2 flex gap-2 font-mono text-[10px] uppercase tracking-wider text-foundry-600">
+                <div className="mt-2 flex gap-2 font-mono text-[10px] uppercase tracking-wider text-ink-muted">
                   <span>{t.console.dualHuman}</span>
                   <span>·</span>
                   <span>{t.console.dualAgent}</span>

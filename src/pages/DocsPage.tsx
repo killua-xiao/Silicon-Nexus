@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
-import { SiteHeader } from '../components/SiteHeader';
-import { SiteFooter } from '../components/SiteFooter';
+import { WirePublicShell } from '../components/WirePublicShell';
 import { useT } from '../i18n/I18nProvider';
 
 export function DocsPage() {
@@ -23,21 +22,20 @@ export function DocsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-foundry-950 foundry-grid">
-      <SiteHeader />
-      <main className="wrap py-8">
-        <h1 className="text-3xl font-semibold tracking-tight text-foundry-100">{t.docs.title}</h1>
-        <p className="mt-3 text-foundry-400">
+    <WirePublicShell>
+
+        <h1 className="text-3xl font-semibold tracking-tight text-ink">{t.docs.title}</h1>
+        <p className="mt-3 text-ink-muted">
           {t.docs.introBefore}{' '}
-          <code className="text-teal-glow">Authorization: Bearer</code> {t.docs.introOr}{' '}
-          <code className="text-teal-glow">X-API-Key</code>. {t.docs.introContract}{' '}
-          <a className="text-teal-glow underline" href="/openapi.yaml">
+          <code className="text-wire-blue">Authorization: Bearer</code> {t.docs.introOr}{' '}
+          <code className="text-wire-blue">X-API-Key</code>. {t.docs.introContract}{' '}
+          <a className="text-wire-blue underline" href="/openapi.yaml">
             OpenAPI
           </a>
           .
         </p>
 
-        <pre className="nx-panel mt-8 overflow-x-auto p-4 font-mono text-xs text-foundry-200">
+        <pre className="nx-panel mt-8 overflow-x-auto p-4 font-mono text-xs text-ink">
 {`# Enroll
 curl -X POST https://silinex.xyz/api/agents/register \\
   -H "Authorization: Bearer $OPERATOR_KEY" \\
@@ -61,27 +59,25 @@ curl "https://silinex.xyz/api/memory/search?q=sector" \\
               <span
                 className={
                   e.method === 'GET'
-                    ? 'w-14 font-mono text-[11px] text-teal-glow'
+                    ? 'w-14 font-mono text-[11px] text-wire-blue'
                     : 'w-14 font-mono text-[11px] text-copper'
                 }
               >
                 {e.method}
               </span>
-              <code className="font-mono text-sm text-teal-glow">{e.path}</code>
-              <span className="text-xs text-foundry-500">{e.note}</span>
+              <code className="font-mono text-sm text-wire-blue">{e.path}</code>
+              <span className="text-xs text-ink-muted">{e.note}</span>
             </li>
           ))}
         </ul>
 
-        <p className="mt-8 text-sm text-foundry-500">
+        <p className="mt-8 text-sm text-ink-muted">
           {t.docs.preferVisual}{' '}
-          <Link to="/console" className="text-teal-glow hover:underline">
+          <Link to="/console" className="text-wire-blue hover:underline">
             {t.docs.openConsole}
           </Link>
           .
         </p>
-      </main>
-      <SiteFooter />
-    </div>
+      </WirePublicShell>
   );
 }
