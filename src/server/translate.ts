@@ -3,15 +3,31 @@
  * Prefer Gemini (GEMINI_API_KEY / GOOGLE_GENERATIVE_AI_API_KEY) when present,
  * then NEXUS_TRANSLATE_URL (LibreTranslate-compatible) or OPENAI_API_KEY;
  * falls back to MyMemory / optional google-translate-api-x for short digests.
+ *
+ * Optional GEMINI_API_BASE + CF_AIG_TOKEN (alias GEMINI_GATEWAY_TOKEN) route
+ * generateContent through Cloudflare AI Gateway; the Gemini key is still sent
+ * as x-goog-api-key (BYOK). Unset, requests go to Google directly.
  */
 
-const GEMINI_GENERATE_CONTENT_HOST = 'generativelanguage.googleapis.com';
+const DEFAULT_GEMINI_API_BASE = 'https://generativelanguage.googleapis.com';
 const DEFAULT_GEMINI_TRANSLATE_MODEL = 'gemini-3.8-flash';
 const GEMINI_CHUNK_CHARS = 8000;
 const GEMINI_TIMEOUT_MS = 20000;
 
 export function geminiApiKey(): string {
   return (process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || '').trim();
+}
+
+/** Official Gemini generateContent origin. Trailing slashes are stripped. */
+export function geminiApiBase(): string {
+  const raw = (process.env.GEMINI_API_BASE || '').trim();
+  if (!raw) return DEFAULT_GEMINI_API_BASE;
+  return raw.replace(/\/+$/, '');
+}
+
+/** Cloudflare AI Gateway token, if any. Prefer CF_AIG_TOKEN over GEMINI_GATEWAY_TOKEN. */
+export function geminiGatewayToken(): string {
+  return (process.env.CF_AIG_TOKEN || process.env.GEMINI_GATEWAY_TOKEN || '').trim();
 }
 
 /** Official Gemini Flash model, overridable. Shared NEXUS_TRANSLATE_MODEL is used only if it is a gemini-* id. */
@@ -83,13 +99,16 @@ async function viaGemini(text: string, from: TranslateLang, to: TranslateLang): 
   const model = geminiTranslateModel();
   const toLabel = to === 'zh' ? 'Simplified Chinese' : 'English';
   const fromLabel = from === 'zh' ? 'Simplified Chinese' : 'English';
-  const url = `https://${GEMINI_GENERATE_CONTENT_HOST}/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+  const url = `${geminiApiBase()}/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'x-goog-api-key': key,
+  };
+  const gatewayToken = geminiGatewayToken();
+  if (gatewayToken) headers['cf-aig-authorization'] = `Bearer ${gatewayToken}`;
   const res = await fetch(url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-goog-api-key': key,
-    },
+    headers,
     body: JSON.stringify({
       systemInstruction: {
         parts: [
