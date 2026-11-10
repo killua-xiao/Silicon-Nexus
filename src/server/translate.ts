@@ -5,8 +5,9 @@
  * falls back to MyMemory / optional google-translate-api-x for short digests.
  *
  * Optional GEMINI_API_BASE + CF_AIG_TOKEN (alias GEMINI_GATEWAY_TOKEN) route
- * generateContent through Cloudflare AI Gateway; the Gemini key is still sent
- * as x-goog-api-key (BYOK). Unset, requests go to Google directly.
+ * generateContent through Cloudflare AI Gateway. The Gemini key is sent as
+ * x-goog-api-key and as the `key` query param (BYOK; the gateway requires the
+ * query form on native :generateContent). Unset, requests go to Google directly.
  */
 
 const DEFAULT_GEMINI_API_BASE = 'https://generativelanguage.googleapis.com';
@@ -99,7 +100,8 @@ async function viaGemini(text: string, from: TranslateLang, to: TranslateLang): 
   const model = geminiTranslateModel();
   const toLabel = to === 'zh' ? 'Simplified Chinese' : 'English';
   const fromLabel = from === 'zh' ? 'Simplified Chinese' : 'English';
-  const url = `${geminiApiBase()}/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+  // Do not log this URL — it includes the provider key as a query param.
+  const url = `${geminiApiBase()}/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`;
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     'x-goog-api-key': key,
